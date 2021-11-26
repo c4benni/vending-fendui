@@ -1,5 +1,5 @@
 module.exports = {
-    port: process.env.PORT|| 8081,
+    port: process.env.PORT|| 1001,
     db: {
         database: process.env.DB_NAME || 'vending',
         user: process.env.DB_USER||'vending',
@@ -12,5 +12,8 @@ module.exports = {
     },
     auth: {
         jwtSecret:process.env.JWT_SECRET||'secret'
+    },
+    app: {
+        validCost: [5,10,20,50,100]
     }
 }
