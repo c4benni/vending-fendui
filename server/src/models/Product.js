@@ -4,15 +4,13 @@
 
 const { app } = require("../config/config");
 
-function generateId() {
-    return `p-${Date.now().toString(36)}`.replace(/\./g,'-')
-}
+const { id: generateId } = require('../utils/generate')
 
 module.exports = (sequelize, dataTypes) => {
     const Product = sequelize.define('Product', {
         id: {
             type: dataTypes.STRING(99),
-            defaultValue: generateId(),
+            defaultValue: generateId('p-'),
             primaryKey: true,
             unique: true
         },

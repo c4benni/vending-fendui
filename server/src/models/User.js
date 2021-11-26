@@ -1,46 +1,80 @@
-const bcrypt = require('bcrypt')
+const { id: generateId } = require('../utils/generate')
 
-function hashPassword(user,) {
-    const SALT_FACTOR = 12;
+const bcrypt = require('bcrypt');
+const { app } = require('../config/config');
 
+async function hashPassword(user) {
+    
     if (!user.changed('password')) {
         return;
     }
+        
+    const hash = await bcrypt.hash(user.password, app.saltRounds)
+    
+    await user.setDataValue('password', hash)
 
-    return bcrypt
-        .genSalt(SALT_FACTOR)
-        .then(salt => bcrypt.hashSync(user.password, salt, null))
-        .then(hash => {
-            user.setDataValue('password', hash)
-    })
+    console.log(user);
+
+    return user
 }
 
 // define a User model;
+module.exports = (sequelize, dataTypes) => {
+    const User = sequelize
+        .define (
+            'User',
+            {
+                id: {
+                    type: dataTypes.STRING(99),
+                    defaultValue: () => generateId('u-'),
+                    primaryKey: true,
+                    unique: true
+                },      
+                username: {
+                    type: dataTypes.STRING(20),
+                    unique: true,
+                    allowNull: false
+                },
+                password: {
+                    type: dataTypes.STRING,
+                    allowNull: false
+                },
+                deposit: {
+                    type: dataTypes.BIGINT,
+                    allowNull: true
+                },
+                role: {
+                    type: dataTypes.STRING(6),
+                    allowNull: false
+                },
+                // sessions: {
+                    
+                // }
+            },
+            {
+                hooks: {
+                    beforeSave: hashPassword
+                }
+            }
+        )    
+    
+    User.prototype.matchPassword = async function (password) {
 
-module.exports = (sequelize, DataTypes) => {
-  const User =  sequelize.define('User', {
-        username: {
-            type: DataTypes.STRING,
-            unique:true,
-        },
-        password: DataTypes.STRING,
-        deposit: DataTypes.BIGINT,
-        role: DataTypes.BOOLEAN
-  }, {
-      hooks: {
-          beforeCreate: hashPassword,
-          beforeUpdate:hashPassword,
-          beforeSave:hashPassword          
-      }
-  })
-    
-    
-    User.prototype.comparePassword = async function (password) {
+        const hash = this.password
+
+        console.log({hash,password});
         
-        const decode = await bcrypt.compare(password, this.dataValues.password)
-    
-        return decode;
+        const match = await bcrypt.compare(password, hash)
+        
+        return match;
     }
     
+
+    User.prototype.hashPassword = async function (password) {
+        const hash = await bcrypt.hash(password, app.saltRounds)
+        
+        return hash
+    }
+
     return User
 }

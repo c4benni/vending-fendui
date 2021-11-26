@@ -5,11 +5,12 @@ const defaultError = {
     status: 500
 }
 
-module.exports = function (
+module.exports = function ({
     express = {},
     callback = () => { },
-    error = () => (defaultError)
-) {
+    onError = () => {},
+    errorMessage = () => (defaultError)
+}) {
     const { res } = express;
 
     return new Promise((r) => {
@@ -20,7 +21,9 @@ module.exports = function (
                 data: 1
             });
         } catch (e) {
-            sendError.withStatus(res, error(e) || defaultError)
+            onError?.(e);
+
+            sendError.withStatus(res, errorMessage(e) || defaultError)
 
             r({
                 error: e
