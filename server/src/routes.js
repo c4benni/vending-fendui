@@ -33,6 +33,14 @@ module.exports = function (app) {
             callback: UserController.getUser
         },
         {
+            method: 'get',
+            url: '/user/all',
+            middleWare: [
+                UserPolicies.getAllUsers
+            ],
+            callback: UserController.getAllUsers
+        },
+        {
             method: 'patch',
             url: '/user',
             middleWare: [

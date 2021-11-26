@@ -7,7 +7,8 @@ const config = require('../config/config')
 
 // sign user and return jwt;
 function signUser(user, res) {
-    const oneDay = 60 * 60 * 7;
+    // ms * s * min * hr
+    const oneDay = 1000 * 60 * 1;
 
     const userJSON = user.toJSON();
 
@@ -21,9 +22,9 @@ function signUser(user, res) {
         { expiresIn: oneDay }
     )
 
-    res.cookie('jwt', token, { maxAge: 10800 })
+    res.cookie('jwt', token, { maxAge: oneDay })
     
-    res.cookie('username', userJSON.username, {maxAge: 10800})
+    res.cookie('username', userJSON.username, {maxAge: oneDay})
 
     return {
         ...userJSON,
@@ -222,6 +223,48 @@ module.exports = {
         })
     },
 
+    async getAllUsers(req, res) {
+        const mainCallback = async () => {
+            const { limit, where = {}, offset } = req.query;
+
+            const findUsers = await User
+                .findAll({
+                    ...where,
+                    limit,
+                    offset
+                })
+
+            if (!findUsers.length) {
+                return sendError.withStatus(res, {
+                    message: 'user(s) not found',
+                    status: 404
+                    // not found
+                })
+            } else {
+                const data = [];
+
+                findUsers.forEach(user => {
+                    const {
+                        id, username, role, createdAt
+                    } = user;
+
+                    data.push({
+                        id, username, role, createdAt
+                    })
+                })
+
+                sendSuccess.withStatus(res, {
+                    data,
+                    status: 200
+                })
+            }
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    },
     
     async updateUser(req, res) {
         const mainCallback = async () => {
@@ -256,7 +299,7 @@ module.exports = {
                     })
                 }
 
-                // check that old password is valid, if invalid;
+                // check that old password is valid;
                 const matchPassword = await user.matchPassword(oldPassword);
 
                 if (!matchPassword) {
@@ -296,7 +339,11 @@ module.exports = {
 
             await user.save()
 
-            res.send(user.toJSON())
+            const jwtSigned = signUser(user, res);
+
+            sendSuccess.withStatus(res, {
+                data: jwtSigned
+            })
         }
 
         await attempt({

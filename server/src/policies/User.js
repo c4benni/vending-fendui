@@ -178,6 +178,47 @@ module.exports = {
         })
     },
 
+    // limit should be at least 1 and at most 99; default = 99
+    async getAllUsers(req, res, next) {
+        
+        const mainCallback = () => {
+            const query = req.query;
+
+            const schema = Joi.object({
+                limit: Joi
+                    .number()
+                    .min(1)
+                    .max(99),
+                offset: Joi
+                    .number()
+                    .min(1),
+                where: Joi.object({
+                    username: userValidation.username,
+                    id: userValidation.id,
+                    role: userValidation.role
+                })
+            })
+
+            const validate = schema.validate(query);
+
+            if (validate.error) {
+                return sendError.withStatus(res, {
+                    message: validate.error.message
+                        || 'invalid credentials',
+                    status: 404
+                    // not found
+                })
+            }
+
+            next()
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    },
+
     // can only update valid username, password, deposit
     async updateUser(req, res, next) {
 
