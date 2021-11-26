@@ -47,9 +47,11 @@ module.exports = (sequelize, dataTypes) => {
                     type: dataTypes.STRING(6),
                     allowNull: false
                 },
-                // sessions: {
-                    
-                // }
+                sessions: {
+                    type: dataTypes.ARRAY(dataTypes.TEXT),
+                    allowNull: true,
+                    defaultValue: []
+                }
             },
             {
                 hooks: {
@@ -74,6 +76,10 @@ module.exports = (sequelize, dataTypes) => {
         const hash = await bcrypt.hash(password, app.saltRounds)
         
         return hash
+    }
+
+    User.prototype.isSignedIn = function (jwt) {
+        return this.sessions.includes(jwt)
     }
 
     return User

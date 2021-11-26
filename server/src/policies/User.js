@@ -214,14 +214,14 @@ module.exports = {
     async deleteUser (req, res, next) {
 
         const mainCallback = () => {
-            const query = req.query;
+            const body = req.body;
 
             const schema = Joi.object({
                 id: userValidation.id.required(),
                 password: userValidation.password.required(),
             })
 
-            const validate = schema.validate(query);
+            const validate = schema.validate(body);
 
             if (validate.error) {
                 return sendError.withStatus(res, {

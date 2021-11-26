@@ -2,12 +2,12 @@ const { Product, User } = require('../models')
 const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
 const sendSuccess = require("../utils/sendSuccess")
-const jwt = require('jsonwebtoken')
+const { sign: jwtSignature } = require('jsonwebtoken')
 const config = require('../config/config')
 
 // sign user and return jwt;
-function signUser(user) {
-    const oneWeek = 60 * 60 * 24 * 7;
+function signUser(user, res) {
+    const oneDay = 60 * 60 * 7;
 
     const userJSON = user.toJSON();
 
@@ -15,13 +15,19 @@ function signUser(user) {
 
     unwantedPaths.forEach(path => delete userJSON[path])
 
+    const token = jwtSignature(
+        userJSON,
+        config.auth.jwtSecret,
+        { expiresIn: oneDay }
+    )
+
+    res.cookie('jwt', token, { maxAge: 10800 })
+    
+    res.cookie('username', userJSON.username, {maxAge: 10800})
+
     return {
         ...userJSON,
-        token: jwt.sign(
-            userJSON,
-            config.auth.jwtSecret,
-            { expiresIn: oneWeek }
-        )
+        token
     }
 }
 
@@ -86,14 +92,15 @@ module.exports = {
                     }
 
                     // create a new user;
-                    await User.create({
+                    const user = await User.create({
                         username, password, role
                     });
 
                     // send success if okay;
                     sendSuccess.withStatus(res, {
                         data: {
-                            message: 'account successfully created'
+                            message: 'account successfully created. Login',
+                            id: user.id
                         },
                         status: 201
                         // created
@@ -113,6 +120,7 @@ module.exports = {
         })
     },
 
+    // after a login, push a session
     async login(req, res) {
         const mainCallback = async () => {
             await attempt({
@@ -130,10 +138,34 @@ module.exports = {
                         const matchPassword = await user.matchPassword(password)
 
                         if (matchPassword) {
+                            
+                            const jwtSigned = signUser(user, res);
+
+                            const sessions = user.sessions || [];
+
+                            sessions.push(jwtSigned.token);
+
+                            // get fresh user to update sessions;
+                            const freshUser = await User.findOne({
+                                where: { username }
+                            })
+
+                            await freshUser.update({
+                                sessions
+                            })
+
+                            await freshUser.save({
+                                fields: [ 'sessions' ]
+                            });
+
+
                             return sendSuccess.withStatus(res, {
                                 status: 200,
                                 // okay
-                                data: signUser(user)
+                                data: {
+                                    ...jwtSigned,
+                                    sessions
+                                }
                             })
                         }
                     }
@@ -205,6 +237,7 @@ module.exports = {
                 return sendError.withStatus(res, {
                     message: 'user not found',
                     status: 401
+                    // unauthorized
                 })
             }
 
@@ -219,6 +252,7 @@ module.exports = {
                     return sendError.withStatus(res, {
                         message: 'new password must be different from old password',
                         status: 401
+                        // unauthorized
                     })
                 }
 
@@ -229,6 +263,7 @@ module.exports = {
                     return sendError.withStatus(res, {
                         message: 'old password is incorrect',
                         status: 401
+                        // unauthorized
                     })
                 }
 
@@ -272,7 +307,7 @@ module.exports = {
 
     async deleteUser(req, res) {
         const mainCallback = async () => {
-            const { id, password } = req.query;
+            const { id, password } = req.body;
 
             const findUser = await User.findOne({
                 where: { id }
@@ -285,13 +320,13 @@ module.exports = {
                     // not found
                 })
             } else {
-                const matchPassword = findUser.matchPassword(password);
+                const matchPassword = await findUser.matchPassword(password);
 
                 if (!matchPassword) {
                     return sendError.withStatus(res, {
                         message: 'incorrect password',
-                        status: 400
-                        // bad request
+                        status: 404
+                        // not found
                     })
                 }
 
@@ -302,7 +337,9 @@ module.exports = {
                 }
 
                 return sendSuccess.withStatus(res, {
-                    message: 'user deleted',
+                    data: {
+                        message: 'user deleted'
+                    },
                     status: 200
                 })
             }
