@@ -112,15 +112,34 @@ module.exports = {
                         'updatedAt'
                     ];
 
+                    const productJSON = product.toJSON();
+
+                    const sellerUser = await User.findOne({
+                        where: {
+                            id: productJSON.sellerId
+                        }
+                    })
+
+                    const sellerInfo = {}
+
+                    if (sellerUser) {
+                        sellerInfo.username = sellerUser.username
+                    } else {
+                        sellerInfo.error = {
+                            message: 'this user has been deleted'
+                        }
+                    }
+
                     const data = {
-                        ...product.toJSON()
+                        ...productJSON,
+                        sellerInfo
                     }
 
                     disAllowedFields.forEach(field => {
                         delete data[field]
                     })
 
-                    return sendSuccess.plain(res, {
+                    return res.send({
                         data
                     })
                 },
@@ -173,9 +192,11 @@ module.exports = {
 
                 await signUserFromCookie(req, res)
 
-                sendSuccess.plain(res, {
-                    data
-                })
+                res.send({
+                        data,
+                        length: data.length,
+                        status: 200
+                    })
             }
         }
 

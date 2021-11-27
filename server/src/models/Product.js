@@ -58,6 +58,10 @@ module.exports = (sequelize, dataTypes) => {
             type: dataTypes.STRING(99),
             allowNull: true,
             defaultValue: 'generic'
+        },
+        ownerDeleted: {
+            type: dataTypes.BOOLEAN,
+            defaultValue: false
         }
     })
 

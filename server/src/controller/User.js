@@ -282,9 +282,9 @@ module.exports = {
 
                 await signUserFromCookie(req, res)
 
-                sendSuccess.withStatus(res, {
+                res.send({
                     data,
-                    status: 200
+                    length: data.length
                 })
             }
         }
@@ -444,7 +444,7 @@ module.exports = {
                     })
                 }
 
-                const remove = await findUser.destroy();
+                const remove = await findUser.deleteSelf();
 
                 if (remove.error) {
                     throw remove.error;

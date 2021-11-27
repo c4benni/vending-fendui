@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const { app, auth } = require('../config/config');
 const { verify: jwtVerify } = require('jsonwebtoken');
 
+const { Product } = require('./index')
+
 async function hashPassword(user) {
     
     if (!user.changed('password')) {
@@ -128,6 +130,33 @@ module.exports = (sequelize, dataTypes) => {
 
         return this
     }
+
+    User.prototype.deleteSelf = async function () {
+        if (this.role !== 'seller') {
+            await this.destroy();
+            return 1
+        }
+
+        const selfProducts = await Product.findAll({
+            where: sellerId === this.id
+        })
+
+        if (selfProducts?.length) {
+            for (const product of selfProducts) {
+                await product.update({
+                    ownerDeleted: true
+                })
+            }
+        }
+
+        await this.destroy();
+    }
+
+    Object.defineProperty(User.prototype, 'isSeller', {
+        get: function () {
+            return this.role == 'seller'
+        }
+    })
 
     return User
 }

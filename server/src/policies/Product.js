@@ -78,7 +78,7 @@ module.exports = {
     },
 
     // limit should be at least 1 and at most 99; default = 99
-    async getAllUsers(req, res, next) {
+    async readAllProducts(req, res, next) {
         
         const mainCallback = () => {
             const query = req.query;
@@ -92,9 +92,11 @@ module.exports = {
                     .number()
                     .min(1),
                 where: Joi.object({
-                    username: userValidation.username,
-                    id: userValidation.id,
-                    role: userValidation.role
+                    productName: productValidation.productName,
+                    id: productValidation.id,
+                    type: productValidation.type,
+                    rating: productValidation.rating,
+                    cost: productValidation.cost
                 })
             })
 
