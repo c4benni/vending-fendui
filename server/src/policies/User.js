@@ -5,11 +5,11 @@ const Joi = require('joi')
 const attempt = require('../utils/attempt');
 
 const {
-
     user: userValidation,
     deposit: depositValidation,
-    changePassword: changePasswordValidation
-
+    changePassword: changePasswordValidation,
+    links: imageValidation,
+    text: textValidation
 }  = require('../utils/validations')(Joi)
 
 module.exports = {
@@ -32,36 +32,6 @@ module.exports = {
                         || 'invalid register credentials',
                     status: 400
                     // bad request
-                })
-            }
-
-            next()
-        }
-
-        await attempt({
-            express: { res },
-            callback: mainCallback
-        })
-    },
-
-    // id must be present in req.params and must be a valid id
-    async getUser(req, res, next) {
-        
-        const mainCallback = () => {
-            const query = req.query;
-
-            const schema = Joi.object({
-                id: userValidation.id
-            })
-
-            const validate = schema.validate(query);
-
-            if (validate.error) {
-                return sendError.withStatus(res, {
-                    message: validate.error.message
-                        || 'invalid credentials',
-                    status: 404
-                    // not found
                 })
             }
 
@@ -125,6 +95,36 @@ module.exports = {
         })
     },
 
+    // id must be present in req.params and must be a valid id
+    async getUser(req, res, next) {
+        
+        const mainCallback = () => {
+            const query = req.query;
+
+            const schema = Joi.object({
+                id: userValidation.id
+            })
+
+            const validate = schema.validate(query);
+
+            if (validate.error) {
+                return sendError.withStatus(res, {
+                    message: validate.error.message
+                        || 'invalid credentials',
+                    status: 404
+                    // not found
+                })
+            }
+
+            next()
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    },
+
     // limit should be at least 1 and at most 99; default = 99
     async getAllUsers(req, res, next) {
         
@@ -166,17 +166,19 @@ module.exports = {
         })
     },
 
-    // can only update valid username, password, deposit
     async updateUser(req, res, next) {
 
         const mainCallback = () => {
             const body = req.body;
 
             const schema = Joi.object({
-                id: userValidation.id.required(),
                 username: userValidation.username,
                 password: changePasswordValidation,
-                deposit: depositValidation
+                deposit: depositValidation,
+                displayName: userValidation.displayName,
+                image: imageValidation,
+                header: imageValidation,
+                bio: textValidation
             })
 
             const validate = schema.validate(body);
@@ -205,7 +207,6 @@ module.exports = {
             const body = req.body;
 
             const schema = Joi.object({
-                id: userValidation.id.required(),
                 password: userValidation.password.required(),
             })
 

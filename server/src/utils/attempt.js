@@ -23,7 +23,7 @@ module.exports = function ({
         } catch (e) {
             onError?.(e);
 
-            sendError.withStatus(res, errorMessage(e) || defaultError)
+            sendError.withStatus(res, errorMessage(e) || {...defaultError, ...e})
 
             r({
                 error: e

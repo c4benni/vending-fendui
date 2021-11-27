@@ -16,6 +16,20 @@ module.exports = {
     },
     app: {
         validCost: [5, 10, 20, 50, 100],
-        saltRounds: 10
+        validProductTypes: [
+            "creativity",
+            "education",
+            "entertainment",
+            "games",
+            "generic",
+            "health & fitness",
+            "shopping & food",
+            "social",
+            "travel",
+            "utilities"
+        ],
+        saltRounds: 10,
+        // ms * s * min * hr
+        sessionMaxTime: 1000 * 60 * 10
     }
 }

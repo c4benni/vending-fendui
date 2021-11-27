@@ -2,39 +2,35 @@ const { User } = require('../models')
 const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
 const sendSuccess = require("../utils/sendSuccess")
-const { sign: jwtSignature } = require('jsonwebtoken')
-const config = require('../config/config')
 const generate = require('../utils/generate')
+const { signUser } = require('../policies/jwt')
+const { clearCookies } = require('../utils/utils')
 
-// sign user and return jwt;
-function signUser(user, res) {
-    // ms * s * min * hr
-    const oneDay = 1000 * 60 * .25;
+async function signUserFromCookie(req, res) {
+    const { id } = await generate
+        .cookies(
+            req.headers.cookie
+    );
+                
+    if (id) {
+        const user = await User.findOne({
+            where: { id }
+        })
 
-    const userJSON = user.toJSON();
+        if (!user) {
+            return 0
+        }
 
-    const unwantedPaths = ['password'];
-
-    unwantedPaths.forEach(path => delete userJSON[path])
-
-    const token = jwtSignature(
-        userJSON,
-        config.auth.jwtSecret,
-        { expiresIn: oneDay }
-    )
-
-    res.cookie('jwt', token, { maxAge: oneDay })
-    
-    res.cookie('username', userJSON.username, {maxAge: oneDay})
-
-    return {
-        ...userJSON,
-        token
+        await signUser(user, res)
     }
+
+    return 1
 }
 
 // logout helper function;
-async function logoutLogic(req, res, all) {
+async function logoutLogic({
+    req, res, all
+}) {
         const mainCallback = async () => {
             await attempt({
                 express: { res },
@@ -52,11 +48,13 @@ async function logoutLogic(req, res, all) {
                             .cookies(req.headers.cookie);
 
                         if (jwt) {
+                            const notCurrent = req.query.notCurrent === 'true';
+
                             user.logout({
-                                jwt, all
+                                jwt, all, notCurrent
                             })
 
-                            res.cookie('jwt', null, { maxAge: 0})
+                            clearCookies(res)                            
 
                             return sendSuccess.withStatus(res, {
                                 message: 'logout successful',
@@ -114,7 +112,8 @@ module.exports = {
 
                     // create a new user;
                     const user = await User.create({
-                        username, password, role
+                        username, password,
+                        role: role ? role.toLowerCase() : null
                     });
 
                     // send success if okay;
@@ -168,11 +167,11 @@ module.exports = {
                             const activeSessions = await user
                                 .isSignedIn(jwt);
 
-                            if (activeSessions.sessions.length > 1) {
-                                alert = 'there is already an active session using your account'
+                            if (activeSessions.sessions.length) {
+                                alert = 'there is already an active session on this account. Do you wish to end all other active sessions?'
                             }
                             
-                            const jwtSigned = signUser(user, res);
+                            const jwtSigned = await signUser(user, res);
 
                             const sessions = activeSessions.sessions || [];
 
@@ -193,7 +192,6 @@ module.exports = {
                             
                             const data = {
                                 ...jwtSigned,
-                                sessions,
                                 alert
                             }
 
@@ -226,11 +224,17 @@ module.exports = {
     },
 
     async logout(req, res) {
-        await logoutLogic(req, res, false)  
+        await logoutLogic({
+            req, res,
+            all: false
+        })
     },
 
     async logoutAll(req, res) {
-        await logoutLogic(req, res, true)  
+        await logoutLogic({
+            req, res,
+            all: true,
+        })
     },
 
     async getUser(req, res) {
@@ -249,11 +253,13 @@ module.exports = {
                 })
             } else {
                 const {
-                    id, username, role, createdAt
+                    id, username, role, createdAt, image
                 } = findUser;
 
+                await signUserFromCookie(req, res)
+
                 sendSuccess.withStatus(res, {
-                    data: { id, username, role, createdAt },
+                    data: { id, username, role, createdAt, image },
                     status: 200
                 })
             }
@@ -287,13 +293,15 @@ module.exports = {
 
                 findUsers.forEach(user => {
                     const {
-                        id, username, role, createdAt
+                        id, username, role, createdAt, image
                     } = user;
 
                     data.push({
-                        id, username, role, createdAt
+                        id, username, role, createdAt, image
                     })
                 })
+
+                await signUserFromCookie(req, res)
 
                 sendSuccess.withStatus(res, {
                     data,
@@ -310,8 +318,19 @@ module.exports = {
     
     async updateUser(req, res) {
         const mainCallback = async () => {
+
+            const { id } = await generate.cookies(req.headers.cookie);
+
+            if (!id) {
+                return sendError.withStatus(res, {
+                    message: 'session expired',
+                    status: 401
+                    // unauthorized
+                })
+            }
+
             const {
-                id, username, password, deposit
+                username, password
             } = req.body;
 
             const user = await User.findOne({
@@ -371,9 +390,25 @@ module.exports = {
                 updateValues.username = username;
             }
 
-            if (deposit) {
-                updateValues.deposit = deposit;
+            const buildUpdateValues = async () => {
+                const genericFields = [
+                    'deposit',
+                    'displayName',
+                    'image',
+                    'header',
+                    'bio'
+                ];
+
+                genericFields.forEach(field => {
+                    const value = req.body[field];
+
+                    if (typeof value != undefined) {
+                        updateValues[field] = value;
+                    }
+                })
             }
+
+            await buildUpdateValues();
 
             await user.update({
                 ...updateValues
@@ -381,7 +416,7 @@ module.exports = {
 
             await user.save()
 
-            const jwtSigned = signUser(user, res);
+            const jwtSigned = await signUser(user, res);
 
             sendSuccess.withStatus(res, {
                 data: jwtSigned
@@ -396,7 +431,18 @@ module.exports = {
 
     async deleteUser(req, res) {
         const mainCallback = async () => {
-            const { id, password } = req.body;
+
+            const { id } = await generate.cookies(req.headers.cookie);
+
+            if (!id) {
+                return sendError.withStatus(res, {
+                    message: 'session expired',
+                    status: 401
+                    // unauthorized
+                })
+            }
+
+            const { password } = req.body;
 
             const findUser = await User.findOne({
                 where: { id }

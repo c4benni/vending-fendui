@@ -1,5 +1,5 @@
 module.exports = {
-    withStatus(res, {data, status}) {
+    withStatus(res, {data, status = 200}) {
         return res.status(status).send({
             data: { status, data }
         })

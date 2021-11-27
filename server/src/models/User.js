@@ -97,9 +97,15 @@ module.exports = (sequelize, dataTypes) => {
     // this function generates a new active session, 
     // then returns if (jwt) is found;
     User.prototype.isSignedIn = async function (jwt) {
+        if (!jwt) {
+            return {
+                sessions: []
+            }
+        }
+
         const activeSessions = [
             ...(this.sessions || [])
-        ].filter(session => jwtVerify(session, auth.jwtSecret));
+        ].filter(session => session && jwtVerify(session, auth.jwtSecret));
 
         return {
             active: this.sessions.includes(jwt),
@@ -108,13 +114,15 @@ module.exports = (sequelize, dataTypes) => {
     }
 
     // remove session(s) from user - logout;
-    User.prototype.logout = async function ({ jwt, all }) {
+    User.prototype.logout = async function ({ jwt, all, notCurrent }) {
         const sessions = this.sessions;
 
         await this.setDataValue(
             'sessions',
             all ?
-                []
+                [
+                    notCurrent ? jwt : null
+                ].filter(Boolean)
             : sessions.filter(session => session != jwt)
         )
 

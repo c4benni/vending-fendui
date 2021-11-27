@@ -1,12 +1,15 @@
 const UserPolicies = require('./policies/User');
 const UserController = require('./controller/User')
 
+const ProductPolicies = require('./policies/Product');
+const ProductController = require('./controller/Product')
+
 const { base } = require('./config/config');
 const jwt = require('./policies/jwt');
 
 module.exports = function (app) {
 
-    const routes = [
+    const User = [
         {
             method: 'post',
             url: '/user/register',
@@ -73,6 +76,22 @@ module.exports = function (app) {
             callback: UserController.deleteUser
         }
     ];
+
+    const Product = [
+        {
+            method: 'post',
+            url: '/product',
+            middleWare: [
+                ProductPolicies.addProduct
+            ],
+            callback: ProductController.addProduct
+        },
+    ];
+
+    const routes = [
+        ...User,
+        ...Product
+    ]
 
     routes.forEach(route => {
         const method = route.method;

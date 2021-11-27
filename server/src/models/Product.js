@@ -10,7 +10,7 @@ module.exports = (sequelize, dataTypes) => {
     const Product = sequelize.define('Product', {
         id: {
             type: dataTypes.STRING(99),
-            defaultValue: generateId(),
+            defaultValue: () => generateId(),
             primaryKey: true,
             unique: true
         },
@@ -29,7 +29,7 @@ module.exports = (sequelize, dataTypes) => {
             allowNull: false
         },
         cost: {
-            type: dataTypes.BIGINT(3),
+            type: dataTypes.BIGINT,
             allowNull: false
         },
         background: {
