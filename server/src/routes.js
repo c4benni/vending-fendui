@@ -120,7 +120,7 @@ module.exports = function (app) {
         },
         {
             method: 'delete',
-            url: '/product/all',
+            url: '/product/multiple',
             middleWare: [
                 ProductPolicies.deleteMultipleProducts
             ],

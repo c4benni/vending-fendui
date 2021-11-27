@@ -5,14 +5,14 @@ const sendSuccess = require("../utils/sendSuccess")
 const generate = require('../utils/generate')
 const { signUserFromCookie } = require('../utils/jwt')
 
-    async function deleteProductLogic({req, res, productID, sendSuccessMsg}) {
+    async function deleteProductLogic({req, res, productID, sendMessage}) {
         const mainCallback = async () => {
 
             // check that user is signed in;
             const { id: userId } = await generate.cookies(req.headers.cookie);
 
             if (!userId) {
-                return sendError.withStatus(res, {
+                return sendMessage && sendError.withStatus(res, {
                     message: 'session expired',
                     status: 401
                     // unauthorized
@@ -25,7 +25,7 @@ const { signUserFromCookie } = require('../utils/jwt')
             })
 
             if (!product) {
-                return sendError.withStatus(res, {
+                return sendMessage && sendError.withStatus(res, {
                     message: 'item not found or might have been deleted',
                     status: 404
                     // not found
@@ -34,7 +34,7 @@ const { signUserFromCookie } = require('../utils/jwt')
 
             // check that product.sellerId == userId;
             if (product.sellerId !== userId) {
-                return sendError.withStatus(res, {
+                return sendMessage && sendError.withStatus(res, {
                     message: 'only the owner of this product can delete it',
                     status: 401
                     // unauthorized
@@ -44,11 +44,14 @@ const { signUserFromCookie } = require('../utils/jwt')
             // all checked, can delete;
             await product.destroy();
 
-            return sendSuccessMsg && sendSuccess.withStatus({
-                message: 'product successfully deleted',
+            return sendMessage ? sendSuccess.withStatus(
+                res, {
+                data: {
+                    message: 'product successfully deleted',
+                },
                 status: 204
                 // no content
-            })
+            }) : true;
         }
 
         await attempt({
@@ -210,11 +213,11 @@ module.exports = {
 
     async readAllProducts(req, res) {
         const mainCallback = async () => {
-            const { limit, where = {}, offset } = req.query;
+            const { limit, where = {}, offset } = req.body;
 
             const findProducts = await Product
                 .findAll({
-                    ...where,
+                    where,
                     limit,
                     offset
                 })
@@ -317,21 +320,38 @@ module.exports = {
     async deleteProduct(req, res) {
         await deleteProductLogic({
             req, res,
-            productID: req.body.id,
-            sendSuccessMsg: true
+            productID: req.query.id,
+            sendMessage: true
         })
     },
 
     async deleteMultipleProducts(req, res) {
         const { ids } = req.body;
 
+        let errorCaught = false
+
         for (const id of ids) {
-            await deleteProductLogic({
+            const deleteItem = await deleteProductLogic({
                 req, res,
                 productID: id,
-                sendSuccessMsg: false
+                sendMessage: false
             })
+
+            if (deleteItem === false) {
+                errorCaught = true;
+                break;
+            }
         }
-        
+
+        errorCaught ?
+            sendError.withStatus(res, {
+                message: 'an error occured',
+                status: 500
+            }) :
+        sendSuccess.withStatus(res, {
+            message: 'item(s) deleted',
+            status: 204
+            // no content
+        })      
     }
 }

@@ -81,7 +81,6 @@ module.exports = {
     async readAllProducts(req, res, next) {
         
         const mainCallback = () => {
-            const query = req.query;
 
             const schema = Joi.object({
                 limit: Joi
@@ -100,7 +99,9 @@ module.exports = {
                 })
             })
 
-            const validate = schema.validate(query);
+            const body = req.body;
+
+            const validate = schema.validate(body);
 
             if (validate.error) {
                 return sendError.withStatus(res, {
@@ -163,13 +164,13 @@ module.exports = {
     async deleteProduct (req, res, next) {
 
         const mainCallback = () => {
-            const body = req.body;
+            const query = req.query;
 
             const schema = Joi.object({
                 id: productValidation.id.required(),
             })
 
-            const validate = schema.validate(body);
+            const validate = schema.validate(query);
 
             if (validate.error) {
                 return sendError.withStatus(res, {
@@ -198,7 +199,8 @@ module.exports = {
                 ids: Joi
                     .array()
                     .items(productValidation.id)
-                    .required(),
+                    .required()
+                    .min(1),
             })
 
             const validate = schema.validate(body);
