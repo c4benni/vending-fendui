@@ -1,7 +1,8 @@
 const { id: generateId } = require('../utils/generate')
 
 const bcrypt = require('bcrypt');
-const { app } = require('../config/config');
+const { app, auth } = require('../config/config');
+const { verify: jwtVerify } = require('jsonwebtoken');
 
 async function hashPassword(user) {
     
@@ -12,8 +13,6 @@ async function hashPassword(user) {
     const hash = await bcrypt.hash(user.password, app.saltRounds)
     
     await user.setDataValue('password', hash)
-
-    console.log(user);
 
     return user
 }
@@ -51,6 +50,23 @@ module.exports = (sequelize, dataTypes) => {
                     type: dataTypes.ARRAY(dataTypes.TEXT),
                     allowNull: true,
                     defaultValue: []
+                },
+
+                displayName: {
+                    type: dataTypes.STRING(99),
+                    allowNull: true
+                },
+                image: {
+                    type: dataTypes.STRING(99),
+                    allowNull: true
+                },
+                header: {
+                    type: dataTypes.STRING(99),
+                    allowNull: true
+                },
+                bio: {
+                    type: dataTypes.TEXT,
+                    allowNull: true
                 }
             },
             {
@@ -78,8 +94,31 @@ module.exports = (sequelize, dataTypes) => {
         return hash
     }
 
-    User.prototype.isSignedIn = function (jwt) {
-        return this.sessions.includes(jwt)
+    // this function generates a new active session, 
+    // then returns if (jwt) is found;
+    User.prototype.isSignedIn = async function (jwt) {
+        const activeSessions = [
+            ...(this.sessions || [])
+        ].filter(session => jwtVerify(session, auth.jwtSecret));
+
+        return {
+            active: this.sessions.includes(jwt),
+            sessions: activeSessions
+        }
+    }
+
+    // remove session(s) from user - logout;
+    User.prototype.logout = async function ({ jwt, all }) {
+        const sessions = this.sessions;
+
+        await this.setDataValue(
+            'sessions',
+            all ?
+                []
+            : sessions.filter(session => session != jwt)
+        )
+
+        return this
     }
 
     return User

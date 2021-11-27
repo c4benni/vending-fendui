@@ -1,6 +1,6 @@
 
 // create product model;
-// should have sellerId uuid primary key, amountAvailable bigint, cost bigInt, & productName varchar(99);
+// should have sellerId varchar(99) primary key, amountAvailable bigint, cost bigInt, & productName varchar(99);
 
 const { app } = require("../config/config");
 
@@ -10,7 +10,7 @@ module.exports = (sequelize, dataTypes) => {
     const Product = sequelize.define('Product', {
         id: {
             type: dataTypes.STRING(99),
-            defaultValue: generateId('p-'),
+            defaultValue: generateId(),
             primaryKey: true,
             unique: true
         },
@@ -19,7 +19,7 @@ module.exports = (sequelize, dataTypes) => {
             allowNull: false
         },
         productName: {
-            type: dataTypes.STRING(999),
+            type: dataTypes.STRING(255),
             allowNull: false,
             unique: true,
             required: true
@@ -31,6 +31,33 @@ module.exports = (sequelize, dataTypes) => {
         cost: {
             type: dataTypes.BIGINT(3),
             allowNull: false
+        },
+        background: {
+            type: dataTypes.STRING(255),
+            allowNull: true
+        },
+        slideShow: {
+            type: dataTypes.ARRAY(
+                dataTypes.STRING(255)
+            ),
+            allowNull: true
+        },
+        caption: {
+            type: dataTypes.STRING(99),
+            allowNull: true
+        },
+        description: {
+            type: dataTypes.TEXT,
+            allowNull: true
+        },
+        rating: {
+            type: dataTypes.DECIMAL(5,2),
+            allowNull: true
+        },
+        type: {
+            type: dataTypes.STRING(99),
+            allowNull: true,
+            defaultValue: 'generic'
         }
     })
 

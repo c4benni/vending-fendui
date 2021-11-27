@@ -1,14 +1,15 @@
-const { Product, User } = require('../models')
+const { User } = require('../models')
 const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
 const sendSuccess = require("../utils/sendSuccess")
 const { sign: jwtSignature } = require('jsonwebtoken')
 const config = require('../config/config')
+const generate = require('../utils/generate')
 
 // sign user and return jwt;
 function signUser(user, res) {
     // ms * s * min * hr
-    const oneDay = 1000 * 60 * 1;
+    const oneDay = 1000 * 60 * .25;
 
     const userJSON = user.toJSON();
 
@@ -32,47 +33,66 @@ function signUser(user, res) {
     }
 }
 
+// logout helper function;
+async function logoutLogic(req, res, all) {
+        const mainCallback = async () => {
+            await attempt({
+                express: { res },
+                callback: async () => {
+                    const { id } = req.query;
+
+                    // find existing user
+                    const user = await User.findOne({
+                        where: { id }
+                    })
+
+                    if (user) {
+
+                        const { jwt } = await generate
+                            .cookies(req.headers.cookie);
+
+                        if (jwt) {
+                            user.logout({
+                                jwt, all
+                            })
+
+                            res.cookie('jwt', null, { maxAge: 0})
+
+                            return sendSuccess.withStatus(res, {
+                                message: 'logout successful',
+                                status: 200
+                                // okay
+                            })                                          
+                        } else {
+                            return sendError.withStatus(res, {
+                                message: `session expired`,
+                                status: 401
+                                // unauthorized
+                            })
+                        }
+                    }
+                    
+                    return sendError.withStatus(res, {
+                        message: `user not found`,
+                        status: 401
+                        // unauthorized
+                    })
+                },
+                errorMessage: err => ({
+                    message: err.message,
+                    status: 409
+                    // conflict
+                })
+            })
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+}
+
 module.exports = {
-    // async getProduct(req, res) {
-    //     await attempt({
-    //         express: { res },
-    //         callback: () => {
-    //         res.send('okay')
-    //     }})
-    // },
-
-    // async postProduct(req, res) {
-    //     const mainCallback = async () => {
-    //         await attempt({
-    //             express: { res },
-    //             callback: async() => {
-    //                 // create a new product;
-    //                 const product = await Product.create({
-    //                     ...req.body,
-    //                     sellerId: 'p-3s',
-    //                 });
-
-    //                 // send success if okay;
-    //                 sendSuccess.withStatus(res, {
-    //                     data: product,
-    //                     status: 200
-    //                 });
-                
-    //             },
-    //             errorMessage: err => ({
-    //                 message: err.message,
-    //                 status: 403
-    //             })
-    //         })
-    //     }
-
-    //     await attempt({
-    //         express: { res },
-    //         callback: mainCallback
-    //     })
-    // },
-
-
     async register(req, res) {
         const mainCallback = async () => {
             await attempt({
@@ -139,10 +159,22 @@ module.exports = {
                         const matchPassword = await user.matchPassword(password)
 
                         if (matchPassword) {
+
+                            let alert;
+                            
+                            const { jwt } = await generate
+                                .cookies(req.headers.cookie)
+
+                            const activeSessions = await user
+                                .isSignedIn(jwt);
+
+                            if (activeSessions.sessions.length > 1) {
+                                alert = 'there is already an active session using your account'
+                            }
                             
                             const jwtSigned = signUser(user, res);
 
-                            const sessions = user.sessions || [];
+                            const sessions = activeSessions.sessions || [];
 
                             sessions.push(jwtSigned.token);
 
@@ -158,15 +190,17 @@ module.exports = {
                             await freshUser.save({
                                 fields: [ 'sessions' ]
                             });
-
+                            
+                            const data = {
+                                ...jwtSigned,
+                                sessions,
+                                alert
+                            }
 
                             return sendSuccess.withStatus(res, {
                                 status: 200,
                                 // okay
-                                data: {
-                                    ...jwtSigned,
-                                    sessions
-                                }
+                                data
                             })
                         }
                     }
@@ -189,6 +223,14 @@ module.exports = {
             express: { res },
             callback: mainCallback
         })
+    },
+
+    async logout(req, res) {
+        await logoutLogic(req, res, false)  
+    },
+
+    async logoutAll(req, res) {
+        await logoutLogic(req, res, true)  
     },
 
     async getUser(req, res) {

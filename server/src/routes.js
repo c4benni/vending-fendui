@@ -23,6 +23,22 @@ module.exports = function (app) {
             ],
             callback: UserController.login
         },
+        {
+            method: 'post',
+            url: '/user/logout',
+            middleWare: [
+                UserPolicies.logout
+            ],
+            callback: UserController.logout
+        },
+        {
+            method: 'post',
+            url: '/user/logout/all',
+            middleWare: [
+                UserPolicies.logout
+            ],
+            callback: UserController.logoutAll
+        },
 
         {
             method: 'get',
