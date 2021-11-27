@@ -102,7 +102,7 @@ module.exports = {
             const query = req.query;
 
             const schema = Joi.object({
-                id: userValidation.id
+                id: userValidation.id.required()
             })
 
             const validate = schema.validate(query);

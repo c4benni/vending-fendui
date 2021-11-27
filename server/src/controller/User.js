@@ -3,29 +3,8 @@ const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
 const sendSuccess = require("../utils/sendSuccess")
 const generate = require('../utils/generate')
-const { signUser } = require('../policies/jwt')
+const { signUser, signUserFromCookie } = require('../utils/jwt')
 const { clearCookies } = require('../utils/utils')
-
-async function signUserFromCookie(req, res) {
-    const { id } = await generate
-        .cookies(
-            req.headers.cookie
-    );
-                
-    if (id) {
-        const user = await User.findOne({
-            where: { id }
-        })
-
-        if (!user) {
-            return 0
-        }
-
-        await signUser(user, res)
-    }
-
-    return 1
-}
 
 // logout helper function;
 async function logoutLogic({
@@ -284,7 +263,7 @@ module.exports = {
 
             if (!findUsers.length) {
                 return sendError.withStatus(res, {
-                    message: 'user(s) not found',
+                    message: 'no user found',
                     status: 404
                     // not found
                 })
@@ -418,7 +397,7 @@ module.exports = {
 
             const jwtSigned = await signUser(user, res);
 
-            sendSuccess.withStatus(res, {
+            sendSuccess.plain(res, {
                 data: jwtSigned
             })
         }
@@ -471,7 +450,7 @@ module.exports = {
                     throw remove.error;
                 }
 
-                return sendSuccess.withStatus(res, {
+                return sendSuccess.plain(res, {
                     data: {
                         message: 'user deleted'
                     },

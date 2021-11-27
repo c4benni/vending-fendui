@@ -110,7 +110,16 @@ module.exports = function (Joi) {
                 .string()
                 .valid(
                     ...app.validProductTypes
-                )
+            ),
+            id: Joi
+                .string()
+                .min(5)
+                .max(99)
+                .pattern(
+                    new RegExp(
+                        '^p-.+\\d{2,2}-\\d{2,2}$'
+                    )
+            ),
         }
     }
 }

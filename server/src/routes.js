@@ -5,7 +5,7 @@ const ProductPolicies = require('./policies/Product');
 const ProductController = require('./controller/Product')
 
 const { base } = require('./config/config');
-const jwt = require('./policies/jwt');
+const jwt = require('./utils/jwt');
 
 module.exports = function (app) {
 
@@ -82,9 +82,25 @@ module.exports = function (app) {
             method: 'post',
             url: '/product',
             middleWare: [
-                ProductPolicies.addProduct
+                ProductPolicies.createProduct
             ],
-            callback: ProductController.addProduct
+            callback: ProductController.createProduct
+        },
+        {
+            method: 'get',
+            url: '/product',
+            middleWare: [
+                ProductPolicies.readProduct
+            ],
+            callback: ProductController.readProduct
+        },
+        {
+            method: 'get',
+            url: '/product/all',
+            middleWare: [
+                ProductPolicies.readAllProducts
+            ],
+            callback: ProductController.readAllProducts
         },
     ];
 
@@ -100,8 +116,14 @@ module.exports = function (app) {
         
         const jwtVerification = [];
 
-        const noVerification = method == 'post'
-            && /^\/user/.test(url);
+        const publicUserRoutes = method == 'post'
+            && /^\/user\/(?=login|register$)/.test(url)
+        
+        const publicProductRoutes = method == 'get'
+            && /^\/product\/?$|^\/product\/all$/.test(url)
+
+        const noVerification = publicUserRoutes
+            || publicProductRoutes;
         
         if (!noVerification) {
             jwtVerification.push(jwt.verify)

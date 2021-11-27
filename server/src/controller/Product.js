@@ -1,21 +1,18 @@
-const { Product } = require('../models')
+const { Product, User } = require('../models')
 const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
 const sendSuccess = require("../utils/sendSuccess")
-const { sign: jwtSignature } = require('jsonwebtoken')
-const config = require('../config/config')
 const generate = require('../utils/generate')
-const { User } = require('../models')
+const { signUserFromCookie } = require('../utils/jwt')
 
 module.exports = {
 
-    async addProduct(req, res) {
+    async createProduct(req, res) {
         const mainCallback = async () => {
             await attempt({
                 express: { res },
                 callback: async () => {
                     // only logged in users with role == 'seller' can access this route.
-
                     const { id } = await generate.cookies(req.headers.cookie);
 
                     if (!id) {
@@ -46,6 +43,18 @@ module.exports = {
                         })
                     }
 
+                    // check if product name exist;
+                    const findProduct = await Product.findOne({
+                        where: { productName: req.body.productName }
+                    });
+
+                    if (findProduct) {
+                        return sendError.withStatus(res, {
+                            message: 'product exists. Choose another name.',
+                            status: 403
+                        })
+                    }
+
                     // create a new product;
                     const product = await Product.create({
                         ...req.body,
@@ -53,12 +62,11 @@ module.exports = {
                     });
 
                     // send success if okay;
-                    sendSuccess.withStatus(res, {
+                    sendSuccess.plain(res, {
                         data: {
                             message: 'product successfully added!',
                             product
-                        },
-                        status: 200
+                        }
                     });
                 
                 },
@@ -67,6 +75,108 @@ module.exports = {
                     status: 403
                 })
             })
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    },
+
+    async readProduct(req, res) {
+       const mainCallback = async () => {
+            await attempt({
+                express: { res },
+                callback: async () => {
+                    // anyone can view this
+                    const { id } = req.query;
+
+                    // still renew signed in users.
+                    await signUserFromCookie(req, res);
+
+                    const product = await Product.findOne({
+                        where: { id }
+                    })
+
+                    if (!product) {
+                        return sendError.withStatus(res, {
+                            message: 'product not found or might have been deleted',
+                            status: 404
+                            // not found
+                        })
+                    }
+
+                    // send filtered result;
+                    const disAllowedFields = [
+                        'id',
+                        'updatedAt'
+                    ];
+
+                    const data = {
+                        ...product.toJSON()
+                    }
+
+                    disAllowedFields.forEach(field => {
+                        delete data[field]
+                    })
+
+                    return sendSuccess.plain(res, {
+                        data
+                    })
+                },
+                errorMessage: err => ({
+                    message: err.message,
+                    status: 403
+                })
+            })
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        }) 
+    },
+
+    async readAllProducts(req, res) {
+        const mainCallback = async () => {
+            const { limit, where = {}, offset } = req.query;
+
+            const findProducts = await Product
+                .findAll({
+                    ...where,
+                    limit,
+                    offset
+                })
+
+            if (!findProducts.length) {
+                return sendError.withStatus(res, {
+                    message: 'no product found',
+                    status: 404
+                    // not found
+                })
+            } else {
+                const data = [];
+
+                findProducts.forEach(product => {
+                    const {
+                        id, sellerId, productName,
+                        cost, amountAvailable, type,
+                        background, rating, caption
+                    } = product;
+
+                    data.push({
+                        id, sellerId, productName,
+                        cost, amountAvailable, type,
+                        background, rating, caption
+                    })
+                })
+
+                await signUserFromCookie(req, res)
+
+                sendSuccess.plain(res, {
+                    data
+                })
+            }
         }
 
         await attempt({

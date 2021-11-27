@@ -1,9 +1,9 @@
 const { verify: jwtVerify, sign } = require('jsonwebtoken');
 const { auth, app } = require('../config/config');
 const { User } = require('../models')
-const generate = require('../utils/generate');
-const sendError = require('../utils/sendError');
-const { clearCookies } = require('../utils/utils')
+const generate = require('./generate');
+const sendError = require('./sendError');
+const { clearCookies } = require('./utils')
 
     // sign user and return jwt;
     async function signUser(user, res) {
@@ -66,6 +66,26 @@ const { clearCookies } = require('../utils/utils')
         next()
     }
 
+
+    async function signUserFromCookie(req, res) {
+        const { id } = await generate
+            .cookies(
+                req.headers.cookie
+        );
+                    
+        if (id) {
+            const user = await User.findOne({
+                where: { id }
+            })
+
+            if (user) {
+                await signUser(user, res)
+            }
+        }
+
+        return 1
+    }
+
 module.exports = {
-    verify, signUser
+    verify, signUser, signUserFromCookie
 }
