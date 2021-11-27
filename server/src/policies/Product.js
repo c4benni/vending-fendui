@@ -158,4 +158,66 @@ module.exports = {
             callback: mainCallback
         })
     },
+
+    
+    async deleteProduct (req, res, next) {
+
+        const mainCallback = () => {
+            const body = req.body;
+
+            const schema = Joi.object({
+                id: productValidation.id.required(),
+            })
+
+            const validate = schema.validate(body);
+
+            if (validate.error) {
+                return sendError.withStatus(res, {
+                    message: validate.error.message
+                        || 'invalid credentials',
+                    status: 400
+                    // bad request
+                })
+            }
+
+            next()
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    },
+
+    async deleteMultipleProducts (req, res, next) {
+
+        const mainCallback = () => {
+            const body = req.body;
+
+            const schema = Joi.object({
+                ids: Joi
+                    .array()
+                    .items(productValidation.id)
+                    .required(),
+            })
+
+            const validate = schema.validate(body);
+
+            if (validate.error) {
+                return sendError.withStatus(res, {
+                    message: validate.error.message
+                        || 'invalid credentials',
+                    status: 400
+                    // bad request
+                })
+            }
+
+            next()
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    }
 }

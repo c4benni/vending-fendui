@@ -110,6 +110,22 @@ module.exports = function (app) {
             ],
             callback: ProductController.patchProduct
         },
+        {
+            method: 'delete',
+            url: '/product',
+            middleWare: [
+                ProductPolicies.deleteProduct
+            ],
+            callback: ProductController.deleteProduct
+        },
+        {
+            method: 'delete',
+            url: '/product/all',
+            middleWare: [
+                ProductPolicies.deleteMultipleProducts
+            ],
+            callback: ProductController.deleteMultipleProducts
+        },
     ];
 
     const routes = [

@@ -5,6 +5,58 @@ const sendSuccess = require("../utils/sendSuccess")
 const generate = require('../utils/generate')
 const { signUserFromCookie } = require('../utils/jwt')
 
+    async function deleteProductLogic({req, res, productID, sendSuccessMsg}) {
+        const mainCallback = async () => {
+
+            // check that user is signed in;
+            const { id: userId } = await generate.cookies(req.headers.cookie);
+
+            if (!userId) {
+                return sendError.withStatus(res, {
+                    message: 'session expired',
+                    status: 401
+                    // unauthorized
+                })
+            }
+
+            // check that product exists;
+            const product = await Product.findOne({
+                where: { id: productID }
+            })
+
+            if (!product) {
+                return sendError.withStatus(res, {
+                    message: 'item not found or might have been deleted',
+                    status: 404
+                    // not found
+                })
+            }
+
+            // check that product.sellerId == userId;
+            if (product.sellerId !== userId) {
+                return sendError.withStatus(res, {
+                    message: 'only the owner of this product can delete it',
+                    status: 401
+                    // unauthorized
+                })
+            }
+
+            // all checked, can delete;
+            await product.destroy();
+
+            return sendSuccessMsg && sendSuccess.withStatus({
+                message: 'product successfully deleted',
+                status: 204
+                // no content
+            })
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    }
+
 module.exports = {
 
     async createProduct(req, res) {
@@ -262,76 +314,24 @@ module.exports = {
         })
     },
 
-    // async deleteUser(req, res) {
-    //     const mainCallback = async () => {
+    async deleteProduct(req, res) {
+        await deleteProductLogic({
+            req, res,
+            productID: req.body.id,
+            sendSuccessMsg: true
+        })
+    },
 
-    //         const { id } = await generate.cookies(req.headers.cookie);
+    async deleteMultipleProducts(req, res) {
+        const { ids } = req.body;
 
-    //         if (!id) {
-    //             return sendError.withStatus(res, {
-    //                 message: 'session expired',
-    //                 status: 401
-    //                 // unauthorized
-    //             })
-    //         }
-
-    //         const { password } = req.body;
-
-    //         const findUser = await User.findOne({
-    //             where: { id }
-    //         });
-
-    //         if (!findUser) {
-    //             return sendError.withStatus(res, {
-    //                 message: 'user not found',
-    //                 status: 404
-    //                 // not found
-    //             })
-    //         } else {
-    //             const matchPassword = await findUser.matchPassword(password);
-
-    //             if (!matchPassword) {
-    //                 return sendError.withStatus(res, {
-    //                     message: 'incorrect password',
-    //                     status: 404
-    //                     // not found
-    //                 })
-    //             }
-
-    //             const removeSellerProducts = async () => {
-    //                 if (!findUser.isSeller) {
-    //                     return
-    //                 }
-
-    //                 await Product.update({
-    //                     ownerDeleted: true
-    //                 }, {
-    //                     where: {
-    //                         sellerId: findUser.id
-    //                     }
-    //                 })
-    //             }
-
-    //             await removeSellerProducts()
-
-    //             const remove = await findUser.destroy();
-
-    //             if (remove.error) {
-    //                 throw remove.error;
-    //             }
-
-    //             return sendSuccess.plain(res, {
-    //                 data: {
-    //                     message: 'user deleted'
-    //                 },
-    //                 status: 200
-    //             })
-    //         }
-    //     }
-
-    //     await attempt({
-    //         express: { res },
-    //         callback: mainCallback
-    //     })
-    // }
+        for (const id of ids) {
+            await deleteProductLogic({
+                req, res,
+                productID: id,
+                sendSuccessMsg: false
+            })
+        }
+        
+    }
 }
