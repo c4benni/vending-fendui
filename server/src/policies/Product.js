@@ -96,7 +96,7 @@ module.exports = {
                     id: productValidation.id,
                     type: productValidation.type,
                     rating: productValidation.rating,
-                    cost: productValidation.cost
+                    cost: productValidation.cost,
                 })
             })
 
@@ -108,6 +108,45 @@ module.exports = {
                         || 'invalid credentials',
                     status: 404
                     // not found
+                })
+            }
+
+            next()
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    },
+
+    async patchProduct(req, res, next) {
+
+        const mainCallback = () => {
+            const body = req.body;
+
+            // allowed fields;
+            const schema = Joi.object({
+                id: productValidation.id.required(),
+                productName: productValidation.productName,
+                amountAvailable: productValidation.amountAvailable,
+                cost: productValidation.cost,
+                background: linkValidation,
+                slideShow: productValidation.slideShow,
+                caption: productValidation.caption,
+                description: textValidation,
+                rating: productValidation.rating,
+                type: productValidation.type
+            })
+
+            const validate = schema.validate(body);
+
+            if (validate.error) {
+                return sendError.withStatus(res, {
+                    message: validate.error.message
+                        || 'invalid credentials',
+                    status: 400
+                    // bad request
                 })
             }
 

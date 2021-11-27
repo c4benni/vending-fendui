@@ -5,6 +5,7 @@ const sendSuccess = require("../utils/sendSuccess")
 const generate = require('../utils/generate')
 const { signUser, signUserFromCookie } = require('../utils/jwt')
 const { clearCookies } = require('../utils/utils')
+const { Product } = require('../models')
 
 // logout helper function;
 async function logoutLogic({
@@ -444,7 +445,23 @@ module.exports = {
                     })
                 }
 
-                const remove = await findUser.deleteSelf();
+                const removeSellerProducts = async () => {
+                    if (!findUser.isSeller) {
+                        return
+                    }
+
+                    await Product.update({
+                        ownerDeleted: true
+                    }, {
+                        where: {
+                            sellerId: findUser.id
+                        }
+                    })
+                }
+
+                await removeSellerProducts()
+
+                const remove = await findUser.destroy();
 
                 if (remove.error) {
                     throw remove.error;

@@ -180,13 +180,13 @@ module.exports = {
                     const {
                         id, sellerId, productName,
                         cost, amountAvailable, type,
-                        background, rating, caption
+                        background, rating, caption, ownerDeleted
                     } = product;
 
                     data.push({
                         id, sellerId, productName,
                         cost, amountAvailable, type,
-                        background, rating, caption
+                        background, rating, caption, ownerDeleted
                     })
                 })
 
@@ -205,4 +205,133 @@ module.exports = {
             callback: mainCallback
         })
     },
+
+    // only the user that posted this product can update it;
+    async patchProduct(req, res) {
+        const mainCallback = async () => {
+
+            // check that user is signed in;
+            const { id: userId } = await generate.cookies(req.headers.cookie);
+
+            if (!userId) {
+                return sendError.withStatus(res, {
+                    message: 'session expired',
+                    status: 401
+                    // unauthorized
+                })
+            }
+
+            const { id: productID } = req.body;
+
+            // check that product exists;
+            const product = await Product.findOne({
+                where: { id: productID }
+            })
+
+            if (!product) {
+                return sendError.withStatus(res, {
+                    message: 'item not found or might have been deleted',
+                    status: 404
+                    // not found
+                })
+            }
+
+            // check that product.sellerId == userId;
+            if (product.sellerId !== userId) {
+                return sendError.withStatus(res, {
+                    message: 'only the owner of this product can update it',
+                    status: 401
+                    // unauthorized
+                })
+            }
+
+            // all checked, can update roles in body, 
+            // since the policy validates them.
+            await product.update(req.body)
+
+            await product.save()
+
+            sendSuccess.plain(res, {
+                data: product.toJSON()
+            })
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    },
+
+    // async deleteUser(req, res) {
+    //     const mainCallback = async () => {
+
+    //         const { id } = await generate.cookies(req.headers.cookie);
+
+    //         if (!id) {
+    //             return sendError.withStatus(res, {
+    //                 message: 'session expired',
+    //                 status: 401
+    //                 // unauthorized
+    //             })
+    //         }
+
+    //         const { password } = req.body;
+
+    //         const findUser = await User.findOne({
+    //             where: { id }
+    //         });
+
+    //         if (!findUser) {
+    //             return sendError.withStatus(res, {
+    //                 message: 'user not found',
+    //                 status: 404
+    //                 // not found
+    //             })
+    //         } else {
+    //             const matchPassword = await findUser.matchPassword(password);
+
+    //             if (!matchPassword) {
+    //                 return sendError.withStatus(res, {
+    //                     message: 'incorrect password',
+    //                     status: 404
+    //                     // not found
+    //                 })
+    //             }
+
+    //             const removeSellerProducts = async () => {
+    //                 if (!findUser.isSeller) {
+    //                     return
+    //                 }
+
+    //                 await Product.update({
+    //                     ownerDeleted: true
+    //                 }, {
+    //                     where: {
+    //                         sellerId: findUser.id
+    //                     }
+    //                 })
+    //             }
+
+    //             await removeSellerProducts()
+
+    //             const remove = await findUser.destroy();
+
+    //             if (remove.error) {
+    //                 throw remove.error;
+    //             }
+
+    //             return sendSuccess.plain(res, {
+    //                 data: {
+    //                     message: 'user deleted'
+    //                 },
+    //                 status: 200
+    //             })
+    //         }
+    //     }
+
+    //     await attempt({
+    //         express: { res },
+    //         callback: mainCallback
+    //     })
+    // }
 }

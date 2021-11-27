@@ -102,6 +102,14 @@ module.exports = function (app) {
             ],
             callback: ProductController.readAllProducts
         },
+        {
+            method: 'patch',
+            url: '/product',
+            middleWare: [
+                ProductPolicies.patchProduct
+            ],
+            callback: ProductController.patchProduct
+        },
     ];
 
     const routes = [
