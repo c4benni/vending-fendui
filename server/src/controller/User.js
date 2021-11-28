@@ -6,6 +6,7 @@ const generate = require('../utils/generate')
 const { signUser, signUserFromCookie } = require('../utils/jwt')
 const { clearCookies } = require('../utils/utils')
 const { Product } = require('../models')
+const { app } = require('../config/config')
 
 // logout helper function;
 async function logoutLogic({
@@ -90,10 +91,17 @@ module.exports = {
                         })
                     }
 
+                    const deposit = {};
+
+                    app.validCost.forEach(cost => {
+                        deposit[`${cost}`] = 0
+                    })
+
                     // create a new user;
                     const user = await User.create({
                         username, password,
-                        role: role ? role.toLowerCase() : null
+                        role: role.toLowerCase(),
+                        deposit
                     });
 
                     // send success if okay;
@@ -219,7 +227,7 @@ module.exports = {
 
     async getUser(req, res) {
         const mainCallback = async () => {
-            const { id } = req.query;
+            const { id, self } = req.query;
 
             const findUser = await User.findOne({
                 where: { id }
@@ -232,14 +240,47 @@ module.exports = {
                     // not found
                 })
             } else {
+                // check that self query is passed only for signed in users;
+                if (self) {
+                    const { jwt } = await generate.cookies(req.headers.cookie);
+
+                    const isSignedIn = await findUser
+                        .isSignedIn({ jwt })
+                    
+                    if (!isSignedIn) {
+                        return sendError.withStatus(res, {
+                            message: 'only signed in users can use the self option',
+                            status: 401
+                        })
+                    }
+                }
+
                 const {
                     id, username, role, createdAt, image
                 } = findUser;
 
+                const data = self ?
+                    {
+                        ...findUser.toJSON()
+                    } :
+                    {
+                        id, username, role, createdAt, image
+                    };
+                
+                // delete password and sessions;
+                const unwantedFields = [
+                    'password',
+                    'sessions'
+                ];
+
+                unwantedFields.forEach(field => {
+                    delete data[field]
+                })
+
                 await signUserFromCookie(req, res)
 
                 sendSuccess.withStatus(res, {
-                    data: { id, username, role, createdAt, image },
+                    data,
                     status: 200
                 })
             }
@@ -372,7 +413,6 @@ module.exports = {
 
             const buildUpdateValues = async () => {
                 const genericFields = [
-                    'deposit',
                     'displayName',
                     'image',
                     'header',

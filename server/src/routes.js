@@ -1,11 +1,13 @@
 const UserPolicies = require('./policies/User');
 const UserController = require('./controller/User')
+const controller = require('./controller/controller')
 
 const ProductPolicies = require('./policies/Product');
 const ProductController = require('./controller/Product')
 
 const { base } = require('./config/config');
 const jwt = require('./utils/jwt');
+const { deposit: depositMiddleware } = require('./policies/policies');
 
 module.exports = function (app) {
 
@@ -125,6 +127,14 @@ module.exports = function (app) {
                 ProductPolicies.deleteMultipleProducts
             ],
             callback: ProductController.deleteMultipleProducts
+        },
+        {
+            method: 'post',
+            url: '/deposit',
+            middleWare: [
+                depositMiddleware
+            ],
+            callback: controller.deposit
         },
     ];
 

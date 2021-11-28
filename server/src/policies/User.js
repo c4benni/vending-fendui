@@ -6,7 +6,6 @@ const attempt = require('../utils/attempt');
 
 const {
     user: userValidation,
-    deposit: depositValidation,
     changePassword: changePasswordValidation,
     links: imageValidation,
     text: textValidation
@@ -19,9 +18,9 @@ module.exports = {
             const body = req.body;
 
             const schema = Joi.object({
-                username: userValidation.username,
-                password: userValidation.password,
-                role: userValidation.role,
+                username: userValidation.username.required(),
+                password: userValidation.password.required(),
+                role: userValidation.role.required(),
             })
 
             const validate = schema.validate(body);
@@ -102,7 +101,8 @@ module.exports = {
             const query = req.query;
 
             const schema = Joi.object({
-                id: userValidation.id.required()
+                id: userValidation.id.required(),
+                self: Joi.boolean()
             })
 
             const validate = schema.validate(query);
@@ -174,7 +174,6 @@ module.exports = {
             const schema = Joi.object({
                 username: userValidation.username,
                 password: changePasswordValidation,
-                deposit: depositValidation,
                 displayName: userValidation.displayName,
                 image: imageValidation,
                 header: imageValidation,

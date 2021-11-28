@@ -6,10 +6,23 @@ module.exports = function (Joi) {
         .min(10)
         .uri();
     
-    const deposit = Joi
+    const cost = Joi
         .number()
         .integer()
         .valid(...app.validCost);
+    
+    const depositObject = {}
+
+    app.validCost.forEach(item => {
+        depositObject[`${item}`] = Joi
+            .number()
+            .integer()
+            .min(1)
+            .max(1000)
+    })
+    
+    const deposit = Joi
+        .object(depositObject)
     
     return {
         user: {
@@ -79,7 +92,7 @@ module.exports = function (Joi) {
                 .number()
                 .min(1)
                 .max(1000),
-            cost: deposit,
+            cost,
             productName: Joi
                 .string()
                 .min(3)

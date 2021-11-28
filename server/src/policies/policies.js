@@ -10,31 +10,71 @@ const {
 
 module.exports = {
     async deposit (req, res, next) {
-    const mainCallback = () => {
-        const query = req.query;
+        const mainCallback = () => {
+            const query = req.body;
 
-        const schema = Joi.object({
-            amount: validateProduct.cost.required()
-        })
-
-        const validate = schema.validate(query);
-
-        if (validate.error) {
-            return sendError.withStatus(res, {
-                message: validate.error.message
-                    || 'invalid credentials',
-                status: 400
-                // bad request
+            const schema = Joi.object({
+                amount: validateProduct.cost.required(),
+                quantity: Joi
+                    .number()
+                    .integer()
+                    .min(1)
+                    .max(1000)
+                    .required()
             })
+
+            const validate = schema.validate(query);
+
+            if (validate.error) {
+                return sendError.withStatus(res, {
+                    message: validate.error.message
+                        || 'invalid credentials',
+                    status: 400
+                    // bad request
+                })
+            }
+
+            next()
         }
 
-        next()
-    }
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
 
-    await attempt({
-        express: { res },
-        callback: mainCallback
-    })
+    },
+    async buy (req, res, next) {
+        const mainCallback = () => {
+            const query = req.body;
 
-    }    
+            const schema = Joi.object({
+                id: validateProduct.id.required(),
+                amount: Joi
+                    .number()
+                    .integer()
+                    .min(1)
+                    .max(1000)
+                    .required()
+            })
+
+            const validate = schema.validate(query);
+
+            if (validate.error) {
+                return sendError.withStatus(res, {
+                    message: validate.error.message
+                        || 'invalid credentials',
+                    status: 400
+                    // bad request
+                })
+            }
+
+            next()
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+
+    } 
 }

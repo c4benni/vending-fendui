@@ -40,7 +40,8 @@ module.exports = (sequelize, dataTypes) => {
                     allowNull: false
                 },
                 deposit: {
-                    type: dataTypes.BIGINT,
+                    type: dataTypes.JSON,
+                    defaultValue: {},
                     allowNull: true
                 },
                 role: {
@@ -109,7 +110,7 @@ module.exports = (sequelize, dataTypes) => {
         ].filter(session => session && jwtVerify(session, auth.jwtSecret));
 
         return {
-            active: this.sessions.includes(jwt),
+            active: activeSessions.includes(jwt),
             sessions: activeSessions
         }
     }
