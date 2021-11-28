@@ -1,3 +1,7 @@
+const { Router } = require('express')
+
+const router = Router();
+
 const UserPolicies = require('./policies/User');
 const UserController = require('./controller/User/User')
 const controller = require('./controller/controller')
@@ -13,7 +17,6 @@ const {
     reset: resetMiddleware
 } = require('./policies/policies');
 
-module.exports = function (app) {
 
     const User = [
         {
@@ -162,7 +165,7 @@ module.exports = function (app) {
         ...User,
         ...Product
     ]
-
+    
     routes.forEach(route => {
         const method = route.method;
         const url = route.url;
@@ -183,11 +186,12 @@ module.exports = function (app) {
             jwtVerification.push(jwt.verify)
         }
 
-        app[method](
+        router[method](
             `${base}${url}`,
             ...jwtVerification,
             ...middleWare,
             route.callback
         )
     })
-}
+
+module.exports = router;

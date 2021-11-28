@@ -12,11 +12,13 @@ const config = require('./config/config')
 
 const app = express();
 
+const routes = require('./routes')
+
 app.use(morgan('combined'))
 app.use(bodyParser.json())
 app.use(cors())
 
-require('./routes')(app)
+app.use(routes)
 
 sequelize.sync({}).then(() => {    
     app.listen(config.port, () => {
