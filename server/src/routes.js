@@ -1,5 +1,5 @@
 const UserPolicies = require('./policies/User');
-const UserController = require('./controller/User')
+const UserController = require('./controller/User/User')
 const controller = require('./controller/controller')
 
 const ProductPolicies = require('./policies/Product');
