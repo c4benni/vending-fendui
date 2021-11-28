@@ -1,6 +1,6 @@
 const Chai = require('chai');
 
-const server = require('../app');
+const server = require('../src/app');
 
 const ChaiHttp = require('chai-http');
 
@@ -12,8 +12,8 @@ Chai.use(ChaiHttp)
 describe('User Api', () => {
     // test the get route
 
-    describe('GET /api/v1/user', () => {
-        it('it should Get all the task', (done) => {
+    describe('GET User by Id', () => {
+        it('it should Get a all User detail', (done) => {
             Chai.request(server).get('/api/v1/user')
                 .end((err, res) => {
                     res.should.have.status(200);

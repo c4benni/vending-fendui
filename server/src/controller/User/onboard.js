@@ -2,7 +2,6 @@ const { User } = require('../../models')
 const attempt = require('../../utils/attempt')
 const sendError = require('../../utils/sendError')
 const sendSuccess = require("../../utils/sendSuccess")
-const generate = require('../../utils/generate')
 const { signUser } = require('../../utils/jwt')
 const {
     clearCookies,
@@ -18,8 +17,7 @@ async function logoutLogic({
             await attempt({
                 express: { res },
                 callback: async () => {
-                    const { id } = await generate
-                        .cookies(req.headers.cookie);
+                    const { id } = req.cookies;
 
                     // find existing user
                     const user = await User.findOne({
@@ -28,8 +26,7 @@ async function logoutLogic({
 
                     if (user) {
 
-                        const { jwt } = await generate
-                            .cookies(req.headers.cookie);
+                        const { jwt } = req.cookies;
 
                         if (jwt) {
                             const notCurrent = req.query.notCurrent === 'true';
@@ -159,8 +156,7 @@ module.exports = {
 
                             let alert;
                             
-                            const { jwt } = await generate
-                                .cookies(req.headers.cookie)
+                            const { jwt } = req.cookies;
 
                             const activeSessions = await user
                                 .isSignedIn(jwt);
@@ -195,11 +191,9 @@ module.exports = {
                                 alert
                             }
 
-                            return sendSuccess.withStatus(res, {
-                                data,
-                                status: 200
-                                // okay
-                            })
+                            return res
+                                .status(200)
+                                .send({ data })
                         }
                     }
                     

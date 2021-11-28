@@ -1,7 +1,5 @@
 const { Product, User } = require('../models');
-const sendSuccess = require('../utils/sendSuccess');
 const attempt = require('../utils/attempt');
-const generate = require('../utils/generate');
 const sendError = require('../utils/sendError');
 const { signedInRole, defaultDeposit } = require('../utils/utils');
 const { app } = require('../config/config');
@@ -19,7 +17,11 @@ module.exports = {
                     })
 
                     if (error) {
-                        return sendError.withStatus(res, error)
+                        return res
+                            .status(error.status)
+                            .send({
+                                error
+                        })
                     }
                     
                     // all checked;
@@ -29,11 +31,10 @@ module.exports = {
                     const { amount, quantity } = req.body;
 
                     if (!app.validCost.includes(parseFloat(amount))) {
-                        return sendError.withStatus(res, {
+                        return res.status(403).send({
                             message: `${amount} cent coins are not accepted`,
-                            status: 403
-                            // forbidden
                         })
+                        // forbidden
                     }
 
                     const freshDeposit = {
@@ -56,12 +57,12 @@ module.exports = {
                         fields: ['deposit']
                     });
 
-                    sendSuccess.withStatus(res, {
-                        data: {
-                            message: 'deposit successfully made'
-                        },
-                        status: 200
-                    })
+                    res.status
+                        .send({
+                            data: {
+                                message: 'deposit successfully made'
+                            }
+                        })
                 },
                 errorMessage: err => ({
                     message: err.message,
@@ -240,15 +241,15 @@ module.exports = {
                         })
                     }
 
-                    sendSuccess.withStatus(res, {
-                        data: {
-                            message: 'deposit successfully made',                            
-                            spent,
-                            purchased: user.purchased,
-                            change: user.deposit
-                        },
-                        status: 200
-                    })
+                    res.status(200)
+                        .send({
+                            data: {
+                                message: 'deposit successfully made',                            
+                                spent,
+                                purchased: user.purchased,
+                                change: user.deposit
+                            },
+                        })
                 },
                 errorMessage: err => ({
                     message: err.message,
@@ -285,11 +286,10 @@ module.exports = {
                         fields: ['deposit']
                     })
 
-                    sendSuccess.withStatus(res, {
+                    res.send({
                         data: {
                             message: 'reset successful'
                         },
-                        status: 204
                     })
                 },
                 errorMessage: err => ({

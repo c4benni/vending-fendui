@@ -1,6 +1,5 @@
 const { app } = require('../config/config');
 const { User } = require('../models');
-const generate = require("./generate");
 
 module.exports = {
     clearCookies(res) {
@@ -12,7 +11,7 @@ module.exports = {
     
     async signedInRole({ req, role, invalidRole }) {
         // only logged in users with role == '${role}' can access this route.
-        const { id } = await generate.cookies(req.headers.cookie);
+        const { id } = req.cookies;
 
         if (!id) {
             return {

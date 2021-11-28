@@ -2,7 +2,6 @@ const { User } = require('../../models')
 const attempt = require('../../utils/attempt')
 const sendError = require('../../utils/sendError')
 const sendSuccess = require("../../utils/sendSuccess")
-const generate = require('../../utils/generate')
 const { signUser, signUserFromCookie } = require('../../utils/jwt')
 const {
     clearCookies,
@@ -33,7 +32,7 @@ module.exports = {
             } else {
                 // check that self query is passed only for signed in users;
                 if (self) {
-                    const { jwt } = await generate.cookies(req.headers.cookie);
+                    const { jwt } = req.cookies;
 
                     const isSignedIn = await findUser
                         .isSignedIn({ jwt })
@@ -128,7 +127,7 @@ module.exports = {
     async updateUser(req, res) {
         const mainCallback = async () => {
 
-            const { id } = await generate.cookies(req.headers.cookie);
+            const { id } = req.cookies;
 
             if (!id) {
                 return sendError.withStatus(res, {
@@ -242,7 +241,7 @@ module.exports = {
     async deleteUser(req, res) {
         const mainCallback = async () => {
 
-            const { id } = await generate.cookies(req.headers.cookie);
+            const { id } = req.cookies;
 
             if (!id) {
                 return sendError.withStatus(res, {

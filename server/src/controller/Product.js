@@ -2,14 +2,13 @@ const { Product, User } = require('../models')
 const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
 const sendSuccess = require("../utils/sendSuccess")
-const generate = require('../utils/generate')
 const { signUserFromCookie } = require('../utils/jwt')
 
     async function deleteProductLogic({req, res, productID, sendMessage}) {
         const mainCallback = async () => {
 
             // check that user is signed in;
-            const { id: userId } = await generate.cookies(req.headers.cookie);
+            const { id: userId } = req.cookies;
 
             if (!userId) {
                 return sendMessage && sendError.withStatus(res, {
@@ -44,12 +43,10 @@ const { signUserFromCookie } = require('../utils/jwt')
             // all checked, can delete;
             await product.destroy();
 
-            return sendMessage ? sendSuccess.withStatus(
-                res, {
+            return sendMessage ? res.status(204).send({
                 data: {
                     message: 'product successfully deleted',
-                },
-                status: 204
+                }
                 // no content
             }) : true;
         }
@@ -68,7 +65,7 @@ module.exports = {
                 express: { res },
                 callback: async () => {
                     // only logged in users with role == 'seller' can access this route.
-                    const { id } = await generate.cookies(req.headers.cookie);
+                    const { id } = req.cookies;
 
                     if (!id) {
                         return sendError.withStatus(res, {
@@ -270,7 +267,7 @@ module.exports = {
         const mainCallback = async () => {
 
             // check that user is signed in;
-            const { id: userId } = await generate.cookies(req.headers.cookie);
+            const { id: userId } = req.cookies;
 
             if (!userId) {
                 return sendError.withStatus(res, {

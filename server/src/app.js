@@ -6,21 +6,25 @@ const cors = require('cors')
 
 const morgan = require('morgan')
 
-const { sequelize } = require('./models')
+const { sequelize: DB } = require('./models')
+
+const cookieParser = require('cookie-parser')
 
 const config = require('./config/config')
 
 const app = express();
 
-const routes = require('./routes')
+const routes = require('./routes/index')
 
-app.use(morgan('combined'))
-app.use(bodyParser.json())
-app.use(cors())
+app.use([
+    morgan('combined'),
+    bodyParser.json(),
+    cors(),
+    cookieParser(),
+    routes
+])
 
-app.use(routes)
-
-sequelize.sync({}).then(() => {    
+DB.sync({}).then(() => {    
     app.listen(config.port, () => {
         console.log('server started');
     })
