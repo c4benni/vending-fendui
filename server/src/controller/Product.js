@@ -276,6 +276,15 @@ module.exports = {
                 })
             }
 
+            // check that user is a seller;
+            if (product.sellerId !== userId) {
+                return sendError.withStatus(res, {
+                    message: 'only the owner of this product can update it',
+                    status: 401
+                    // unauthorized
+                })
+            }
+
             const { id: productID } = req.body;
 
             // check that product exists;
@@ -298,6 +307,21 @@ module.exports = {
                     status: 401
                     // unauthorized
                 })
+            }
+
+            // ensure new productName doesn't exist;
+            if (req.body.productName) {
+                const existingProductName = await Product.findOne({
+                    where: { productName: req.body.productName }
+                })
+
+                if (existingProductName) {
+                    return sendError.withStatus(res, {
+                        message: 'product name is taken. Choose another name',
+                        status: 403
+                        // forbidden
+                    })
+                }
             }
 
             // all checked, can update roles in body, 
