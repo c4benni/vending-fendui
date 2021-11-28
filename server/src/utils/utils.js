@@ -1,3 +1,4 @@
+const { app } = require('../config/config');
 const { User } = require('../models');
 const generate = require("./generate");
 
@@ -50,5 +51,26 @@ module.exports = {
         return {
             data: user
         }
-    }
+    },
+
+    defaultDeposit() {
+        const deposit = {};
+
+        app.validCost.forEach(cost => {
+            deposit[cost] = 0;
+        })
+
+        return deposit
+    },
+
+    unwantedUserFields: (user) => [
+        'password',
+        'token',
+        'sessions',
+        'createdAt',
+        'updatedAt',
+        user.isSeller ?
+            ['deposit', 'purchased']
+            : 'income'
+    ].flat()
 }

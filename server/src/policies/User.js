@@ -74,9 +74,7 @@ module.exports = {
             express: { res },
             callback: () => {
 
-                const schema = Joi.object({
-                    id: userValidation.id
-                })
+                const schema = Joi.object({})
                 
                 const validate = schema.validate(req.body)
 

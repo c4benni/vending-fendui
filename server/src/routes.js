@@ -9,7 +9,8 @@ const { base } = require('./config/config');
 const jwt = require('./utils/jwt');
 const {
     deposit: depositMiddleware,
-    buy: buyMiddleware
+    buy: buyMiddleware,
+    reset: resetMiddleware
 } = require('./policies/policies');
 
 module.exports = function (app) {
@@ -145,7 +146,15 @@ module.exports = function (app) {
             middleWare: [
                 buyMiddleware
             ],
-            callback: controller.deposit
+            callback: controller.buy
+        },
+        {
+            method: 'post',
+            url: '/reset',
+            middleWare: [
+                resetMiddleware
+            ],
+            callback: controller.reset
         },
     ];
 
@@ -167,10 +176,10 @@ module.exports = function (app) {
         const publicProductRoutes = method == 'get'
             && /^\/product\/?$|^\/product\/all$/.test(url)
 
-        const noVerification = publicUserRoutes
-            || publicProductRoutes;
+        const authenticate = !publicUserRoutes
+            && !publicProductRoutes;
         
-        if (!noVerification) {
+        if (authenticate) {
             jwtVerification.push(jwt.verify)
         }
 

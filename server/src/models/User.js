@@ -41,7 +41,10 @@ module.exports = (sequelize, dataTypes) => {
                 },
                 deposit: {
                     type: dataTypes.JSON,
-                    defaultValue: {},
+                    allowNull: true
+                },
+                income: {
+                    type: dataTypes.JSON,
                     allowNull: true
                 },
                 purchased: {
@@ -135,11 +138,28 @@ module.exports = (sequelize, dataTypes) => {
         return this
     }
 
-    Object.defineProperty(User.prototype, 'isSeller', {
-        get: function () {
-            return this.role == 'seller'
+    Object.defineProperties(User.prototype, {
+        isSeller: {
+            get: function () {
+                return this.role == 'seller'
+            }
+        },
+        totalMoney: {
+            get: function () {
+                if (this.isSeller) {
+                    const income = Object.values(this.income || []);
+
+                    return income.reduce((a, b) => a + b, 0)
+                }
+                else {
+                    const deposit = Object.values(this.deposit || []);
+
+                    return deposit.reduce((a, b) => a + b, 0)
+                }
+            }
         }
     })
+
 
     return User
 }

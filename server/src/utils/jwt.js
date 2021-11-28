@@ -3,15 +3,15 @@ const { auth, app } = require('../config/config');
 const { User } = require('../models')
 const generate = require('./generate');
 const sendError = require('./sendError');
-const { clearCookies } = require('./utils')
+const { clearCookies, unwantedUserFields } = require('./utils')
 
     // sign user and return jwt;
     async function signUser(user, res) {
         const sessionMaxTime = app.sessionMaxTime;
 
+        const unwanted = unwantedUserFields(user);
+        
         const userJSON = user.toJSON();
-
-        const unwanted = ['password', 'sessions'];
 
         unwanted.forEach(path => delete userJSON[path])
 

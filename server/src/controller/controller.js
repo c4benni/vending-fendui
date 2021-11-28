@@ -1,9 +1,10 @@
-const { Product } = require('../models');
+const { Product, User } = require('../models');
 const sendSuccess = require('../utils/sendSuccess');
 const attempt = require('../utils/attempt');
 const generate = require('../utils/generate');
 const sendError = require('../utils/sendError');
-const { signedInRole } = require('../utils/utils');
+const { signedInRole, defaultDeposit } = require('../utils/utils');
+const { app } = require('../config/config');
 
 
 module.exports = {
@@ -12,22 +13,28 @@ module.exports = {
             await attempt({
                 express: { res },
                 callback: async () => {
-                    const { data, error } = await signedInRole({
-                        res, role: 'buyer',
+                    const { data: user, error } = await signedInRole({
+                        req, role: 'buyer',
                         invalidRole: 'only a buyer can deposit coins'
                     })
 
                     if (error) {
-                        return sendError.withStatus(error)
+                        return sendError.withStatus(res, error)
                     }
-
-                    const user = data.user;
                     
                     // all checked;
                     // extract fields from query
                     // get buyer's deposit and update deposit[req.query.amount] 
                     // += req.query.quantity;
                     const { amount, quantity } = req.body;
+
+                    if (!app.validCost.includes(parseFloat(amount))) {
+                        return sendError.withStatus(res, {
+                            message: `${amount} cent coins are not accepted`,
+                            status: 403
+                            // forbidden
+                        })
+                    }
 
                     const freshDeposit = {
                         ...(user.deposit || {})
@@ -49,18 +56,9 @@ module.exports = {
                         fields: ['deposit']
                     });
 
-                    const spent = {
-                        total: productPrice * amount,
-                        coins: productPrice,
-                        amount
-                    }
-
                     sendSuccess.withStatus(res, {
                         data: {
-                            message: 'purchase successfully made',
-                            spent,
-                            purchased: user.purchased,
-                            change: user.deposit
+                            message: 'deposit successfully made'
                         },
                         status: 200
                     })
@@ -84,18 +82,18 @@ module.exports = {
                 express: { res },
                 callback: async () => {
                     // only logged in users with role == 'buyer' can access this route.
-                    const { data, error } = await signedInRole({
-                        res, role: 'buyer',
+                    const { data: user, error } = await signedInRole({
+                        req, role: 'buyer',
                         invalidRole: 'only a buyer can purchase products'
                     })
 
                     if (error) {
-                        return sendError.withStatus(error)
+                        return sendError.withStatus(res, error)
                     }
 
-                    const user = data.user;
-
                     const { id, amount } = req.body;
+
+                    const parsedAmount = parseFloat(amount)
                     
                     // valid user;
                     // check product exists
@@ -112,11 +110,43 @@ module.exports = {
                         })
                     }
 
+                    // check that product isn't deleted;
+                    if (product.ownerDeleted) {
+                        return sendError.withStatus(res, {
+                            message: "the owner of this product has been deleted. Try another product",
+                            status: 401
+                            // unauthorized
+                        })
+                    }
+
+                    // check that product isn't out of stock;
+                    if (product.amountAvailable) {
+                        return sendError.withStatus(res, {
+                            message: "this product is out of stock. Try again later",
+                            status: 404
+                            // not found
+                        })
+                    }
+
+                    // check product stock is enough for purchasing amount;
+                    const productStock = parseFloat(
+                        product.amountAvailable || 0
+                    );
+
+                    if (productStock < parsedAmount) {
+                        return sendError.withStatus(res, {
+                            message: `total product left is ${product.amountAvailable}. Try again`,
+                            status: 401
+                            // unauthorized
+                        })
+                    }
+
                     // get product's price 
                     // and check if user has those coins;
                     // and user has sufficient of those coins;
                     const productPrice = product.cost;
 
+                    // user coins that matches product's cost;
                     const userProductCoins = user
                         .deposit?.[`${productPrice}`] || 0
                     
@@ -130,9 +160,9 @@ module.exports = {
                     }
 
                     // insufficient coins
-                    if (userProductCoins < amount) {
+                    if (userProductCoins < parsedAmount) {
                         return sendError.withStatus(res, {
-                            message: `you do not have enough ${productPrice} coins. Deposit more and try again`,
+                            message: `you do not have enough ${productPrice} cent coins. Deposit more and try again`,
                             status: 401
                             // unauthorized
                         })
@@ -150,12 +180,74 @@ module.exports = {
                     
                     freshPurchased.push(reciept);
 
+                    // deduct from product.amountAvailable;
+                    await product.update({
+                        amountAvailable: productStock
+                            - parsedAmount
+                    })
+
+                    await product.save({
+                        fields: ['amountAvailable']
+                    })
+
+                    // update user's purchases and deduct deposit;
+                    const userDeposit = {
+                        ...user.deposit
+                    };
+
+                    userDeposit[productPrice] -= parsedAmount;
+
                     await user.update({
-                        purchased: freshPurchased
+                        purchased: freshPurchased,
+                        deposit: userDeposit
                     })
 
                     await user.save({
-                        fields: ['purchased']
+                        fields: ['purchased', 'deposit']
+                    })
+
+                    const spent = {
+                        total: productPrice * amount,
+                        coins: productPrice,
+                        amount
+                    }
+
+                    await user.save({
+                        fields: ['purchased', 'deposit']
+                    })
+                    
+                    // update seller's income;
+                    const seller = await User
+                        .findOne({
+                            where: {
+                                id: product.sellerId
+                            }
+                        })
+                    
+                    if (seller) {
+                        const sellerIncome = {
+                            ...seller.income
+                        };
+
+                        sellerIncome[productPrice] += parsedAmount;
+
+                        await seller.update({
+                            income: sellerIncome
+                        })
+
+                        await seller.save({
+                            fields: ['income']
+                        })
+                    }
+
+                    sendSuccess.withStatus(res, {
+                        data: {
+                            message: 'deposit successfully made',                            
+                            spent,
+                            purchased: user.purchased,
+                            change: user.deposit
+                        },
+                        status: 200
                     })
                 },
                 errorMessage: err => ({
@@ -170,4 +262,46 @@ module.exports = {
             callback: mainCallback
         })
     },
+
+    async reset(req, res) {
+        const mainCallback = async () => {
+            await attempt({
+                express: { res },
+                callback: async () => {
+                    const { data: user, error } = await signedInRole({
+                        req, role: 'buyer',
+                        invalidRole: 'only a buyer can reset deposit'
+                    })
+
+                    if (error) {
+                        return sendError.withStatus(res, error)
+                    }
+
+                    await user.update({
+                        deposit: defaultDeposit()
+                    })
+
+                    await user.save({
+                        fields: ['deposit']
+                    })
+
+                    sendSuccess.withStatus(res, {
+                        data: {
+                            message: 'reset successful'
+                        },
+                        status: 204
+                    })
+                },
+                errorMessage: err => ({
+                    message: err.message,
+                    status: 403
+                })
+            })
+        }
+
+        await attempt({
+            express: { res },
+            callback: mainCallback
+        })
+    }, 
 }

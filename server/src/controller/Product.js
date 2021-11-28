@@ -116,11 +116,15 @@ module.exports = {
                         sellerId: id
                     });
 
+                    const productJSON = product.toJSON();
+
+                    delete productJSON.createdAt;
+
                     // send success if okay;
                     sendSuccess.plain(res, {
                         data: {
                             message: 'product successfully added!',
-                            product
+                            product: productJSON
                         }
                     });
                 
@@ -224,7 +228,7 @@ module.exports = {
 
             if (!findProducts.length) {
                 return sendError.withStatus(res, {
-                    message: 'no product found',
+                    message: 'no product(s) found',
                     status: 404
                     // not found
                 })
@@ -271,15 +275,6 @@ module.exports = {
             if (!userId) {
                 return sendError.withStatus(res, {
                     message: 'session expired',
-                    status: 401
-                    // unauthorized
-                })
-            }
-
-            // check that user is a seller;
-            if (product.sellerId !== userId) {
-                return sendError.withStatus(res, {
-                    message: 'only the owner of this product can update it',
                     status: 401
                     // unauthorized
                 })

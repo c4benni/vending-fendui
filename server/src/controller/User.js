@@ -4,9 +4,12 @@ const sendError = require('../utils/sendError')
 const sendSuccess = require("../utils/sendSuccess")
 const generate = require('../utils/generate')
 const { signUser, signUserFromCookie } = require('../utils/jwt')
-const { clearCookies } = require('../utils/utils')
+const {
+    clearCookies,
+    defaultDeposit,
+    unwantedUserFields
+} = require('../utils/utils')
 const { Product } = require('../models')
-const { app } = require('../config/config')
 
 // logout helper function;
 async function logoutLogic({
@@ -16,7 +19,8 @@ async function logoutLogic({
             await attempt({
                 express: { res },
                 callback: async () => {
-                    const { id } = req.query;
+                    const { id } = await generate
+                        .cookies(req.headers.cookie);
 
                     // find existing user
                     const user = await User.findOne({
@@ -31,7 +35,7 @@ async function logoutLogic({
                         if (jwt) {
                             const notCurrent = req.query.notCurrent === 'true';
 
-                            user.logout({
+                            await user.logout({
                                 jwt, all, notCurrent
                             })
 
@@ -91,17 +95,24 @@ module.exports = {
                         })
                     }
 
-                    const deposit = {};
+                    const getRole = role.toLowerCase()
 
-                    app.validCost.forEach(cost => {
-                        deposit[`${cost}`] = 0
-                    })
+                    let deposit = null
+
+                    let income = null;
+
+                    if (getRole == 'buyer') {
+                        deposit = defaultDeposit()
+                    } else {
+                        income = defaultDeposit()
+                    }
 
                     // create a new user;
                     const user = await User.create({
                         username, password,
-                        role: role.toLowerCase(),
-                        deposit
+                        role: getRole,
+                        deposit,
+                        income
                     });
 
                     // send success if okay;
@@ -165,6 +176,8 @@ module.exports = {
 
                             sessions.push(jwtSigned.token);
 
+                            delete jwtSigned.token;
+
                             // get fresh user to update sessions;
                             const freshUser = await User.findOne({
                                 where: { username }
@@ -184,9 +197,9 @@ module.exports = {
                             }
 
                             return sendSuccess.withStatus(res, {
-                                status: 200,
+                                data,
+                                status: 200
                                 // okay
-                                data
                             })
                         }
                     }
@@ -256,33 +269,30 @@ module.exports = {
                 }
 
                 const {
-                    id, username, role, createdAt, image
+                    id, username, role,
+                    createdAt, image, header,
+                    bio, displayName
                 } = findUser;
+
+                const unwantedFields = unwantedUserFields(findUser);
 
                 const data = self ?
                     {
                         ...findUser.toJSON()
                     } :
                     {
-                        id, username, role, createdAt, image
+                        id, username, role,
+                        createdAt, image, header,
+                        bio, displayName
                     };
                 
-                // delete password and sessions;
-                const unwantedFields = [
-                    'password',
-                    'sessions'
-                ];
-
                 unwantedFields.forEach(field => {
                     delete data[field]
                 })
 
                 await signUserFromCookie(req, res)
 
-                sendSuccess.withStatus(res, {
-                    data,
-                    status: 200
-                })
+                res.status(200).send({ data, status: 200 })
             }
         }
 
@@ -438,7 +448,9 @@ module.exports = {
 
             const jwtSigned = await signUser(user, res);
 
-            sendSuccess.plain(res, {
+            delete jwtSigned.token;
+
+            res.send({
                 data: jwtSigned
             })
         }
@@ -506,6 +518,8 @@ module.exports = {
                 if (remove.error) {
                     throw remove.error;
                 }
+
+                clearCookies(res)                            
 
                 return sendSuccess.plain(res, {
                     data: {
