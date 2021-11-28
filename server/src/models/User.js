@@ -44,6 +44,10 @@ module.exports = (sequelize, dataTypes) => {
                     defaultValue: {},
                     allowNull: true
                 },
+                purchased: {
+                    type: dataTypes.ARRAY(dataTypes.JSON),
+                    allowNull: true,
+                },
                 role: {
                     type: dataTypes.STRING(6),
                     allowNull: false

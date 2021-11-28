@@ -7,7 +7,10 @@ const ProductController = require('./controller/Product')
 
 const { base } = require('./config/config');
 const jwt = require('./utils/jwt');
-const { deposit: depositMiddleware } = require('./policies/policies');
+const {
+    deposit: depositMiddleware,
+    buy: buyMiddleware
+} = require('./policies/policies');
 
 module.exports = function (app) {
 
@@ -133,6 +136,14 @@ module.exports = function (app) {
             url: '/deposit',
             middleWare: [
                 depositMiddleware
+            ],
+            callback: controller.deposit
+        },
+        {
+            method: 'post',
+            url: '/buy',
+            middleWare: [
+                buyMiddleware
             ],
             callback: controller.deposit
         },
