@@ -24,7 +24,7 @@ app.use([
     routes
 ])
 
-DB.sync({}).then(() => {    
+DB.sync({force:true}).then(() => {    
     app.listen(config.port, () => {
         console.log('server started');
     })

@@ -1,34 +1,37 @@
+// const assert = require('assert')
+
+// const app = require('../src/app');
+
 const Chai = require('chai');
 
-const server = require('../src/app');
-
-const ChaiHttp = require('chai-http');
+// const ChaiHttp = require('chai-http');
 
 // assertion style
-Chai.should();
+// Chai.assert();
 
-Chai.use(ChaiHttp)
+const assert = Chai.assert;
 
-describe('User Api', () => {
-    // test the get route
+// Chai.use(ChaiHttp)
 
-    describe('GET User by Id', () => {
-        it('it should Get a all User detail', (done) => {
-            Chai.request(server).get('/api/v1/user')
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.a('array');
-                    done()
-            })
-        })
+const { User } = require('../src/models')
+
+describe('User API', () => {
+    // test User model;
+
+    it('should create a valid user object', async () => {
+            const info = {
+            username: 'emawiszssx',
+            password: "qwertY$2",
+            role: 'buyer'
+        }
+
+        const user = await User.create(info)
+
+            assert.isNull(user.error || null)
+
+        assert.isDefined(user)
+        
+        return true
     })
-
-
-    // test the get by id
-
-    // test create product
-
-    // test update product
-
-    // test delete product
 })
+
