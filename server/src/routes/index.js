@@ -7,10 +7,12 @@ const jwt = require('../utils/jwt');
 
 const User = require('./User')
 const Product = require('./Products')
+const Media = require('./client/media')
 
     const routes = [
         ...User,
-        ...Product
+        ...Product,
+        ...Media
     ]
     
     routes.forEach(route => {

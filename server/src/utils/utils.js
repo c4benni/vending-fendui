@@ -37,7 +37,7 @@ module.exports = {
             }
         }
 
-        if (user.role != role) {
+        if (role && user.role != role) {
             return {
                 error: {
                     message: invalidRole,

@@ -1,4 +1,8 @@
-const express = require('express')
+const { createSSRApp } = require('vue')
+
+const { renderToString } = require('@vue/server-renderer')
+
+const app = require('express')()
 
 const bodyParser = require('body-parser')
 
@@ -12,7 +16,6 @@ const cookieParser = require('cookie-parser')
 
 const config = require('./config/config')
 
-const app = express();
 
 const routes = require('./routes/index')
 
@@ -24,7 +27,31 @@ app.use([
     routes
 ])
 
-DB.sync({force:true}).then(() => {    
+
+app.get('*', async (req, res) => {
+  const app = createSSRApp({
+    data() {
+      return {
+        user: 'John Doe'
+      }
+    },
+    template: `<div>Current user is: {{ user }}</div>`
+  })
+
+  const appContent = await renderToString(app)
+  const html = `
+  <html>
+    <body>
+      <h1>My First Heading</h1>
+      <div id="app">${appContent}</div>
+    </body>
+  </html>
+  `
+
+  res.end(html)
+})
+
+DB.sync({}).then(() => {    
     app.listen(config.port, () => {
         console.log('server started');
     })
