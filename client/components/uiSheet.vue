@@ -1,6 +1,6 @@
 <script>
-import { mountComplexComponent, nextAnimFrame } from './utils/main'
-// import { timeout } from "./utils";
+import { mountComplexComponent, nextAnimFrame } from '../utils/main'
+// import { timeout } from "../utils";
 export default {
   name: 'UiSheet',
   model: {
@@ -397,7 +397,7 @@ export default {
 }
 
 .ui-sheet.ui-dialog:before {
-  content: '';
+  content: "";
   height: 100%;
   width: 100%;
   display: block;
@@ -416,7 +416,7 @@ export default {
     height: var(--background-elem-height);
     width: 100%;
     display: block;
-    content: '';
+    content: "";
     background-color: var(--background-elem-background);
     opacity: 0;
   }

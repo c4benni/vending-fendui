@@ -5,6 +5,13 @@ export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
 
+  env: {
+    DB_HOST: process.env.DB_HOST || 'db-host',
+    DB_DATABASE: process.env.DB_DATABASE || 'postgres',
+    DB_USER: process.env.DB_USER || 'postgres',
+    DB_PASS: process.env.DB_PASS || 'Fendui'
+  },
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - Vending App',
@@ -14,41 +21,41 @@ export default {
       {
         hid: 'description',
         name: 'description',
-        content: 'Discover your favourite recipes!',
+        content: 'Discover your favourite recipes!'
       },
       { name: 'format-detection', content: 'telephone=no' },
       {
         hid: 'twitter-app-country',
         property: 'twitter:app:country',
-        content: 'NG',
+        content: 'NG'
       },
       {
         hid: 'twitter-site',
         property: 'twitter:site',
-        content: '@c4benn',
+        content: '@c4benn'
       },
       {
         hid: 'twitter-image',
         property: 'twitter:image',
-        content: '~static/icon.png',
+        content: '~static/icon.png'
       },
       {
         hid: 'twitter-card',
         property: 'twitter:card',
-        content: 'summary_large_image',
+        content: 'summary_large_image'
       },
       {
         hid: 'twitter-title',
         property: 'twitter:title',
-        content: 'Vending App - Buy and sell easily',
+        content: 'Vending App - Buy and sell easily'
       },
       {
         hid: 'twitter-desc',
         property: 'twitter:description',
-        content: description,
-      },
+        content: description
+      }
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -70,7 +77,7 @@ export default {
     // '@nuxtjs/stylelint-module',
     // https://go.nuxtjs.dev/tailwindcss
     '@nuxtjs/tailwindcss',
-    '@nuxtjs/pwa',
+    '@nuxtjs/pwa'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -78,14 +85,14 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
-    '@nuxtjs/pwa',
+    '@nuxtjs/pwa'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {},
 
   router: {
-    base: '/',
+    base: '/'
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
@@ -96,14 +103,14 @@ export default {
       shortName: 'Vending',
       short_name: 'Vending',
       description,
-      background_color: '#000',
+      background_color: '#000'
     },
     meta: {
       author: 'Chidi Benedict',
       themeColor: '#cacd23',
-      nativeUI: true,
+      nativeUI: true
       // ohHost: 'https://www.c4benni.github.io/nina'
-    },
+    }
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -111,8 +118,13 @@ export default {
 
   server: {
     // port: 8000, // default: 3000
-    host: '0.0.0.0', // default: localhost
+    host: '0.0.0.0' // default: localhost
   }, // other configs
 
-  pageTransition: {},
+  serverMiddleware: [
+    // 'redirect-ssl',
+    { path: '/api/v1', handler: '~/server-middleware/src/app.js' }
+  ],
+
+  pageTransition: {}
 }

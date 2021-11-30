@@ -1,26 +1,21 @@
+/* eslint-disable no-console */
 <script>
 import Vue from 'vue'
 import smoothscroll from 'smoothscroll-polyfill'
 
-import registerComponents from '~/components/utils/registerComponents'
-import { C4UiLib } from '~/components/utils/framework'
-import breakpoints from '~/components/utils/breakpoints'
-
-import IDB from '~/components/utils/db/IDB'
-// import matchVuexAndIDB from '~/components/utils/db/matchVuexAndIDB'
-
-// import { watchers as updateIDBVuexWwatchers } from '~/components/utils/db/updateIDBfromVuex'
+import registerComponents from '~/utils/registerComponents'
+import { C4UiLib } from '~/utils/framework'
+import breakpoints from '~/utils/breakpoints'
 
 import {
   breakpointsClasses,
-  getUid,
   mediaListener,
   nextAnimFrame,
   nextFrame,
   scrollWindow,
   setTouchDevice,
   sleep,
-} from '~/components/utils/main'
+} from '~/utils/main'
 
 export default {
   name: 'DefaultLayout',
@@ -28,7 +23,16 @@ export default {
     ...breakpoints.data,
     loadingText: 'LOADING...',
     prefetch: ['working'],
+    user: []
   }),
+
+  // async fetch() {
+  //   this.user = await fetch(
+  //     'http://localhost:3000/api/v1/user'
+  //   ).then(res => res.json())
+
+  // },
+
   head() {
     const links = []
 
@@ -46,14 +50,9 @@ export default {
       },
       {
 
-        href: 'https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Display:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,900&display=swap',
         rel: 'stylesheet',
       }
-      // {
-      //   hid: 'main-styles',
-      //   rel: 'stylesheet',
-      //   href: '/main.css',
-      // }
     )
 
     if (this.$c4.mounted) {
@@ -108,7 +107,6 @@ export default {
       return {
         appLoaded: this.$store.state.appLoaded,
         showLoading: this.$store.state.showPageLoading,
-        // pageRendered: this.$route.matched[0].instances.default.selfRendered,
       }
     },
   },
@@ -198,6 +196,7 @@ export default {
       }
     },
   },
+
   beforeCreate() {
     registerComponents(Vue)
 
@@ -209,13 +208,11 @@ export default {
     Vue.prototype.$c4 = Vue.observable(new C4UiLib(Vue))
 
     Vue.prototype.$theme = Vue.prototype.$c4.theme
-
-    Vue.prototype.$IDB = IDB
   },
   created() {
     this.setGreetings()
   },
-  async beforeMount() {
+  beforeMount() {
 
     const setPrototype = () => {
       Vue.prototype.$nextFrame = nextFrame.bind(this)
@@ -257,36 +254,16 @@ export default {
 
     window.history.scrollRestoration = 'auto'
 
-    await this.$nextTick()
-    await this.$IDB({
-      action: 'init',
-      args: { name: 'nina' },
-    })
-
-    this.$commit('UPDATE_', {
-      path: 'init',
-      innerPath: 'idb',
-      value: true,
-    })
-
     // if (response.data.upgradeCalled && response.data.uid) {
     //   await this.$store.getters.supabase.from('profiles').insert({
     //     uid,
     //   })
     // }
-
-    const uid = await getUid.call(this)
-
-    this.$commit('UPDATE_', {
-      path: 'idb',
-      value: {
-        ...this.$store.state.idb,
-        uid,
-      },
-    })
   },
 
   mounted() {
+    console.log(this.user);
+
     this.$nextTick(async () => {
       this.appMounted = true
 

@@ -1,5 +1,5 @@
 <script>
-import { mountSingleComponent, scrollWindow } from './utils/main'
+import { mountSingleComponent, scrollWindow } from '../utils/main'
 export default {
   name: 'UiFooter',
   data() {

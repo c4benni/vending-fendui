@@ -7,7 +7,7 @@ import {
   eventKey as EventKey,
   mountComplexComponent,
   nextAnimFrame,
-} from '~/components/utils/main'
+} from '~/utils/main'
 export default {
   name: 'UiDialog',
   model: {

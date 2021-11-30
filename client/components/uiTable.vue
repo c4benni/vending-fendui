@@ -1,6 +1,6 @@
 <script>
 // div it up!
-import { capitalize, computedBR, mountSingleComponent } from './utils/main'
+import { capitalize, computedBR, mountSingleComponent } from '../utils/main'
 export default {
   name: 'UiTable',
   props: {

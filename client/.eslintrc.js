@@ -13,5 +13,6 @@ module.exports = {
   // add your custom rules here
   rules: {
     eqeqeq: 0,
+    'no-console': 0,
   },
 }

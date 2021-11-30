@@ -1,4 +1,7 @@
+const theme = require('./tailwind/theme')
+
 module.exports = {
+  mode: 'jit',
   purge: [
     './components/**/*.{vue,js}',
     './layouts/**/*.vue',
@@ -7,11 +10,10 @@ module.exports = {
     './nuxt.config.{js,ts}'
   ],
   darkMode: false, // or 'media' or 'class'
-  theme: {
-    extend: {}
-  },
+  theme,
   variants: {
     extend: {}
   },
-  plugins: []
+  plugins: [],
+  important: true
 }

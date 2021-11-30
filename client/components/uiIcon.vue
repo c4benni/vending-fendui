@@ -1,11 +1,11 @@
 <script>
-import icons from '~/components/utils/icons'
+import icons from '~/utils/icons'
 import {
   camelCase,
   eventKey,
   functionalEmit,
   kebabCase,
-} from '~/components/utils/main'
+} from '~/utils/main'
 export default {
   name: 'UiIcon',
   functional: true,

@@ -1,5 +1,5 @@
 <script>
-import { computedBR, mountSingleComponent } from './utils/main'
+import { computedBR, mountSingleComponent } from '../utils/main'
 export default {
   name: 'UiPagination',
   props: {

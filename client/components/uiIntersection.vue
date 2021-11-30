@@ -1,5 +1,5 @@
 <script>
-import { mountSingleComponent, nextAnimFrame } from '~/components/utils/main'
+import { mountSingleComponent, nextAnimFrame } from '~/utils/main'
 const defaultConfig = {
   threshold: '0',
   rootMargin: '0px 0px 0px 0px',

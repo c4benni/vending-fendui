@@ -1,5 +1,5 @@
 <script>
-import { mountSingleComponent } from '~/components/utils/main.js'
+import { mountSingleComponent } from '~/utils/main.js'
 export default {
   name: 'AppImg',
   props: {

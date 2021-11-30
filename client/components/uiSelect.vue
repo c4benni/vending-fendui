@@ -1,5 +1,5 @@
 <script>
-import { mountSingleComponent } from './utils/main'
+import { mountSingleComponent } from '../utils/main'
 export default {
   name: 'UiSelect',
   model: {

@@ -1,5 +1,5 @@
 <script>
-import { eventKey, mountSingleComponent } from './utils/main'
+import { eventKey } from '../utils/main'
 export default {
   name: 'UiClickable',
   props: {
@@ -27,20 +27,8 @@ export default {
     willChange: false,
   }),
 
-  computed: {
-    ...mountSingleComponent.computed,
-  },
-
-  mounted() {
-    mountSingleComponent.mounted.call(this)
-  },
-
-  // beforeDestroy() {
-  //   this.toggleEvents('remove')
-  // },
-
   methods: {
-    async update({ active, currentEvent, e, emit }) {
+    async update({ active, currentEvent }) {
       if (active) {
         this.willChange = true
         await this.$nextTick()
@@ -227,16 +215,16 @@ export default {
         ],
         on: !this.nativeOn
           ? {
-              ...this.$listeners,
-              ...events,
-            }
+            ...this.$listeners,
+            ...events,
+          }
           : undefined,
         nativeOn: this.nativeOn
           ? {
-              ...this.$listeners,
-              ...events,
-              // click: (e) => console.log(e),
-            }
+            ...this.$listeners,
+            ...events,
+            // click: (e) => console.log(e),
+          }
           : undefined,
       },
       this.$slots.default

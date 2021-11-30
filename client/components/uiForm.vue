@@ -1,8 +1,11 @@
 <script>
-import { mountSingleComponent, sleep } from '~/components/utils/main'
+import { mountSingleComponent, sleep } from '~/utils/main'
 export default {
   name: 'UiForm',
   props: {
+    submitClass: {
+      type: Array, default: undefined
+    },
     showSubmit: {
       type: Boolean,
       default: true,
@@ -57,78 +60,79 @@ export default {
         this.$slots.default,
         this.showSubmit
           ? submit(
-              {
-                ...submitData,
-                props: {
-                  simpleButton: true,
-                  actionButton: true,
-                  persistent: false,
-                  ...(submitData?.props || {}),
-                },
-                attrs: {
-                  title: this.submitText.toLowerCase(),
-                  ...(submitData?.attrs || {}),
-                },
-                staticClass: 'submit-form',
-                on: {
-                  ...(submitData?.on || {}),
+            {
+              ...submitData,
+              props: {
+                simpleButton: true,
+                // actionButton: true,
+                persistent: false,
+                ...(submitData?.props || {}),
+              },
+              attrs: {
+                title: this.submitText.toLowerCase(),
+                ...(submitData?.attrs || {}),
+              },
+              staticClass: 'submit-form',
+              class: [this.submitClass],
+              on: {
+                ...(submitData?.on || {}),
 
-                  click: async (e) => {
-                    this.$emit('submit-clicked')
+                click: async (e) => {
+                  this.$emit('submit-clicked')
 
-                    e.preventDefault()
+                  e.preventDefault()
 
-                    const inputs = [...this.$children].filter((x) =>
-                      /input/i.test(x.$vnode.tag)
-                    )
-                    const validForm = {
-                      componentInvalid: [],
-                      checkValidity: undefined,
-                      reportValidity: undefined,
-                    }
+                  const inputs = [...this.$children].filter((x) =>
+                    /input/i.test(x.$vnode.tag)
+                  )
+                  const validForm = {
+                    componentInvalid: [],
+                    checkValidity: undefined,
+                    reportValidity: undefined,
+                  }
 
-                    const vmodel = {}
+                  const vmodel = {}
 
-                    inputs.forEach((x) => {
-                      vmodel[(x.autocomplete || x.label).toLowerCase()] =
-                        x.output
-                      x?.validate?.()
-                      this.$nextTick(() => {
-                        if (x?.validation?.valid === false) {
-                          validForm.componentInvalid.push(x)
+                  inputs.forEach((x) => {
+                    vmodel[(x.autocomplete || x.label).toLowerCase()] =
+                      x.output
+                    x?.validate?.()
+                    this.$nextTick(() => {
+                      if (x?.validation?.valid === false) {
+                        validForm.componentInvalid.push(x)
 
-                          x.keys['v-msg'] += 1
-                        }
-                      })
+                        x.keys['v-msg'] += 1
+                      }
                     })
+                  })
 
-                    delete vmodel['information is correct']
+                  delete vmodel['information is correct']
 
-                    await sleep.call(this, 16)
+                  await sleep.call(this, 16)
 
-                    if (typeof this.$el.reportValidity == 'function') {
-                      validForm.reportValidity = this.$el.reportValidity?.()
-                    }
+                  if (typeof this.$el.reportValidity == 'function') {
+                    validForm.reportValidity = this.$el.reportValidity?.()
+                  }
 
-                    validForm.checkValidity = this.$el?.checkValidity?.()
+                  validForm.checkValidity = this.$el?.checkValidity?.()
 
-                    const htmlValid = /true|undefined/i
+                  const htmlValid = /true|undefined/i
 
-                    const isValid =
-                      !validForm.componentInvalid.length &&
-                      htmlValid.test(validForm.checkValidity) &&
-                      htmlValid.test(validForm.reportValidity)
+                  const isValid =
+                    !validForm.componentInvalid.length &&
+                    htmlValid.test(validForm.checkValidity) &&
+                    htmlValid.test(validForm.reportValidity)
 
-                    if (isValid) {
-                      this.$nextTick(() => {
-                        this.$emit('submit-form', vmodel)
-                      })
-                    }
-                  },
+                  if (isValid) {
+                    this.$nextTick(() => {
+                      this.$emit('submit-form', vmodel)
+                    })
+                  }
                 },
               },
-              [this.$slots.submitText || this.submitText]
-            )
+            },
+            [this.$slots.submitText || this.submitText]
+          )
           : null,
         this.$slots.append,
       ]

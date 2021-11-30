@@ -175,8 +175,8 @@ export default {
               ? '-1'
               : '0'
             : props.disabled || props.readonly
-            ? '-1'
-            : undefined,
+              ? '-1'
+              : undefined,
           ...attrs,
           disabled: props.disabled,
           value: props.value,
@@ -188,28 +188,28 @@ export default {
           props.asWrapper
             ? { ...asWrapper }
             : {
-                ...asWrapper,
-                __sm: /^sm$|^small$/i.test(props.size),
-                __md: /^md$|^medium$/i.test(props.size),
-                __lg: /^lg$|^large$/i.test(props.size),
-                __prepend: !!slots.prepend,
-                __append: !!slots.append,
-                __text: props.text,
+              ...asWrapper,
+              __sm: /^sm$|^small$/i.test(props.size),
+              __md: /^md$|^medium$/i.test(props.size),
+              __lg: /^lg$|^large$/i.test(props.size),
+              __prepend: !!slots.prepend,
+              __append: !!slots.append,
+              __text: props.text,
 
-                __tile: /tile/i.test(props.shape) && !props.icon,
-                __round: /round/i.test(props.shape) && !props.icon,
-                __pill: /pill/i.test(props.shape) && !props.icon,
-                __circle: /circle/i.test(props.shape) && !props.icon,
-                __icon: props.icon,
+              __tile: /tile/i.test(props.shape) && !props.icon,
+              __round: /round/i.test(props.shape) && !props.icon,
+              __pill: /pill/i.test(props.shape) && !props.icon,
+              __circle: /circle/i.test(props.shape) && !props.icon,
+              __icon: props.icon,
 
-                __block: props.block && !props.icon,
-                '__case-capitalize': /capitalize/i.test(props.case),
-                '__case-upper': /^caps$|^uppercase$|^upper$/i.test(props.case),
-                '__case-lower': /^low$|^lowercase$|^lower$/i.test(props.case),
-                '__case-initial': /^initial$/i.test(props.case),
+              __block: props.block && !props.icon,
+              '__case-capitalize': /capitalize/i.test(props.case),
+              '__case-upper': /^caps$|^uppercase$|^upper$/i.test(props.case),
+              '__case-lower': /^low$|^lowercase$|^lower$/i.test(props.case),
+              '__case-initial': /^initial$/i.test(props.case),
 
-                __action: props.actionButton,
-              },
+              __action: props.actionButton,
+            },
           !props.text && !props.outlined ? props.background : '',
           props.color
             ? /-text$/i.test(props.color)
@@ -219,25 +219,25 @@ export default {
           props.raise === true && canRaise
             ? 'raise-light'
             : typeof props.raise === 'string' && canRaise
-            ? props.raise
-            : '',
+              ? props.raise
+              : '',
         ],
         style:
           props.filledText || props.outlined
             ? {
-                '--fill-opacity': props.filledText
-                  ? props.filledOpacity
-                  : undefined,
-                '--outlined-opacity': props.outlined
-                  ? props.outlinedOpacity
-                  : undefined,
-                '--outlined-stroke': props.outlined
-                  ? props.outlinedStroke
-                  : undefined,
-                '--fill-background': props.fill,
-                '--active-scale': props.activeScale,
-                ...c.data.style,
-              }
+              '--fill-opacity': props.filledText
+                ? props.filledOpacity
+                : undefined,
+              '--outlined-opacity': props.outlined
+                ? props.outlinedOpacity
+                : undefined,
+              '--outlined-stroke': props.outlined
+                ? props.outlinedStroke
+                : undefined,
+              '--fill-background': props.fill,
+              '--active-scale': props.activeScale,
+              ...c.data.style,
+            }
             : c.data.style,
         on: {
           ...listeners,
@@ -250,7 +250,7 @@ export default {
           : span({ staticClass: '__default-slot' }, [slots.default]),
         slots.append && slots.append,
         props.outlined &&
-          span({ attrs: { 'aria-hidden': 'true' }, staticClass: 'outline' }),
+        span({ attrs: { 'aria-hidden': 'true' }, staticClass: 'outline' }),
       ]
     )
   },
@@ -276,9 +276,9 @@ export default {
   --padding__text-lg: 2px 1.25rem;
   --fontSize-sm: 0.8275rem;
   --lineHeight-sm: 1.1;
-  --fontSize-md: 16px;
+  --fontSize-md: 1.05rem;
   --lineHeight-md: 1.3;
-  --fontSize-lg: 19px;
+  --fontSize-lg: 1.25rem;
   --lineHeight-lg: 1.5;
   --pill__padding-sm: 5.6px 14px;
   --pill__padding-md: 9.6px 22px;
@@ -301,7 +301,7 @@ export default {
   grid-auto-flow: column;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
   word-spacing: 0.8px;
   width: -webkit-fit-content;
   width: -moz-fit-content;
@@ -354,19 +354,19 @@ export default {
   grid-template-columns: auto 1fr auto;
 }
 
-.ui-btn[class*='pend'].__sm {
+.ui-btn[class*="pend"].__sm {
   grid-column-gap: var(--gap-sm);
   -moz-column-gap: var(--gap-sm);
   column-gap: var(--gap-sm);
 }
 
-.ui-btn[class*='pend'].__md {
+.ui-btn[class*="pend"].__md {
   grid-column-gap: var(--gap-md);
   -moz-column-gap: var(--gap-md);
   column-gap: var(--gap-md);
 }
 
-.ui-btn[class*='pend'].__lg {
+.ui-btn[class*="pend"].__lg {
   grid-column-gap: var(--gap-lg);
   -moz-column-gap: var(--gap-lg);
   column-gap: var(--gap-lg);
@@ -418,7 +418,7 @@ export default {
 
 .ui-btn:after,
 .ui-btn:before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -446,19 +446,19 @@ export default {
 
 .ui-btn.focus-visible:after,
 .ui-btn:focus-visible:after,
-.ui-btn[tabindex='-1']:focus-within:after {
+.ui-btn[tabindex="-1"]:focus-within:after {
   opacity: var(--t-disabled);
 }
 
 .ui-btn:focus-visible::before,
 .ui-btn:focus-visible::before,
-.ui-btn[tabindex='-1']:focus-within:after {
+.ui-btn[tabindex="-1"]:focus-within:after {
   transition: 0s !important;
 }
 
 .ui-btn.__outlined.focus-visible:after,
 .ui-btn.__outlined:focus-visible:after,
-.ui-btn[tabindex='-1'].__outlined:focus-within:after {
+.ui-btn[tabindex="-1"].__outlined:focus-within:after {
   opacity: var(--t-caption);
 }
 
