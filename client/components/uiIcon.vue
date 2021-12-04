@@ -11,6 +11,10 @@ export default {
   functional: true,
 
   props: {
+    svgClass: {
+      type: Array,
+      default: () => []
+    },
     name: {
       type: String,
       default: 'bug',
@@ -182,17 +186,17 @@ export default {
 
           props: props.clickable
             ? {
-                simpleButton: true,
-                icon: true,
-                flat: true,
-                asWrapper: true,
-                tag: props.to ? 'nuxt-link' : props.tag,
-                to: props.to || undefined,
-                ...props.props,
-              }
+              simpleButton: true,
+              icon: true,
+              flat: true,
+              asWrapper: true,
+              tag: props.to ? 'nuxt-link' : props.tag,
+              to: props.to || undefined,
+              ...props.props,
+            }
             : nuxtLink
-            ? { to: props.to }
-            : undefined,
+              ? { to: props.to }
+              : undefined,
           on: {
             ...$listeners,
             '!keydown': (e) => {
@@ -226,6 +230,7 @@ export default {
                 height: !props.clickable ? `${getSize().height}` : undefined,
                 focusable: 'false',
                 // ...$attrs,
+                class: props.svgClass
               },
             },
             [

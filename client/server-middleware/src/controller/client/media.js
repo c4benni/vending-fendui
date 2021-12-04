@@ -1,6 +1,6 @@
-const cloudinary = require('../.../utils/cloudinary')
-const attempt = require('../.../utils/attempt')
-const { signedInRole } = require('../.../utils/utils')
+const cloudinary = require('../../utils/cloudinary')
+const attempt = require('../../utils/attempt')
+const { signedInRole } = require('../../utils/utils')
 
 module.exports = {
   async getMedia(req, res) {
@@ -10,11 +10,12 @@ module.exports = {
         callback: async () => {
           const { data: user, error } = await signedInRole({
             req,
+            res
           })
 
           if (error) {
             return res.status(error.status).send({
-              error,
+              error
             })
           }
 
@@ -34,25 +35,25 @@ module.exports = {
                   y: 5,
                   width: 50,
                   opacity: 60,
-                  effect: 'brightness:200',
+                  effect: 'brightness:200'
                 },
-                { angle: 10 },
-              ],
+                { angle: 10 }
+              ]
             }
           )
 
-          res.send(img)
+          res.send({ img, user })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 403,
-        }),
+          status: 403
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
-  },
+  }
 }

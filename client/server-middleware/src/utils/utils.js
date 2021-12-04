@@ -1,75 +1,85 @@
-const { app } = require('../config/config');
-const { User } = require('../models');
+const { app } = require('../config/config')
 
 module.exports = {
-    clearCookies(res) {
-        res?.cookie?.('jwt', null, { maxAge: 0 })
-            
-        res?.cookie?.('id', null, {maxAge: 0})
-    },
+  // eslint-disable-next-line promise/param-names
+  promiser: (value) => new Promise((r) => r(value)),
+  clearCookies(res) {
+    res?.cookie?.('token', null, { maxAge: 0 })
 
-    
-    async signedInRole({ req, role, invalidRole }) {
-        // only logged in users with role == '${role}' can access this route.
-        const { id } = req.cookies;
+    res?.cookie?.('id', null, { maxAge: 0 })
+  },
 
-        if (!id) {
-            return {
-                error: {
-                    message: 'you need to login first',
-                    status: 401
-                    // unauthorized
-                }
-            }
+  async signedInRole({ req, role, invalidRole }) {
+    const { User } = require('../models')
+
+    // only logged in users with role == '${role}' can access this route.
+    const { id } = req.cookies
+
+    if (!id) {
+      return {
+        error: {
+          message: 'you need to login first',
+          status: 401
+          // unauthorized
         }
+      }
+    }
 
-        const user = await User.findOne({
-            where: { id }
-        })
+    const user = await User.findOne({
+      where: { id }
+    })
 
-        if (!user) {
-            return {
-                error: {
-                    message: 'this account may have been deleted',
-                    status: 404
-                    // not found
-                }
-            }
+    if (!user) {
+      return {
+        error: {
+          message: 'this account may have been deleted',
+          status: 404
+          // not found
         }
+      }
+    }
 
-        if (role && user.role != role) {
-            return {
-                error: {
-                    message: invalidRole,
-                    status: 401
-                    // unauthorized
-                }
-            }
+    if (role && user.role != role) {
+      return {
+        error: {
+          message: invalidRole,
+          status: 403
+          // forbidden
         }
+      }
+    }
 
-        return {
-            data: user
-        }
-    },
+    // // sign user;
 
-    defaultDeposit() {
-        const deposit = {};
+    const unwanted = module.exports.unwantedUserFields(user)
 
-        app.validCost.forEach(cost => {
-            deposit[cost] = 0;
-        })
+    unwanted.forEach((path) => delete user[path])
 
-        return deposit
-    },
+    return {
+      data: user
+    }
+  },
 
-    unwantedUserFields: (user) => [
-        'password',
-        'token',
-        'sessions',
-        'createdAt',
-        'updatedAt',
-        user.isSeller ?
-            ['deposit', 'purchased']
-            : 'income'
-    ].flat()
+  defaultDeposit() {
+    const deposit = {}
+
+    app.validCost.forEach((cost) => {
+      deposit[cost] = 0
+    })
+
+    return deposit
+  },
+
+  unwantedUserFields: (user) =>
+    [
+      'password',
+      'token',
+      'sessions',
+      'createdAt',
+      'updatedAt',
+      user.isSeller ? ['deposit', 'purchased'] : 'income'
+    ].flat(),
+
+  bearerToken: (req) =>
+    req.headers?.Authorization?.token?.split?.(' ')?.[0] || ''
 }

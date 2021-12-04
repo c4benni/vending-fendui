@@ -1,9 +1,14 @@
-const { User } = require('../../models')
-const attempt = require('../.../utils/attempt')
-const sendError = require('../.../utils/sendError')
-const sendSuccess = require('../.../utils/sendSuccess')
-const { signUser } = require('../.../utils/jwt')
-const { clearCookies, defaultDeposit } = require('../.../utils/utils')
+const { User, Session } = require('../../models')
+const attempt = require('../../utils/attempt')
+const sendError = require('../../utils/sendError')
+const sendSuccess = require('../../utils/sendSuccess')
+const { findSession, signUser, signCookies } = require('../../utils/sessions')
+const {
+  clearCookies,
+  defaultDeposit,
+  bearerToken,
+  unwantedUserFields
+} = require('../../utils/utils')
 
 // logout helper function;
 async function logoutLogic({ req, res, all }) {
@@ -12,35 +17,36 @@ async function logoutLogic({ req, res, all }) {
       express: { res },
       callback: async () => {
         const { id } = req.cookies
+        const token = req.cookies?.token || bearerToken(req)
 
         // find existing user
-        const user = await User.findOne({
-          where: { id },
-        })
+        const session = await findSession(token, id)
 
-        if (user) {
-          const { jwt } = req.cookies
-
-          if (jwt) {
+        if (session) {
+          if (token) {
             const notCurrent = req.query.notCurrent === 'true'
 
-            await user.logout({
-              jwt,
-              all,
-              notCurrent,
-            })
+            if (!all) {
+              await session.Sign(0)
+            } else {
+              await Session.destroy({
+                where: {
+                  id: notCurrent ? '0' : id
+                }
+              })
+            }
 
             clearCookies(res)
 
             return sendSuccess.withStatus(res, {
               message: 'logout successful',
-              status: 200,
+              status: 200
               // okay
             })
           } else {
             return sendError.withStatus(res, {
               message: `session expired`,
-              status: 401,
+              status: 401
               // unauthorized
             })
           }
@@ -48,21 +54,21 @@ async function logoutLogic({ req, res, all }) {
 
         return sendError.withStatus(res, {
           message: `user not found`,
-          status: 401,
+          status: 401
           // unauthorized
         })
       },
       errorMessage: (err) => ({
         message: err.message,
-        status: 409,
+        status: 409
         // conflict
-      }),
+      })
     })
   }
 
   await attempt({
     express: { res },
-    callback: mainCallback,
+    callback: mainCallback
   })
 }
 
@@ -75,14 +81,14 @@ module.exports = {
           const { username, password, role } = req.body
           // check that user doesnt exist.
           const findUser = await User.findOne({
-            where: { username },
+            where: { username }
           })
 
           if (findUser) {
             return sendError.withStatus(res, {
               message: 'user exist',
-              status: 400,
-              // bad request
+              status: 401
+              // unauthorized
             })
           }
 
@@ -104,30 +110,28 @@ module.exports = {
             password,
             role: getRole,
             deposit,
-            income,
+            income
           })
 
           // send success if okay;
-          sendSuccess.withStatus(res, {
+          res.status(201).send({
             data: {
               message: 'account successfully created. Login',
-              id: user.id,
-            },
-            status: 201,
-            // created
+              id: user.id
+            }
           })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 409,
+          status: 409
           // conflict
-        }),
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -141,7 +145,7 @@ module.exports = {
 
           // find existing user
           const user = await User.findOne({
-            where: { username },
+            where: { username }
           })
 
           if (user) {
@@ -150,40 +154,36 @@ module.exports = {
             if (matchPassword) {
               let alert
 
-              const { jwt } = req.cookies
+              const sessions = await Session.findOne({
+                where: { id: user.id }
+              })
 
-              const activeSessions = await user.isSignedIn(jwt)
-
-              if (activeSessions.sessions.length) {
+              if (sessions) {
                 alert =
-                  'there is already an active session on this account. Do you wish to end all other active sessions?'
+                  'There is already an active session on this account. Do you wish to end all other active sessions?'
               }
 
-              const jwtSigned = await signUser(user, res)
-
-              const sessions = activeSessions.sessions || []
-
-              sessions.push(jwtSigned.token)
-
-              delete jwtSigned.token
-
-              // get fresh user to update sessions;
-              const freshUser = await User.findOne({
-                where: { username },
-              })
-
-              await freshUser.update({
-                sessions,
-              })
-
-              await freshUser.save({
-                fields: ['sessions'],
+              // create a fresh user session;
+              const newSession = await Session.create({
+                id: user.id
               })
 
               const data = {
-                ...jwtSigned,
                 alert,
+                session: newSession.session,
+                ...user.toJSON()
               }
+
+              signCookies({ res, token: data.session, userId: data.id })
+
+              const unwantedFields = unwantedUserFields(user)
+
+              unwantedFields.forEach((field) => {
+                delete data[field]
+              })
+
+              // sign user
+              await signUser(data.id, res, req)
 
               return res.status(200).send({ data })
             }
@@ -191,21 +191,21 @@ module.exports = {
 
           return sendError.withStatus(res, {
             message: `username or password is incorrect`,
-            status: 401,
+            status: 401
             // unauthorized
           })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 409,
+          status: 409
           // conflict
-        }),
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -213,7 +213,7 @@ module.exports = {
     await logoutLogic({
       req,
       res,
-      all: false,
+      all: false
     })
   },
 
@@ -221,7 +221,7 @@ module.exports = {
     await logoutLogic({
       req,
       res,
-      all: true,
+      all: true
     })
-  },
+  }
 }

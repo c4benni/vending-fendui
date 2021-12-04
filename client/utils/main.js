@@ -71,146 +71,6 @@ export function breakpointsClasses() {
 export const functionalEmit = ({ event, payload, c }) =>
   c?.data?.on?.[event]?.(payload)
 
-export const mountComponents = {
-  computed: {
-    selfRendered() {
-      return this.$loadedComponent(this.selfName)
-    }
-  }
-}
-
-export const mountComplexComponent = {
-  computed: {
-    ...mountComponents.computed,
-
-    childrenRendered() {
-      if (this.selfRendered) {
-        return true
-      }
-
-      const rendered = this.renderedComponents.filter((x) => {
-        return !!this.$store.state.fetched.components?.[x]
-      })
-
-      return rendered.length == this.renderedComponents.length
-    }
-  },
-  methods: {
-    async mountSelf() {
-      if (this.selfRendered) {
-        return true
-      }
-
-      if (!this.selfRendered) {
-        await this.$sleep(200)
-      }
-
-      if (this.childrenRendered && !this.selfRendered) {
-        const value = { ...this.$store.state.fetched.components }
-
-        value[this.selfName] = true
-
-        this.$commit('UPDATE_', {
-          path: 'components',
-          innerPath: 'fetched',
-          value
-        })
-      }
-    }
-  },
-  mounted() {
-    this.mountSelf()
-  },
-  watch: {
-    childrenRendered(n) {
-      if (n) {
-        this.mountSelf()
-      }
-    }
-  }
-}
-
-export const mountPages = {
-  computed: {
-    selfRendered() {
-      // const findComponents = (str) =>
-      //   this.$store.state.fetched.components[str]
-
-      return (
-        // findComponents('AppHeader') &&
-        // (!/shop\/add_to_bag/i.test(this.$route.path)
-        //   ? findComponents('AppFooter')
-        //   : true) &&
-        this.$store.state.fetched.pages[this.selfName]
-      )
-    }
-  }
-}
-
-export const mountComplexPage = {
-  computed: {
-    ...mountPages.computed,
-
-    childrenRendered() {
-      if (this.selfRendered) {
-        return true
-      }
-
-      const rendered = this.renderedComponents.filter((x) => {
-        return !!this.$store.state.fetched.components?.[x]
-      })
-
-      return rendered.length == this.renderedComponents.length
-    }
-  },
-  methods: {
-    async mountSelf() {
-      if (this.selfRendered) {
-        return true
-      }
-
-      if (!this.selfRendered) {
-        await this.$sleep(200)
-      }
-
-      if (this.childrenRendered) {
-        if (!this.selfRendered) {
-          const value = { ...this.$store.state.fetched.pages }
-
-          value[this.selfName] = true
-          value[this.$route.name] = true
-
-          this.$commit('UPDATE_', {
-            path: 'pages',
-            innerPath: 'fetched',
-            value
-          })
-        }
-
-        this.$commit('UPDATE_', {
-          path: 'showPageLoading',
-          value: false
-        })
-
-        this.$commit('V_MODEL', {
-          path: 'loadingBar',
-          value: false
-        })
-      }
-    }
-  },
-  mounted() {
-    this.mountSelf()
-  },
-  watch: {
-    childrenRendered(n) {
-      if (n) {
-        this.mountSelf()
-      }
-    }
-  }
-}
-
 export function logoSVG({ h, size }) {
   return h(
     'svg',
@@ -254,27 +114,6 @@ export function logoSVG({ h, size }) {
       })
     })
   )
-}
-
-export const mountSingleComponent = {
-  computed: {
-    ...mountComponents.computed
-  },
-  async mounted() {
-    if (!this.selfRendered) {
-      await this.$sleep(200)
-
-      const value = { ...this.$store.state.fetched.components }
-
-      value[this.selfName] = true
-
-      this.$commit('UPDATE_', {
-        path: 'components',
-        innerPath: 'fetched',
-        value
-      })
-    }
-  }
 }
 
 export const promiser = (val = true) => {
@@ -833,7 +672,7 @@ export async function getUid() {
   } else {
     const { data, error } = await this.$IDB({
       action: 'select',
-      args: { from: 'logger', query: 'uid' }
+      args: { from: 'logger', query: 'id' }
     })
 
     if (error || !data?.length) {
@@ -844,73 +683,6 @@ export async function getUid() {
   }
 
   return promiser(uid)
-}
-
-export function scrollWindow(smooth = true) {
-  if (!process.client) {
-    return
-  }
-
-  requestAnimationFrame(() => {
-    if (
-      /md|lg|xl/.test(computedBR.breakpoints.call(this).is) ||
-      this.$route.name == 'recipe-id'
-    ) {
-      ;(
-        document.getElementById('scrolling-element') ||
-        document.getElementById('app-main')
-      ).scrollTo({
-        top: 0,
-        left: 0,
-        behavior: smooth ? 'smooth' : 'auto'
-      })
-    } else {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: smooth ? 'smooth' : 'auto'
-      })
-    }
-
-    document.body.focus()
-    document.body.click()
-  })
-}
-
-export const emptyRecipe = {
-  title: 'loading recipe...',
-  loading: true,
-  img: {
-    background: '',
-    color: '',
-    src: '',
-    alt: 'loading recipe...'
-  }
-}
-
-export const getParallax = (from, to) => {
-  const scale = to / from
-  const translate = (to - from) / 2
-
-  return {
-    css: `scale3d(${scale},${scale},1) translate3d(0,${translate}px,0)`,
-    scale,
-    translate,
-    size: { from, to }
-  }
-}
-
-export const getParallaxToParallax = (from, to) => {
-  const size = { from: from.size.to, to: to.size.to }
-
-  const translate = from.translate + to.translate / from.translate / 2
-
-  return {
-    translate,
-    scale: to.scale,
-    css: `${from.css} scale3d(${to.scale},${to.scale},1) translate3d(0,${translate}px,0)`,
-    size
-  }
 }
 
 export const sortBy = (remove = []) => {
@@ -1110,33 +882,6 @@ export const extractQueryVariables = (str, variable) => {
   })
 
   return output
-}
-
-export function loadingPage(h) {
-  const div = (d, c) => h('div', d, c)
-  return !this.selfRendered
-    ? div(
-        {
-          attrs: {
-            'aria-label': 'loading page please wait',
-            title: 'loading page...'
-          },
-          staticClass: '__loading-page pseudo'
-        },
-        [
-          div({
-            staticClass: 'spinner'
-          }),
-
-          div(
-            {
-              staticClass: 'loading-title'
-            },
-            'LOADING PAGE...'
-          )
-        ]
-      )
-    : null
 }
 
 export const setCSSVariable = (str) => {

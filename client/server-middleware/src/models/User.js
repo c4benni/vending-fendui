@@ -1,8 +1,11 @@
-const { id: generateId } = require('.../utils/generate')
+/* eslint-disable require-await */
 
 const bcrypt = require('bcrypt')
-const { app, auth } = require('../config/config')
-const { verify: jwtVerify } = require('jsonwebtoken')
+const { app } = require('../config/config')
+const { id: generateId } = require('../utils/generate')
+
+const { findSession } = require('../utils/sessions')
+const { clearCookies } = require('../utils/utils')
 
 async function hashPassword(user) {
   if (!user.changed('password')) {
@@ -25,60 +28,66 @@ module.exports = (sequelize, dataTypes) => {
         type: dataTypes.STRING(99),
         defaultValue: () => generateId('u-'),
         primaryKey: true,
-        unique: true,
+        unique: true
       },
       username: {
         type: dataTypes.STRING(20),
         unique: true,
-        allowNull: false,
+        allowNull: false
       },
       password: {
         type: dataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       deposit: {
         type: dataTypes.JSON,
-        allowNull: true,
+        allowNull: true
       },
       income: {
         type: dataTypes.JSON,
-        allowNull: true,
+        allowNull: true
       },
       purchased: {
         type: dataTypes.ARRAY(dataTypes.JSON),
-        allowNull: true,
+        allowNull: true
       },
       role: {
         type: dataTypes.STRING(6),
-        allowNull: false,
+        allowNull: false
       },
       sessions: {
         type: dataTypes.ARRAY(dataTypes.TEXT),
         allowNull: true,
-        defaultValue: [],
+        defaultValue: []
       },
 
       displayName: {
         type: dataTypes.STRING(99),
-        allowNull: true,
+        allowNull: true
       },
       image: {
         type: dataTypes.STRING(99),
-        allowNull: true,
+        allowNull: true
       },
       header: {
         type: dataTypes.STRING(99),
-        allowNull: true,
+        allowNull: true
       },
       bio: {
         type: dataTypes.TEXT,
-        allowNull: true,
-      },
+        allowNull: true
+      }
     },
     {
       hooks: {
-        beforeSave: hashPassword,
+        beforeSave: hashPassword
       },
+      indexes: [
+        {
+          unique: true,
+          fields: ['id']
+        }
+      ]
     }
   )
 
@@ -100,56 +109,65 @@ module.exports = (sequelize, dataTypes) => {
 
   // this function generates a new active session,
   // then returns if (jwt) is found;
-  User.prototype.isSignedIn = async function (jwt) {
-    if (!jwt) {
+  User.prototype.isSignedIn = async function (token) {
+    if (!token) {
       return {
-        sessions: [],
+        sessions: []
       }
     }
 
-    const activeSessions = [...(this.sessions || [])].filter(
-      (session) => session && jwtVerify(session, auth.jwtSecret)
-    )
+    const { Session } = require('../models')
+
+    const sessions = await Session.findAll({
+      where: {
+        id: this.id
+      }
+    })
 
     return {
-      active: activeSessions.includes(jwt),
-      sessions: activeSessions,
+      sessions
     }
   }
 
   // remove session(s) from user - logout;
-  User.prototype.logout = async function ({ jwt, all, notCurrent }) {
-    const sessions = this.sessions
+  User.prototype.logout = async function ({ token, all, req, res }) {
+    const notCurrent = req.query.notCurrent === 'true'
+    const session = await findSession(token, this.id)
 
-    await this.setDataValue(
-      'sessions',
-      all
-        ? [notCurrent ? jwt : null].filter(Boolean)
-        : sessions.filter((session) => session != jwt)
-    )
+    if (!all) {
+      await session.sign(0)
+    } else {
+      const { Session } = require('../models')
 
-    return this
+      await Session.destroy({
+        where: {
+          id: notCurrent ? '0' : this.id
+        }
+      })
+    }
+
+    clearCookies(res)
   }
 
   Object.defineProperties(User.prototype, {
     isSeller: {
-      get: function () {
+      get() {
         return this.role == 'seller'
-      },
-    },
-    totalMoney: {
-      get: function () {
-        if (this.isSeller) {
-          const income = Object.values(this.income || [])
+      }
+    }
+    // totalMoney: {
+    //   get () {
+    //     if (this.isSeller) {
+    //       const income = Object.values(this.income || [])
 
-          return income.reduce((a, b) => a + b, 0)
-        } else {
-          const deposit = Object.values(this.deposit || [])
+    //       return income.reduce((a, b) => a + b, 0)
+    //     } else {
+    //       const deposit = Object.values(this.deposit || [])
 
-          return deposit.reduce((a, b) => a + b, 0)
-        }
-      },
-    },
+    //       return deposit.reduce((a, b) => a + b, 0)
+    //     }
+    //   }
+    // }
   })
 
   return User

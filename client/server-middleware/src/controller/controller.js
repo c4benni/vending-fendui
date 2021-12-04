@@ -1,8 +1,8 @@
 const { Product, User } = require('../models')
-const attempt = require('.../utils/attempt')
-const sendError = require('.../utils/sendError')
-const { signedInRole, defaultDeposit } = require('.../utils/utils')
+const attempt = require('../utils/attempt')
+const sendError = require('../utils/sendError')
 const { app } = require('../config/config')
+const { signedInRole, defaultDeposit } = require('../utils/utils')
 
 module.exports = {
   async deposit(req, res) {
@@ -14,11 +14,12 @@ module.exports = {
             req,
             role: 'buyer',
             invalidRole: 'only a buyer can deposit coins',
+            res
           })
 
           if (error) {
             return res.status(error.status).send({
-              error,
+              error
             })
           }
 
@@ -29,14 +30,14 @@ module.exports = {
           const { amount, quantity } = req.body
 
           if (!app.validCost.includes(parseFloat(amount))) {
-            return res.status(403).send({
-              message: `${amount} cent coins are not accepted`,
+            return res.status(400).send({
+              message: `${amount} cent coins are not accepted`
             })
-            // forbidden
+            // bad request
           }
 
           const freshDeposit = {
-            ...(user.deposit || {}),
+            ...(user.deposit || {})
           }
 
           const parsedQuantity = parseFloat(quantity)
@@ -48,29 +49,30 @@ module.exports = {
           }
 
           await user.update({
-            deposit: freshDeposit,
+            deposit: freshDeposit
           })
 
           await user.save({
-            fields: ['deposit'],
+            fields: ['deposit']
           })
 
-          res.status.send({
+          res.status(200).send({
             data: {
               message: 'deposit successfully made',
-            },
+              deposit: user.deposit
+            }
           })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 403,
-        }),
+          status: 403
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -84,6 +86,7 @@ module.exports = {
             req,
             role: 'buyer',
             invalidRole: 'only a buyer can purchase products',
+            res
           })
 
           if (error) {
@@ -97,13 +100,13 @@ module.exports = {
           // valid user;
           // check product exists
           const product = await Product.findOne({
-            where: { id },
+            where: { id }
           })
 
           if (!product) {
             return sendError.withStatus(res, {
               message: "this product doesn't exist might have been deleted.",
-              status: 404,
+              status: 404
               // not found
             })
           }
@@ -113,27 +116,7 @@ module.exports = {
             return sendError.withStatus(res, {
               message:
                 'the owner of this product has been deleted. Try another product',
-              status: 401,
-              // unauthorized
-            })
-          }
-
-          // check that product isn't out of stock;
-          if (product.amountAvailable) {
-            return sendError.withStatus(res, {
-              message: 'this product is out of stock. Try again later',
-              status: 404,
-              // not found
-            })
-          }
-
-          // check product stock is enough for purchasing amount;
-          const productStock = parseFloat(product.amountAvailable || 0)
-
-          if (productStock < parsedAmount) {
-            return sendError.withStatus(res, {
-              message: `total product left is ${product.amountAvailable}. Try again`,
-              status: 401,
+              status: 403
               // unauthorized
             })
           }
@@ -141,7 +124,7 @@ module.exports = {
           // get product's price
           // and check if user has those coins;
           // and user has sufficient of those coins;
-          const productPrice = product.cost
+          const productPrice = `${product.cost}`
 
           // user coins that matches product's cost;
           const userProductCoins = user.deposit?.[`${productPrice}`] || 0
@@ -151,7 +134,7 @@ module.exports = {
             return sendError.withStatus(res, {
               message:
                 'you do not have the available coins to purchase this product. Deposit some coins and try again',
-              status: 401,
+              status: 403
               // unauthorized
             })
           }
@@ -160,7 +143,18 @@ module.exports = {
           if (userProductCoins < parsedAmount) {
             return sendError.withStatus(res, {
               message: `you do not have enough ${productPrice} cent coins. Deposit more and try again`,
-              status: 401,
+              status: 403
+              // unauthorized
+            })
+          }
+
+          // check product stock is enough for purchasing amount;
+          const productStock = parseFloat(product.amountAvailable || 0)
+
+          if (productStock < parsedAmount) {
+            return sendError.withStatus(res, {
+              message: `total product left is ${product.amountAvailable}. Try again`,
+              status: 403
               // unauthorized
             })
           }
@@ -172,66 +166,68 @@ module.exports = {
           const reciept = {
             timeStamp: Date.now(),
             id,
-            amount,
+            amount
           }
 
           freshPurchased.push(reciept)
 
           // deduct from product.amountAvailable;
           await product.update({
-            amountAvailable: productStock - parsedAmount,
+            amountAvailable: productStock - parsedAmount
           })
 
           await product.save({
-            fields: ['amountAvailable'],
+            fields: ['amountAvailable']
           })
 
           // update user's purchases and deduct deposit;
           const userDeposit = {
-            ...user.deposit,
+            ...user.deposit
           }
 
-          userDeposit[productPrice] -= parsedAmount
+          userDeposit[productPrice] =
+            parseFloat(userDeposit[productPrice] || 0) - parsedAmount
 
           await user.update({
             purchased: freshPurchased,
-            deposit: userDeposit,
+            deposit: userDeposit
           })
 
           await user.save({
-            fields: ['purchased', 'deposit'],
+            fields: ['purchased', 'deposit']
           })
 
           const spent = {
             total: productPrice * amount,
             coins: productPrice,
-            amount,
+            amount
           }
 
           await user.save({
-            fields: ['purchased', 'deposit'],
+            fields: ['purchased', 'deposit']
           })
 
           // update seller's income;
           const seller = await User.findOne({
             where: {
-              id: product.sellerId,
-            },
+              id: product.sellerId
+            }
           })
 
           if (seller) {
             const sellerIncome = {
-              ...seller.income,
+              ...(seller.income || {})
             }
 
-            sellerIncome[productPrice] += parsedAmount
+            sellerIncome[productPrice] =
+              parseFloat(sellerIncome[productPrice] || 0) + parsedAmount
 
             await seller.update({
-              income: sellerIncome,
+              income: sellerIncome
             })
 
             await seller.save({
-              fields: ['income'],
+              fields: ['income']
             })
           }
 
@@ -240,20 +236,20 @@ module.exports = {
               message: 'deposit successfully made',
               spent,
               purchased: user.purchased,
-              change: user.deposit,
-            },
+              change: user.deposit
+            }
           })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 403,
-        }),
+          status: 403
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -266,6 +262,7 @@ module.exports = {
             req,
             role: 'buyer',
             invalidRole: 'only a buyer can reset deposit',
+            res
           })
 
           if (error) {
@@ -273,29 +270,30 @@ module.exports = {
           }
 
           await user.update({
-            deposit: defaultDeposit(),
+            deposit: defaultDeposit()
           })
 
           await user.save({
-            fields: ['deposit'],
+            fields: ['deposit']
           })
 
           res.send({
             data: {
               message: 'reset successful',
-            },
+              deposit: user.deposit
+            }
           })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 403,
-        }),
+          status: 403
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
-  },
+  }
 }

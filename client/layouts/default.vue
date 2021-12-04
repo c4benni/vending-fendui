@@ -12,7 +12,6 @@ import {
   mediaListener,
   nextAnimFrame,
   nextFrame,
-  scrollWindow,
   setTouchDevice,
   sleep,
 } from '~/utils/main'
@@ -21,17 +20,7 @@ export default {
   name: 'DefaultLayout',
   data: () => ({
     ...breakpoints.data,
-    loadingText: 'LOADING...',
-    prefetch: ['working'],
-    user: []
   }),
-
-  // async fetch() {
-  //   this.user = await fetch(
-  //     'http://localhost:3000/api/v1/user'
-  //   ).then(res => res.json())
-
-  // },
 
   head() {
     const links = []
@@ -50,7 +39,8 @@ export default {
       },
       {
 
-        href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Display:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,900&display=swap',
+        // href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Display:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,900&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap',
         rel: 'stylesheet',
       }
     )
@@ -85,10 +75,8 @@ export default {
       )
     }
 
-    const headerText = this.$store.state.headerText
-
     return {
-      title: headerText ? headerText + ' page' : '',
+      title: 'Welcome',
       link: [...links],
       //   style: [{ cssText: styles, type: 'text/css', hid: 'ui-styles' }],
       htmlAttrs: {
@@ -115,48 +103,24 @@ export default {
       this.$el
         .closest('html')
         .classList.replace(
-          this.$theme.light ? 'dark-theme' : 'light-theme',
-          this.$theme.light ? 'light-theme' : 'dark-theme'
+          this.$theme.light ? 'dark' : 'light',
+          this.$theme.light ? 'light' : 'dark'
         )
     },
-    $route(n, o) {
+    async $route(n, o) {
       this.setGreetings()
 
-      this.willChangeLoading = false
-      this.loadingLeaveAnimation = false
-
-      if (n.path != o.path) {
-        this.$commit('UPDATE_', {
-          path: 'showOnMobile',
-          value: false,
-          innerPath: 'header',
-        })
+      if (n.path != '/' && o.path != '/') {
+        await this.$refreshUser()
       }
     },
 
-    '$c4.overlays'() {
-      if (this.$c4.overlays.length) {
-        if (!this.$c4.htmlOverlayClassAdded) {
-          this.$c4.htmlOverlayClassAdded = true
-          const html = this.$el.closest('html')
-          html.style.setProperty(
-            '--padding-right',
-            `${innerWidth - html.clientWidth}px`
-          )
-          requestAnimationFrame(() => {
-            html.classList.add('overlay-active')
-          })
-        }
-      } else {
-        const html = this.$el.closest('html')
-
-        html.classList.remove('overlay-active', 'no-overlay')
-
-        html.style.removeProperty('--padding-right')
-
-        this.$c4.htmlOverlayClassAdded = false
+    '$route.path'() {
+      if (this.$c4.mounted) {
+        scrollTo(0, 0)
       }
     },
+
     async '$store.state.vmodel.pageVisible'(n) {
       if (n) {
         await this.$nuxt.refresh()
@@ -169,50 +133,24 @@ export default {
       }
     },
 
-    async pageLoading(n) {
-      const loadingText = (value = 'LOADING...') => (this.loadingText = value)
-      const toggleLoading = (value = true) =>
-        this.$nextTick(() => (this.showLoading = value))
-      if (n.appLoaded) {
-        if (n.showPageLoading) {
-          loadingText()
-          return toggleLoading()
-        }
-
-        this.willChangeLoading = true
-        this.loadingLeaveAnimation = true
-
-        await this.$sleep(300)
-
-        toggleLoading(false)
-
-        await this.$nextTick()
-
-        this.willChangeLoading = false
-        this.loadingLeaveAnimation = false
-      } else {
-        loadingText()
-        return toggleLoading()
-      }
-    },
   },
 
   beforeCreate() {
+
     registerComponents(Vue)
 
     Vue.prototype.$commit = this.$store.commit
 
-    Vue.prototype.$loadedComponent = (str) =>
-      !!this.$store.state.fetched.components[str]
-
     Vue.prototype.$c4 = Vue.observable(new C4UiLib(Vue))
 
     Vue.prototype.$theme = Vue.prototype.$c4.theme
+
   },
   created() {
+
     this.setGreetings()
   },
-  beforeMount() {
+  async beforeMount() {
 
     const setPrototype = () => {
       Vue.prototype.$nextFrame = nextFrame.bind(this)
@@ -221,7 +159,6 @@ export default {
 
       Vue.prototype.$sleep = sleep
 
-      Vue.prototype.$scrollWindow = scrollWindow.bind(this)
     }
 
     setPrototype()
@@ -234,7 +171,7 @@ export default {
       this.$theme.is = val
         ; (
           document.documentElement || document.getElementsByTagName('html')[0]
-        ).classList.add(this.$theme.light ? 'light-theme' : 'dark-theme')
+        ).classList.add(this.$theme.light ? 'light' : 'dark')
     }
 
     const currentTheme = window.matchMedia('(prefers-color-scheme: light)')
@@ -254,15 +191,93 @@ export default {
 
     window.history.scrollRestoration = 'auto'
 
-    // if (response.data.upgradeCalled && response.data.uid) {
-    //   await this.$store.getters.supabase.from('profiles').insert({
-    //     uid,
-    //   })
-    // }
+    Vue.prototype.$refreshUser = async () => {
+      if (this.$route.path == '/') { return }
+
+      const res = await fetch('/api/v1/auth')
+
+      const { data } = await res.json()
+
+      this.$commit('UPDATE_', {
+        path: 'user',
+        value: !data ? null : data
+      })
+
+      if (!data && this.$c4.mounted) {
+        this.$router.push('/')
+      }
+    }
+
+    Vue.prototype.$apiCall = async (url, method, data) => {
+      try {
+        const getData = data ? JSON.stringify(data) : undefined
+
+        const res = await fetch(`/api/v1/${url}`, {
+          method: method || 'get',
+          body: getData,
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+        })
+        const json = await res.json();
+
+        // expired session
+        if (json?.error?.status == 401) {
+          this.$commit('UPDATE_', {
+            path: 'notify',
+            value: {
+              message: 'Session expired',
+              error: true,
+              timeout: 7500,
+              key: Date.now()
+            }
+          })
+
+          this.$commit('UPDATE_', {
+            value: null,
+            path: 'user'
+          })
+
+          this.$router.push('/')
+        }
+
+        return json
+      } catch (e) {
+        return {
+          error: {
+            message: 'Opps! An error occured',
+            status: 500, e
+          }
+        }
+      }
+    }
+
+    await this.$nextTick();
+
+    await this.$refreshUser()
+
+    await this.$nextTick();
+
+    const session = this.$store.state.user
+    const path = this.$route.path
+
+    // redirect back to dashboard if a logged in user is trying to access login page
+    if (session && path == '/') {
+      this.$router.push('/dashboard')
+    }
+
+    // redirect back to login if a logged out user is trying to access dashboard
+
+    else
+      if (!session && path != '/') {
+        return this.$router.push('/')
+      }
+
   },
 
   mounted() {
-    console.log(this.user);
+    breakpoints.mounted.call(this)
 
     this.$nextTick(async () => {
       this.appMounted = true
@@ -345,7 +360,6 @@ export default {
     const scoping = { 'data-l-dt': '' }
     const div = (d, c) => h('div', d, c)
     const Nuxt = (d) => h('nuxt', d)
-    const main = (d, c) => h('main', d, c)
 
     return div(
       {
@@ -355,9 +369,9 @@ export default {
         domProps: {
           id: 'ui-root',
         },
-        staticClass: 'theme-surface',
+        // staticClass: '',
         class: [
-          `${this.$theme.is}-theme`,
+          `${this.$theme.is}`,
           this.$store.state.pageTransition,
           {
             'touch-device': this.$store.state.isTouchDevice,
@@ -388,9 +402,26 @@ export default {
         },
       },
       [
-        main([
+        this.$c4.mounted ?
           Nuxt()
-        ])
+          : div({
+            style: {
+              width: '100%',
+              height: '100%',
+              position: 'fixed',
+              zIndex: '1000',
+              display: 'grid',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }
+          }, [
+            div({
+              staticClass: 'spinner-border',
+              style: {
+                '--size': '2rem'
+              }
+            })
+          ])
       ]
     )
   },
@@ -407,11 +438,6 @@ export default {
 
 #ui-root {
   background: var(--theme-surface);
-  --max-width: 2564px;
-  min-width: min(var(--max-width), 100vw);
-  max-width: var(--max-width);
-  min-height: 100vh;
-  height: 100%;
   display: grid;
   grid-auto-flow: row;
   grid-template-rows: 1fr;

@@ -1,7 +1,7 @@
 const Joi = require('joi')
 
-const attempt = require('../.../utils/attempt')
-const sendError = require('../.../utils/sendError')
+const attempt = require('../../utils/attempt')
+const sendError = require('../../utils/sendError')
 
 module.exports = {
   // only logged in users can get any media;
@@ -16,7 +16,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 400,
+          status: 400
           // bad request
         })
       }
@@ -26,7 +26,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
-  },
+  }
 }

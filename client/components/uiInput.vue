@@ -129,6 +129,9 @@ export default {
         const input = this.$refs.input;
         const message = getValidation.message;
 
+        this.$emit('input-validity', getValidation.valid)
+
+
         input?.setCustomValidity?.(message);
       });
 
@@ -268,7 +271,7 @@ export default {
               attrs: {
                 ...scoping,
               },
-              class: ["v-msg vibrate"],
+              class: ["v-msg vibrate text-red-600"],
             },
             [getValidation.message]
           )
@@ -331,7 +334,7 @@ export default {
 }
 
 .main[data-ui-input].invalid:not(:focus-within)::before {
-  border: 2px solid var(--error-bg);
+  border: 2px solid var(--text-red-600);
   opacity: 0.25;
 }
 
@@ -418,7 +421,6 @@ export default {
 }
 
 .v-msg[data-ui-input] {
-  color: var(--error-bg);
   font-size: 0.9rem;
   text-align: right;
   padding: 0 var(--qtr-x-gutter);

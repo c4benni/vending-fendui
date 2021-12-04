@@ -1,4 +1,4 @@
-import { mediaListener, nextAnimFrame } from './main'
+import { mediaListener } from './main'
 
 export default {
   data: {
@@ -121,7 +121,7 @@ export default {
     },
 
     async updateBreakpointMediaListener(e) {
-      await nextAnimFrame()
+      await this.$nextTick()
       const name = e.name
       const index = e.index
       const isOrientation = /orientation/.test(name)
@@ -161,11 +161,6 @@ export default {
         // Object.entries(value).forEach((x) => {
         //   this.$set(this.$breakpoints, x[0], x[1])
         // })
-
-        this.$commit('UPDATE_', {
-          path: 'breakpoints',
-          value: { ...value }
-        })
       }
 
       if (isOrientation) {

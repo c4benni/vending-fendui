@@ -1,15 +1,15 @@
-const sendError = require('.../utils/sendError')
-
 const Joi = require('joi')
 
-const attempt = require('.../utils/attempt')
+const sendError = require('../utils/sendError')
+
+const attempt = require('../utils/attempt')
 
 const {
   user: userValidation,
   changePassword: changePasswordValidation,
   links: imageValidation,
-  text: textValidation,
-} = require('.../utils/validations')(Joi)
+  text: textValidation
+} = require('../utils/validations')(Joi)
 
 module.exports = {
   async register(req, res, next) {
@@ -19,7 +19,7 @@ module.exports = {
       const schema = Joi.object({
         username: userValidation.username.required(),
         password: userValidation.password.required(),
-        role: userValidation.role.required(),
+        role: userValidation.role.required()
       })
 
       const validate = schema.validate(body)
@@ -27,17 +27,19 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid register credentials',
-          status: 400,
+          status: 400
           // bad request
         })
       }
+
+      req.body.username = req.body.username.toLowerCase()
 
       next()
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -47,7 +49,7 @@ module.exports = {
       callback: () => {
         const schema = Joi.object({
           username: userValidation.username,
-          password: userValidation.password,
+          password: userValidation.password
         })
 
         const validate = schema.validate(req.body)
@@ -57,13 +59,13 @@ module.exports = {
             message:
               validate?.error?.message ||
               'an error occured. Check your login credentials and try again.',
-            status: 400,
+            status: 400
             // bad request
           })
         }
 
         next()
-      },
+      }
     })
   },
 
@@ -80,13 +82,13 @@ module.exports = {
             message:
               validate?.error?.message ||
               'an error occured. Check your credentials and try again.',
-            status: 400,
+            status: 400
             // bad request
           })
         }
 
         next()
-      },
+      }
     })
   },
 
@@ -97,7 +99,7 @@ module.exports = {
 
       const schema = Joi.object({
         id: userValidation.id.required(),
-        self: Joi.boolean(),
+        self: Joi.boolean()
       })
 
       const validate = schema.validate(query)
@@ -105,7 +107,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 404,
+          status: 404
           // not found
         })
       }
@@ -115,7 +117,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -130,8 +132,8 @@ module.exports = {
         where: Joi.object({
           username: userValidation.username,
           id: userValidation.id,
-          role: userValidation.role,
-        }),
+          role: userValidation.role
+        })
       })
 
       const validate = schema.validate(body)
@@ -139,7 +141,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 404,
+          status: 404
           // not found
         })
       }
@@ -149,7 +151,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -163,7 +165,7 @@ module.exports = {
         displayName: userValidation.displayName,
         image: imageValidation,
         header: imageValidation,
-        bio: textValidation,
+        bio: textValidation
       })
 
       const validate = schema.validate(body)
@@ -171,7 +173,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 400,
+          status: 400
           // bad request
         })
       }
@@ -181,7 +183,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -190,7 +192,7 @@ module.exports = {
       const body = req.body
 
       const schema = Joi.object({
-        password: userValidation.password.required(),
+        password: userValidation.password.required()
       })
 
       const validate = schema.validate(body)
@@ -198,7 +200,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 400,
+          status: 400
           // bad request
         })
       }
@@ -208,7 +210,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
-  },
+  }
 }

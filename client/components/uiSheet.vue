@@ -1,5 +1,5 @@
 <script>
-import { mountComplexComponent, nextAnimFrame } from '../utils/main'
+import { nextAnimFrame } from '../utils/main'
 // import { timeout } from "../utils";
 export default {
   name: 'UiSheet',
@@ -118,7 +118,6 @@ export default {
     }
   },
   computed: {
-    ...mountComplexComponent.computed,
     getBackdropOpacity() {
       return this.$refs.root?.backdropConfig?.opacity || undefined
     },
@@ -140,7 +139,6 @@ export default {
     },
   },
   watch: {
-    ...mountComplexComponent.watch,
     backdrop() {
       this.initialBackdropOpacity = parseFloat(this.getBackdropOpacity)
     },
@@ -215,11 +213,8 @@ export default {
       this.renderedComponents.push('UiIntersection')
     }
   },
-  mounted() {
-    mountComplexComponent.mounted.call(this)
-  },
+
   methods: {
-    ...mountComplexComponent.methods,
     getPayload(p) {
       return {
         ...(p || {}),
@@ -244,8 +239,8 @@ export default {
           /leave/i.test(this.transitionState) && this.noTransition
             ? 'pseudo-anim'
             : mdAndUp
-            ? 'anim-scale'
-            : this.transitionName,
+              ? 'anim-scale'
+              : this.transitionName,
         backdrop: this.backdrop,
         zIndex: this.zIndex,
         removeContent: this.removeContent,
@@ -314,35 +309,35 @@ export default {
           const thresholdLength = 200
           return [
             this.useIntersection &&
-              !mdAndUp &&
-              intersection({
-                props: {
-                  useAnimationFrame: false,
-                  disableIntersection: !/afterE|^leave|beforeL/i.test(
-                    this.transitionState
-                  ),
-                  config: {
-                    root: this.$el,
-                    threshold: [
-                      ...Array.from(
-                        { length: thresholdLength },
-                        (_, i) => i * (1 / thresholdLength)
-                      ),
-                      1,
-                    ],
-                  },
+            !mdAndUp &&
+            intersection({
+              props: {
+                useAnimationFrame: false,
+                disableIntersection: !/afterE|^leave|beforeL/i.test(
+                  this.transitionState
+                ),
+                config: {
+                  root: this.$el,
+                  threshold: [
+                    ...Array.from(
+                      { length: thresholdLength },
+                      (_, i) => i * (1 / thresholdLength)
+                    ),
+                    1,
+                  ],
                 },
-                scopedSlots: {
-                  default: (intersectionPayload) => {
-                    this.intersectionState = intersectionPayload
-                    this.$emit('intersection-point', intersectionPayload)
-                    return div({
-                      attrs: { 'aria-hidden': 'true' },
-                      staticClass: 'observer-el fill-before',
-                    })
-                  },
+              },
+              scopedSlots: {
+                default: (intersectionPayload) => {
+                  this.intersectionState = intersectionPayload
+                  this.$emit('intersection-point', intersectionPayload)
+                  return div({
+                    attrs: { 'aria-hidden': 'true' },
+                    staticClass: 'observer-el fill-before',
+                  })
                 },
-              }),
+              },
+            }),
             this.$scopedSlots?.default?.(this.getPayload(payload)),
           ]
         },

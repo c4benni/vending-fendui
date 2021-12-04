@@ -1,9 +1,13 @@
 const { User } = require('../../models')
-const attempt = require('../.../utils/attempt')
-const sendError = require('../.../utils/sendError')
-const sendSuccess = require('../.../utils/sendSuccess')
-const { signUser, signUserFromCookie } = require('../.../utils/jwt')
-const { clearCookies, unwantedUserFields } = require('../.../utils/utils')
+const attempt = require('../../utils/attempt')
+const sendError = require('../../utils/sendError')
+const sendSuccess = require('../../utils/sendSuccess')
+const { signUser, signUserFromCookie } = require('../../utils/sessions')
+const {
+  clearCookies,
+  unwantedUserFields,
+  bearerToken
+} = require('../../utils/utils')
 const { Product } = require('../../models')
 const onboard = require('./onboard')
 
@@ -15,26 +19,30 @@ module.exports = {
       const { id, self } = req.query
 
       const findUser = await User.findOne({
-        where: { id },
+        where: { id }
       })
 
       if (!findUser) {
         return sendError.withStatus(res, {
           message: 'user not found',
-          status: 404,
+          status: 404
           // not found
         })
       } else {
         // check that self query is passed only for signed in users;
         if (self) {
-          const { jwt } = req.cookies
+          let { id } = req.cookies
 
-          const isSignedIn = await findUser.isSignedIn({ jwt })
+          if (!id) {
+            id = bearerToken(req)
+          }
+
+          const isSignedIn = await findUser.isSignedIn({ id })
 
           if (!isSignedIn) {
             return sendError.withStatus(res, {
               message: 'only signed in users can use the self option',
-              status: 401,
+              status: 401
             })
           }
         }
@@ -47,14 +55,14 @@ module.exports = {
           image,
           header,
           bio,
-          displayName,
+          displayName
         } = findUser
 
         const unwantedFields = unwantedUserFields(findUser)
 
         const data = self
           ? {
-              ...findUser.toJSON(),
+              ...findUser.toJSON()
             }
           : {
               id,
@@ -64,7 +72,7 @@ module.exports = {
               image,
               header,
               bio,
-              displayName,
+              displayName
             }
 
         unwantedFields.forEach((field) => {
@@ -79,7 +87,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -90,13 +98,13 @@ module.exports = {
       const findUsers = await User.findAll({
         ...where,
         limit,
-        offset,
+        offset
       })
 
       if (!findUsers.length) {
         return sendError.withStatus(res, {
           message: 'no user found',
-          status: 404,
+          status: 404
           // not found
         })
       } else {
@@ -110,7 +118,7 @@ module.exports = {
             username,
             role,
             createdAt,
-            image,
+            image
           })
         })
 
@@ -118,14 +126,14 @@ module.exports = {
 
         res.send({
           data,
-          length: data.length,
+          length: data.length
         })
       }
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -136,7 +144,7 @@ module.exports = {
       if (!id) {
         return sendError.withStatus(res, {
           message: 'session expired',
-          status: 401,
+          status: 401
           // unauthorized
         })
       }
@@ -144,13 +152,13 @@ module.exports = {
       const { username, password } = req.body
 
       const user = await User.findOne({
-        where: { id },
+        where: { id }
       })
 
       if (!user) {
         return sendError.withStatus(res, {
           message: 'user not found',
-          status: 401,
+          status: 401
           // unauthorized
         })
       }
@@ -165,7 +173,7 @@ module.exports = {
         if (oldPassword === newPassword) {
           return sendError.withStatus(res, {
             message: 'new password must be different from old password',
-            status: 401,
+            status: 401
             // unauthorized
           })
         }
@@ -176,7 +184,7 @@ module.exports = {
         if (!matchPassword) {
           return sendError.withStatus(res, {
             message: 'old password is incorrect',
-            status: 401,
+            status: 401
             // unauthorized
           })
         }
@@ -187,51 +195,59 @@ module.exports = {
       if (username) {
         // check that user doesnt exist on DB;
         const findUsername = await User.findOne({
-          where: { username },
+          where: { username }
         })
 
         if (findUsername) {
           return sendError.withStatus(res, {
             message: 'that username is taken. Try again.',
-            status: 400,
+            status: 400
           })
         }
 
         updateValues.username = username
       }
 
-      const buildUpdateValues = async () => {
+      const buildUpdateValues = () => {
         const genericFields = ['displayName', 'image', 'header', 'bio']
 
         genericFields.forEach((field) => {
           const value = req.body[field]
 
-          if (typeof value != undefined) {
+          if (typeof value != 'undefined') {
             updateValues[field] = value
           }
         })
+
+        return genericFields
       }
 
-      await buildUpdateValues()
+      buildUpdateValues()
 
       await user.update({
-        ...updateValues,
+        ...updateValues
       })
 
       await user.save()
 
-      const jwtSigned = await signUser(user, res)
+      const session = await signUser(user.id, res, req)
 
-      delete jwtSigned.token
+      const data = {
+        ...session
+      }
+
+      const unwanted = unwantedUserFields(user)
+
+      unwanted.forEach((field) => delete data[field])
 
       res.send({
-        data: jwtSigned,
+        data
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -242,7 +258,7 @@ module.exports = {
       if (!id) {
         return sendError.withStatus(res, {
           message: 'session expired',
-          status: 401,
+          status: 401
           // unauthorized
         })
       }
@@ -250,13 +266,13 @@ module.exports = {
       const { password } = req.body
 
       const findUser = await User.findOne({
-        where: { id },
+        where: { id }
       })
 
       if (!findUser) {
         return sendError.withStatus(res, {
           message: 'user not found',
-          status: 404,
+          status: 404
           // not found
         })
       } else {
@@ -265,7 +281,7 @@ module.exports = {
         if (!matchPassword) {
           return sendError.withStatus(res, {
             message: 'incorrect password',
-            status: 404,
+            status: 404
             // not found
           })
         }
@@ -277,12 +293,12 @@ module.exports = {
 
           await Product.update(
             {
-              ownerDeleted: true,
+              ownerDeleted: true
             },
             {
               where: {
-                sellerId: findUser.id,
-              },
+                sellerId: findUser.id
+              }
             }
           )
         }
@@ -299,16 +315,16 @@ module.exports = {
 
         return sendSuccess.plain(res, {
           data: {
-            message: 'user deleted',
+            message: 'user deleted'
           },
-          status: 200,
+          status: 200
         })
       }
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
-  },
+  }
 }

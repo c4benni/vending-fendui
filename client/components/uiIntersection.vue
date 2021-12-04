@@ -1,5 +1,5 @@
 <script>
-import { mountSingleComponent, nextAnimFrame } from '~/utils/main'
+import { nextAnimFrame } from '~/utils/main'
 const defaultConfig = {
   threshold: '0',
   rootMargin: '0px 0px 0px 0px',
@@ -103,7 +103,6 @@ export default {
       }
     },
 
-    ...mountSingleComponent.computed,
   },
 
   watch: {
@@ -126,9 +125,7 @@ export default {
 
     this.observe()
   },
-  mounted() {
-    mountSingleComponent.mounted.call(this)
-  },
+
   activated() {
     this.observe()
   },

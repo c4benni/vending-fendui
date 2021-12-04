@@ -1,38 +1,37 @@
-const fs = require('fs')
+const { readdirSync } = require('fs')
 
-const path = require('path')
+const { join: joinPath } = require('path')
 
 const { Sequelize, DataTypes } = require('sequelize')
 
-const { db: dbConfig, db } = require('../config/config')
+const { db: dbConfig } = require('../config/config')
 
 // database instance
 const DB = {}
 
 // new Sequelize instance
 const sequelize = new Sequelize(
-    dbConfig.database,
-    dbConfig.user,
-    dbConfig.password,
-    dbConfig.options
+  dbConfig.database,
+  dbConfig.user,
+  dbConfig.password,
+  dbConfig.options
 )
 
 // auto import models and add them to DB{}
-fs.
-    readdirSync(__dirname).
-    filter(file => file !== 'index.js').
-    forEach(file => {
-        // import and initialize models;
-        const model = require(path.join(__dirname, file))(sequelize, DataTypes)
-        
-        // add to DB{}
-        DB[model.name] = model; 
-    }) 
+readdirSync(__dirname)
+  .filter((file) => file !== 'index.js')
+  .forEach((file) => {
+    // import and initialize models;
+    const model = require(joinPath(__dirname, file))(sequelize, DataTypes)
+
+    // add to DB{}
+    DB[model.name] = model
+  })
 
 // add the instance above to DB{}
-DB.sequelize = sequelize;
+DB.sequelize = sequelize
 
 // add the Sequelize class to DB{}
-DB.Sequelize = Sequelize;
+DB.Sequelize = Sequelize
 
-module.exports = DB;
+module.exports = DB

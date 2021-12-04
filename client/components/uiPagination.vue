@@ -1,5 +1,5 @@
 <script>
-import { computedBR, mountSingleComponent } from '../utils/main'
+import { computedBR, } from '../utils/main'
 export default {
   name: 'UiPagination',
   props: {
@@ -16,7 +16,6 @@ export default {
     selfName: 'UiPagination',
   }),
   computed: {
-    ...mountSingleComponent.computed,
     ...computedBR,
 
     items() {
@@ -71,9 +70,7 @@ export default {
       )
     },
   },
-  mounted() {
-    mountSingleComponent.mounted.call(this)
-  },
+
   render(h) {
     const scoping = { 'data-uipn': '' }
     const div = (d, c) => h('div', d, c)

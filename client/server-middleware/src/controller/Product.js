@@ -1,8 +1,8 @@
 const { Product, User } = require('../models')
-const attempt = require('.../utils/attempt')
-const sendError = require('.../utils/sendError')
-const sendSuccess = require('.../utils/sendSuccess')
-const { signUserFromCookie } = require('.../utils/jwt')
+const attempt = require('../utils/attempt')
+const sendError = require('../utils/sendError')
+const sendSuccess = require('../utils/sendSuccess')
+const { signUserFromCookie } = require('../utils/sessions')
 
 async function deleteProductLogic({ req, res, productID, sendMessage }) {
   const mainCallback = async () => {
@@ -14,7 +14,7 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
         sendMessage &&
         sendError.withStatus(res, {
           message: 'session expired',
-          status: 401,
+          status: 401
           // unauthorized
         })
       )
@@ -22,7 +22,7 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
 
     // check that product exists;
     const product = await Product.findOne({
-      where: { id: productID },
+      where: { id: productID }
     })
 
     if (!product) {
@@ -30,7 +30,7 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
         sendMessage &&
         sendError.withStatus(res, {
           message: 'item not found or might have been deleted',
-          status: 404,
+          status: 404
           // not found
         })
       )
@@ -42,7 +42,7 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
         sendMessage &&
         sendError.withStatus(res, {
           message: 'only the owner of this product can delete it',
-          status: 401,
+          status: 401
           // unauthorized
         })
       )
@@ -54,8 +54,8 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
     return sendMessage
       ? res.status(204).send({
           data: {
-            message: 'product successfully deleted',
-          },
+            message: 'product successfully deleted'
+          }
           // no content
         })
       : true
@@ -63,7 +63,7 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
 
   await attempt({
     express: { res },
-    callback: mainCallback,
+    callback: mainCallback
   })
 }
 
@@ -79,19 +79,19 @@ module.exports = {
           if (!id) {
             return sendError.withStatus(res, {
               message: 'you need to login first',
-              status: 401,
+              status: 401
               // unauthorized
             })
           }
 
           const user = await User.findOne({
-            where: { id },
+            where: { id }
           })
 
           if (!user) {
             return sendError.withStatus(res, {
               message: 'this account may have been deleted',
-              status: 404,
+              status: 404
               // not found
             })
           }
@@ -100,27 +100,27 @@ module.exports = {
             return sendError.withStatus(res, {
               message:
                 'only a seller can add a product. Create a seller account?',
-              status: 401,
+              status: 401
               // unauthorized
             })
           }
 
           // check if product name exist;
           const findProduct = await Product.findOne({
-            where: { productName: req.body.productName },
+            where: { productName: req.body.productName }
           })
 
           if (findProduct) {
             return sendError.withStatus(res, {
               message: 'product exists. Choose another name.',
-              status: 403,
+              status: 403
             })
           }
 
           // create a new product;
           const product = await Product.create({
             ...req.body,
-            sellerId: id,
+            sellerId: id
           })
 
           const productJSON = product.toJSON()
@@ -128,23 +128,23 @@ module.exports = {
           delete productJSON.createdAt
 
           // send success if okay;
-          sendSuccess.plain(res, {
+          res.send({
             data: {
               message: 'product successfully added!',
-              product: productJSON,
-            },
+              product: productJSON
+            }
           })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 403,
-        }),
+          status: 403
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -160,13 +160,13 @@ module.exports = {
           await signUserFromCookie(req, res)
 
           const product = await Product.findOne({
-            where: { id },
+            where: { id }
           })
 
           if (!product) {
             return sendError.withStatus(res, {
               message: 'product not found or might have been deleted',
-              status: 404,
+              status: 404
               // not found
             })
           }
@@ -178,8 +178,8 @@ module.exports = {
 
           const sellerUser = await User.findOne({
             where: {
-              id: productJSON.sellerId,
-            },
+              id: productJSON.sellerId
+            }
           })
 
           const sellerInfo = {}
@@ -188,13 +188,13 @@ module.exports = {
             sellerInfo.username = sellerUser.username
           } else {
             sellerInfo.error = {
-              message: 'this user has been deleted',
+              message: 'this user has been deleted'
             }
           }
 
           const data = {
             ...productJSON,
-            sellerInfo,
+            sellerInfo
           }
 
           disAllowedFields.forEach((field) => {
@@ -202,36 +202,38 @@ module.exports = {
           })
 
           return res.send({
-            data,
+            data
           })
         },
         errorMessage: (err) => ({
           message: err.message,
-          status: 403,
-        }),
+          status: 403
+        })
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
   async readAllProducts(req, res) {
     const mainCallback = async () => {
-      const { limit, where = {}, offset } = req.body
+      const { limit, where = '{}', offset } = req.query
+
+      const getWhere = typeof where == 'object' ? JSON.stringify(where) : where
 
       const findProducts = await Product.findAll({
-        where,
+        where: JSON.parse(getWhere),
         limit,
-        offset,
+        offset
       })
 
       if (!findProducts.length) {
         return sendError.withStatus(res, {
           message: 'no product(s) found',
-          status: 404,
+          status: 404
           // not found
         })
       } else {
@@ -248,7 +250,7 @@ module.exports = {
             background,
             rating,
             caption,
-            ownerDeleted,
+            ownerDeleted
           } = product
 
           data.push({
@@ -261,7 +263,7 @@ module.exports = {
             background,
             rating,
             caption,
-            ownerDeleted,
+            ownerDeleted
           })
         })
 
@@ -270,14 +272,14 @@ module.exports = {
         res.send({
           data,
           length: data.length,
-          status: 200,
+          status: 200
         })
       }
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -290,7 +292,7 @@ module.exports = {
       if (!userId) {
         return sendError.withStatus(res, {
           message: 'session expired',
-          status: 401,
+          status: 401
           // unauthorized
         })
       }
@@ -299,13 +301,13 @@ module.exports = {
 
       // check that product exists;
       const product = await Product.findOne({
-        where: { id: productID },
+        where: { id: productID }
       })
 
       if (!product) {
         return sendError.withStatus(res, {
           message: 'item not found or might have been deleted',
-          status: 404,
+          status: 404
           // not found
         })
       }
@@ -314,7 +316,7 @@ module.exports = {
       if (product.sellerId !== userId) {
         return sendError.withStatus(res, {
           message: 'only the owner of this product can update it',
-          status: 401,
+          status: 401
           // unauthorized
         })
       }
@@ -322,13 +324,13 @@ module.exports = {
       // ensure new productName doesn't exist;
       if (req.body.productName) {
         const existingProductName = await Product.findOne({
-          where: { productName: req.body.productName },
+          where: { productName: req.body.productName }
         })
 
         if (existingProductName) {
           return sendError.withStatus(res, {
             message: 'product name is taken. Choose another name',
-            status: 403,
+            status: 403
             // forbidden
           })
         }
@@ -341,13 +343,13 @@ module.exports = {
       await product.save()
 
       sendSuccess.plain(res, {
-        data: product.toJSON(),
+        data: product.toJSON()
       })
     }
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -356,7 +358,7 @@ module.exports = {
       req,
       res,
       productID: req.query.id,
-      sendMessage: true,
+      sendMessage: true
     })
   },
 
@@ -370,7 +372,7 @@ module.exports = {
         req,
         res,
         productID: id,
-        sendMessage: false,
+        sendMessage: false
       })
 
       if (deleteItem === false) {
@@ -382,12 +384,12 @@ module.exports = {
     errorCaught
       ? sendError.withStatus(res, {
           message: 'an error occured',
-          status: 500,
+          status: 500
         })
       : sendSuccess.withStatus(res, {
           message: 'item(s) deleted',
-          status: 204,
+          status: 204
           // no content
         })
-  },
+  }
 }

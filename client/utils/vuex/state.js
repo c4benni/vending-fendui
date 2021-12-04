@@ -1,87 +1,30 @@
+const mediaPath = 'vendingApp/vector/'
+
 export default function state() {
   return {
-    noPageAnimation: false,
-    isMozilla: false,
-    worker: null,
-    rootModal: {
-      tag: 'ui-sheet',
-      active: false,
-      meta: {
-        uid: null
-      },
-      transitionState: ''
+    media: {
+      register: `${mediaPath}bermuda-profitable-growth_mpihif`,
+      login: `${mediaPath}bermuda-businessman_brbemo`,
+      favIco: `${mediaPath}icons8-vending-machine-96_sfeaj1`,
+      notFound: [
+        `${mediaPath}pixeltrue-error-1_hdvys7`,
+        `${mediaPath}jaconda-17_iemp36`,
+        `${mediaPath}bermuda-page-not-found_ixpt7o`
+      ],
+      expired: [`${mediaPath}flamenco-logged-out_yjfeh2`],
+      welcome: `${mediaPath}crayon-welcome-3_yscmh1`,
+      alert: `${mediaPath}flamenco-652_mrnn3d`,
+      empty: `${mediaPath}flame-2_kn885a`
     },
-    pageVisible: true,
-    isTouchDevice: null,
-    isStrictTouchDevice: null,
-    beforeCreateCalled: false,
-    breakpoints: {},
-    appLoaded: false,
-    appMounted: false,
-    showPageLoading: false,
 
-    fetched: {
-      components: {},
-      pages: {}
-    },
+    user: null,
+
     greeting: '',
 
-    pageTransition: '',
-    pageTransitionState: 'beforeEnter',
+    breakpoints: {},
 
-    vmodel: {
-      search: '',
-      loadingBar: false,
-      clearSaved: {
-        active: false,
-        meta: {}
-      }
-    },
+    mobileNav: false,
 
-    // for route to reset
-    initialVModel: {
-      search: ''
-    },
-
-    savedItems: [],
-
-    recentlyViewed: [],
-
-    sortSaved: 'datedesc',
-
-    supportsBackdrop: false,
-
-    vectorIcons: {
-      working:
-        'https://itwmctclrhnoeqnsakvq.supabase.in/storage/v1/object/sign/media/working.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYS93b3JraW5nLnBuZyIsImlhdCI6MTYzNTI1MDIxOCwiZXhwIjoxOTUwNjEwMjE4fQ.-xx0RJLQaKI__Koz9Jbk5ASAhM4WcvDk7ZZ-09LYCAg'
-    },
-
-    header: {
-      text: '',
-      showOnMobile: false
-    },
-
-    explore: {
-      expanded: {}
-    },
-
-    exploreSections: {
-      cuisines: {},
-      categories: {},
-      collections: {}
-    },
-
-    recipes: {},
-
-    fetchTimeStamps: {},
-
-    idb: {
-      uid: null,
-      init: false
-    },
-
-    exploreBuilt: false,
-
-    windowHeight: 0
+    notify: { message: null }
   }
 }

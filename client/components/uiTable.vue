@@ -1,6 +1,6 @@
 <script>
 // div it up!
-import { capitalize, computedBR, mountSingleComponent } from '../utils/main'
+import { capitalize, computedBR } from '../utils/main'
 export default {
   name: 'UiTable',
   props: {
@@ -38,7 +38,6 @@ export default {
   }),
   computed: {
     ...computedBR,
-    ...mountSingleComponent.computed,
     getItems() {
       const value = [this.header]
 
@@ -55,9 +54,7 @@ export default {
       }
     },
   },
-  mounted() {
-    mountSingleComponent.mounted.call(this)
-  },
+
   render(h) {
     const scoping = { 'data-uite': '' }
 
@@ -127,17 +124,17 @@ export default {
       [
         [
           this.id &&
-            this.describe &&
-            div(
-              {
-                attrs: {
-                  ...scoping,
-                  id: this.id,
-                },
-                staticClass: 'sr-only',
+          this.describe &&
+          div(
+            {
+              attrs: {
+                ...scoping,
+                id: this.id,
               },
-              this.describe
-            ),
+              staticClass: 'sr-only',
+            },
+            this.describe
+          ),
         ],
         row({
           key: 'header',
@@ -175,7 +172,7 @@ export default {
   overflow: hidden;
 }
 
-.light-theme .root[data-uite] {
+.light .root[data-uite] {
   background: var(--theme-primary);
 }
 

@@ -1,5 +1,5 @@
 <script>
-import { mountSingleComponent, sleep } from '~/utils/main'
+import { sleep } from '~/utils/main'
 export default {
   name: 'UiForm',
   props: {
@@ -33,12 +33,7 @@ export default {
       selfName: 'UiForm',
     }
   },
-  computed: {
-    ...mountSingleComponent.computed,
-  },
-  mounted() {
-    mountSingleComponent.mounted.call(this)
-  },
+
   render(h) {
     const form = (d, c) => h('form', d, c)
     const submit = (d, c) => h('ui-btn', d, c)
@@ -142,11 +137,11 @@ export default {
 </script>
 
 <style>
-.ui-form.dark-theme:not(.root[data-pfm]) {
+.ui-form.dark:not(.root[data-pfm]) {
   --info: #026fb3;
   --info-gradient: #508fb6;
 }
-.ui-form.light-theme:not(.root[data-pfm]) {
+.ui-form.light:not(.root[data-pfm]) {
   --info: var(--primary);
   --info-gradient: rgb(54, 93, 114);
 }

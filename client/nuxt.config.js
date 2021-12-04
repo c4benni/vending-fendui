@@ -55,7 +55,13 @@ export default {
         content: description
       }
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+    link: [
+      {
+        rel: 'icon',
+        type: 'image/x-icon',
+        href: 'https://res.cloudinary.com/c4benn/image/upload/v1638262180/vendingApp/vector/icons8-vending-machine-96_sfeaj1.png'
+      }
+    ]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -85,14 +91,38 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
-    '@nuxtjs/pwa'
+    '@nuxtjs/pwa',
+    '@nuxtjs/cloudinary',
+    // With options
+    [
+      'nuxt-highcharts',
+      {
+        /* module options */
+      }
+    ]
   ],
 
+  cloudinary: {
+    // Cloudinary configuration options
+    cloudName: 'c4benn',
+    apiKey: '336555747421799',
+    apiSecret: '0TtMTNIreV2Ljo7S1Binntv8dc0',
+    useComponent: true
+  },
+
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  axios: {},
+  axios: {
+    baseURL: 'http://localhost:3000/api/v1',
+    timeout: 5000,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    }
+  },
 
   router: {
-    base: '/'
+    base: '/',
+    middleware: 'auth'
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
@@ -123,7 +153,7 @@ export default {
 
   serverMiddleware: [
     // 'redirect-ssl',
-    { path: '/api/v1', handler: '~/server-middleware/src/app.js' }
+    { path: '/api/v1', handler: '~/server-middleware/src/server.js' }
   ],
 
   pageTransition: {}

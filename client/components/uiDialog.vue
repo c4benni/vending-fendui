@@ -5,7 +5,6 @@
 import {
   zIndex,
   eventKey as EventKey,
-  mountComplexComponent,
   nextAnimFrame,
 } from '~/utils/main'
 export default {
@@ -140,7 +139,6 @@ export default {
     }
   },
   computed: {
-    ...mountComplexComponent.computed,
     hasEntered() {
       return /afterE|^$/i.test(this.transitionState) && this.manualVModel
     },
@@ -233,7 +231,6 @@ export default {
     },
   },
   watch: {
-    ...mountComplexComponent.watch,
     async 'v_model.isActive'(n) {
       if (n) {
         this.transitionState = 'beforeEnter'
@@ -286,7 +283,6 @@ export default {
     }
   },
   mounted() {
-    mountComplexComponent.mounted.call(this)
     requestAnimationFrame(() => {
       this.$el._uiAction = this.selfMethods || this.v_model
     })
@@ -309,9 +305,7 @@ export default {
     )
     this.v_model.close()
   },
-  methods: {
-    ...mountComplexComponent.methods,
-  },
+
   render(h) {
     if (!this.$store.getters.pageEntered || !this.$c4.mounted) {
       return null
@@ -325,11 +319,11 @@ export default {
     const touchstart =
       transitioning && this.hasBackdrop
         ? {
-            touchstart: (e) => {
-              e.stopPropagation()
-              e.preventDefault()
-            },
-          }
+          touchstart: (e) => {
+            e.stopPropagation()
+            e.preventDefault()
+          },
+        }
         : {}
     const animCancelled = () => {
       this.hideRoot = true
@@ -379,7 +373,7 @@ export default {
         on: {
           ...this.$listeners,
           mousedown: (e) => {
-            ;/afterE/i.test(this.transitionState) &&
+            ; /afterE/i.test(this.transitionState) &&
               requestAnimationFrame(() => this.$nextTick(this.v_model.close))
             this.$emit('mousedown', e)
           },
@@ -396,38 +390,37 @@ export default {
       [
         this.hasBackdrop
           ? div({
-              ref: 'backdrop',
-              attrs: {
-                'aria-label': this.manualVModel ? 'click to close' : undefined,
-              },
-              staticClass: '__backdrop',
-              style: {
-                background: this.backdropConfig.background,
-                opacity: this.manualVModel
-                  ? `${this.backdropOpacity || this.backdropConfig.opacity}`
-                  : '0',
-                '--transition': this.reducedBackdropTransition
-                  ? `0ms`
-                  : `${this.vmodel ? '400' : '150'}ms opacity ease ${
-                      this.vmodel ? '64ms' : '0ms'
-                    }`,
-                willChange: /^before|^enter|^leave/i.test(this.transitionState)
-                  ? 'opacity'
-                  : undefined,
-              },
-            })
+            ref: 'backdrop',
+            attrs: {
+              'aria-label': this.manualVModel ? 'click to close' : undefined,
+            },
+            staticClass: '__backdrop',
+            style: {
+              background: this.backdropConfig.background,
+              opacity: this.manualVModel
+                ? `${this.backdropOpacity || this.backdropConfig.opacity}`
+                : '0',
+              '--transition': this.reducedBackdropTransition
+                ? `0ms`
+                : `${this.vmodel ? '400' : '150'}ms opacity ease ${this.vmodel ? '64ms' : '0ms'
+                }`,
+              willChange: /^before|^enter|^leave/i.test(this.transitionState)
+                ? 'opacity'
+                : undefined,
+            },
+          })
           : null,
         this.canRenderAdditional &&
-          span({
-            ref: 'focus-trap-1',
-            key: 'focus-trap-1',
-            attrs: { tabindex: '0', 'aria-hidden': 'true' },
-            on: {
-              focus: () => {
-                this.$refs.content?.focus?.()
-              },
+        span({
+          ref: 'focus-trap-1',
+          key: 'focus-trap-1',
+          attrs: { tabindex: '0', 'aria-hidden': 'true' },
+          on: {
+            focus: () => {
+              this.$refs.content?.focus?.()
             },
-          }),
+          },
+        }),
         this.showAppend ? this.$scopedSlots?.prepend?.(this.payload) : null,
         // this.isSheet &&
         //   div({
@@ -438,11 +431,10 @@ export default {
           {
             ref: 'content-wrapper',
             ...this.contentWrapperData,
-            staticClass: `content-wrapper${
-              this.contentWrapperData?.staticClass
+            staticClass: `content-wrapper${this.contentWrapperData?.staticClass
                 ? ` ${this.contentWrapperData.staticClass}`
                 : ''
-            }`,
+              }`,
           },
           [
             transition(
@@ -591,11 +583,11 @@ export default {
                     },
                     directives: !this.removeContent
                       ? [
-                          {
-                            name: 'show',
-                            value: this.manualVModel,
-                          },
-                        ]
+                        {
+                          name: 'show',
+                          value: this.manualVModel,
+                        },
+                      ]
                       : undefined,
                   },
                   [this.$scopedSlots?.default?.(this.payload)]
@@ -609,16 +601,16 @@ export default {
         ),
         this.showPrepend ? this.$scopedSlots?.append?.(this.payload) : null,
         this.canRenderAdditional &&
-          span({
-            ref: 'focus-trap-2',
-            key: 'focus-trap-2',
-            attrs: { tabindex: '0', 'aria-hidden': 'true' },
-            on: {
-              focus: () => {
-                this.$refs.content?.focus?.()
-              },
+        span({
+          ref: 'focus-trap-2',
+          key: 'focus-trap-2',
+          attrs: { tabindex: '0', 'aria-hidden': 'true' },
+          on: {
+            focus: () => {
+              this.$refs.content?.focus?.()
             },
-          }),
+          },
+        }),
       ]
       // : []
     )

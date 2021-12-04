@@ -1,33 +1,41 @@
 export default {
-  pageEntered(s) {
-    return /afterEnter/i.test(s.pageTransitionState)
-  },
-  headerHeight(s) {
-    const breakpoints = s.breakpoints
+  userInfo(s) {
+    const user = s.user
 
-    const xxs = breakpoints.is == 'xxs'
-
-    const md = /md/.test(breakpoints.is)
-
-    const lg = /lg/.test(breakpoints.is)
-    const xl = /xl/.test(breakpoints.is)
-
-    if (xxs) {
-      return '40px'
+    if (!user) {
+      return {}
     }
 
-    if (md) {
-      return '50px'
+    const userData = {
+      ...user,
+      depositTotal: null,
+      incomeTotal: null,
+      isBuyer: user.role == 'buyer',
+      isSeller: user.role == 'seller'
     }
 
-    if (lg) {
-      return '54px'
-    }
+    const amountPath = user.role == 'buyer' ? 'deposit' : 'income'
 
-    if (xl) {
-      return '62px'
-    }
+    const totalAmount = Object.entries(user[amountPath])
+      .map((x) => x[0] * x[1])
+      .reduce((a, b) => a + b, 0)
 
-    return '44px'
+    userData[`${amountPath}Total`] =
+      totalAmount > 99
+        ? `$${(totalAmount / 100).toFixed(2)}`
+        : `¢${totalAmount}`
+
+    const output = {}
+
+    Object.entries(userData)
+      .filter((entry) => entry[1] != null && entry[1] !== undefined)
+      .forEach((entry) => {
+        const key = entry[0]
+        const value = entry[1]
+
+        output[key] = value
+      })
+
+    return output
   }
 }

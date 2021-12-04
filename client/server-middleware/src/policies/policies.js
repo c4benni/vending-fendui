@@ -1,10 +1,10 @@
-const sendError = require('.../utils/sendError')
-
 const Joi = require('joi')
 
-const attempt = require('.../utils/attempt')
+const sendError = require('../utils/sendError')
 
-const { product: validateProduct } = require('.../utils/validations')(Joi)
+const attempt = require('../utils/attempt')
+
+const { product: validateProduct } = require('../utils/validations')(Joi)
 
 module.exports = {
   async deposit(req, res, next) {
@@ -13,7 +13,7 @@ module.exports = {
 
       const schema = Joi.object({
         amount: validateProduct.cost.required(),
-        quantity: Joi.number().integer().min(1).max(1000).required(),
+        quantity: Joi.number().integer().min(1).max(1000).required()
       })
 
       const validate = schema.validate(query)
@@ -21,7 +21,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 400,
+          status: 400
           // bad request
         })
       }
@@ -31,7 +31,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -41,7 +41,7 @@ module.exports = {
 
       const schema = Joi.object({
         id: validateProduct.id.required(),
-        amount: Joi.number().integer().min(1).max(1000).required(),
+        amount: Joi.number().integer().min(1).max(1000).required()
       })
 
       const validate = schema.validate(query)
@@ -49,7 +49,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 400,
+          status: 400
           // bad request
         })
       }
@@ -59,7 +59,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
   },
 
@@ -74,7 +74,7 @@ module.exports = {
       if (validate.error) {
         return sendError.withStatus(res, {
           message: validate.error.message || 'invalid credentials',
-          status: 400,
+          status: 400
           // bad request
         })
       }
@@ -84,7 +84,7 @@ module.exports = {
 
     await attempt({
       express: { res },
-      callback: mainCallback,
+      callback: mainCallback
     })
-  },
+  }
 }

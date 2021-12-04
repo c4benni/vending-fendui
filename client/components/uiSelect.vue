@@ -1,5 +1,4 @@
 <script>
-import { mountSingleComponent } from '../utils/main'
 export default {
   name: 'UiSelect',
   model: {
@@ -24,10 +23,7 @@ export default {
   data: () => ({
     selfName: 'UiSelect',
   }),
-  computed: { ...mountSingleComponent.computed },
-  mounted() {
-    mountSingleComponent.mounted.call(this)
-  },
+
   render(h) {
     if (!this.items.length) {
       return null
@@ -129,11 +125,11 @@ export default {
   min-width: 96px;
 }
 
-.light-theme .root[data-uist] {
+.light .root[data-uist] {
   --disabled-c: rgba(44, 44, 44, 0.4);
 }
 
-.dark-theme .root[data-uist] {
+.dark .root[data-uist] {
   --disabled-c: rgba(255, 255, 255, 0.4);
 }
 

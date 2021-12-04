@@ -144,6 +144,7 @@ export default {
       '__filled-text': props.filledText,
       __flat: props.flat,
       __disabled: props.disabled,
+      'bg-cool-gray-400 black-text text-opacity-60 dark:bg-cool-gray-600 white-text text-opacity-60': props.disabled && !props.text,
       'theme-primary':
         props.background === '' && !props.text && !props.outlined,
       '__default-color': props.color === '' && (props.text || props.outlined),
@@ -497,13 +498,13 @@ export default {
 }
 
 .ui-btn.Active {
-  transition: transform 0.2 transform linear;
+  transition: transform 0.1s transform linear;
   transform: scale3d(0.98, 0.98, 1);
 }
 
 .ui-btn.__icon.Active,
 .ui-btn.__sm.Active {
-  transition: transform 0.2s transform linear;
+  transition: transform 0.1s transform linear;
   transform: scale3d(0.95, 0.95, 1);
 }
 
@@ -653,24 +654,9 @@ export default {
   min-width: var(--icon__size-lg);
 }
 
-#ui-root .ui-btn.__disabled {
+.ui-btn.__disabled {
   box-shadow: none;
   opacity: var(--t-disabled);
-  pointer-events: none;
-}
-
-.ui-btn.__disabled:not(.__text):not(.transparent) {
-  /* background: var(--disabled) !important; */
-  filter: grayscale(0.9) brightness(0.5);
-}
-
-.light-theme .ui-btn.__disabled {
-  /* color: #3b3b3b !important; */
-  pointer-events: none;
-}
-
-.dark-theme .ui-btn.__disabled {
-  /* color: hsla(0, 0%, 100%, 0.46667) !important; */
   pointer-events: none;
 }
 
