@@ -20,11 +20,9 @@ module.exports = {
         amountAvailable: productValidation.amountAvailable.required(),
         cost: productValidation.cost.required(),
         type: productValidation.type.required(),
-        background: linkValidation,
-        slideShow: productValidation.slideShow,
+        images: productValidation.slideShow,
         caption: productValidation.caption,
-        description: textValidation,
-        rating: productValidation.rating
+        description: textValidation
       })
 
       const validate = schema.validate(body)

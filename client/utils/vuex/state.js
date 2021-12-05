@@ -30,6 +30,8 @@ export default function state() {
 
     authSleeping: false,
 
-    dashboardProcessing: false
+    dashboardProcessing: false,
+
+    processingDone: null
   }
 }

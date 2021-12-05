@@ -3,21 +3,31 @@
 // should have sellerId varchar(99) primary key, amountAvailable bigint, cost bigInt, & productName varchar(99);
 
 // we need just the api for admin calls;
-const { api: cloudinary } = require('cloudinary').v2
+// const { api: cloudinary } = require('cloudinary').v2
 
 const { app } = require('../config/config')
 
 const { id: generateId } = require('../utils/generate')
 
-async function beforeCreate(user) {
-  const { id } = user.id
+// async function beforeCreate(product) {
+//   const { id } = product
 
-  const createFolder = await cloudinary.create_folder(
-    `/vendingApp/Product/${id}`
-  )
+//   const { success } = await cloudinary.create_folder(
+//     `/vendingApp/Product/${id}`,
+//     {
+//       unsigned: true
+//     }
+//   )
 
-  console.log(createFolder)
-}
+//   await product.setDataValue('folderCreated', success)
+// }
+
+// async function beforeDestroy(product) {
+//   if (this.folderCreated) {
+//     const { id } = product
+//     await cloudinary.delete_folder(`/vendingApp/Product/${id}`)
+//   }
+// }
 
 module.exports = (sequelize, dataTypes) => {
   const Product = sequelize.define(
@@ -75,6 +85,10 @@ module.exports = (sequelize, dataTypes) => {
       ownerDeleted: {
         type: dataTypes.BOOLEAN,
         defaultValue: false
+      },
+      folderCreated: {
+        type: dataTypes.BOOLEAN,
+        defaultValue: false
       }
     },
     {
@@ -83,11 +97,12 @@ module.exports = (sequelize, dataTypes) => {
           unique: true,
           fields: ['id']
         }
-      ],
+      ]
 
-      hooks: {
-        beforeCreate
-      }
+      // hooks: {
+      //   beforeCreate,
+      //   beforeDestroy
+      // }
     }
   )
 

@@ -14,9 +14,39 @@
         >
             <div
                 v-if="isProcessing"
-                class="absolute w-full h-full grid justify-center items-center"
+                class="absolute w-full h-full grid justify-center items-start fade-appear"
             >
-                <div class="spinner-border"></div>
+                <div
+                    class="pt-4 rounded-b-sm bg-white dark:bg-blue-gray-900 grid overflow-hidden isolate grid-flow-col"
+                >
+                    <div
+                        class="grid start-center justify-center mt-2 pl-6"
+                        :class="{
+                            'text-green-700': !!processingDone
+                        }"
+                    >
+                        <ui-icon v-if="processingDone" name="check"></ui-icon>
+                        <div v-else class="spinner-border"></div>
+                    </div>
+                    <div>
+                        <p class="px-6 font-bold text-xl">
+                            {{
+                                processingDone.title ||
+                                    'Creating product'
+                            }}
+                        </p>
+                        <p
+                            class="px-6 mb-6 opacity-80 text-sm mt-1"
+                            :class="{
+                                'pr-12': !!processingDone
+                            }"
+                        >
+                            {{
+                                processingDone.subtitle || 'Please wait while we create your product.'
+                            }}
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
         <sideNav
@@ -152,10 +182,11 @@
 import sideNav from '~/components/dashboard/sideNav.vue'
 import Header from '~/components/dashboard/header.vue';
 import { capitalize } from '~/utils/main';
+import UiIcon from '~/components/uiIcon.vue';
 
 export default {
     name: 'DashboardPage',
-    components: { sideNav, Header, },
+    components: { sideNav, Header, UiIcon, },
 
     data: () => ({
         authenticated: false,
@@ -163,6 +194,9 @@ export default {
     }),
 
     computed: {
+        processingDone() {
+            return this.$store.state.processingDone || {}
+        },
         renderBackdrop() {
             return this.miniDevice || this.isProcessing
         },
@@ -360,6 +394,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
 

@@ -44,4 +44,12 @@ export default function ({ store, redirect, route }) {
 
   redirectUnauthorized('buyer', ['create-product', 'my-products'])
   redirectUnauthorized('seller', ['deposit', 'reset'])
+
+  if (
+    route.path == '/dashboard/create-product' &&
+    store.state.dashboardProcessing &&
+    !store.state.processingDone
+  ) {
+    return redirect('/dashboard/create-product')
+  }
 }

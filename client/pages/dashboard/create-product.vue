@@ -97,7 +97,7 @@
         </div>
 
         <div
-            class="px-4 pb-12 mb-12 fill-before before-divide before:border-b before:w-[calc(100%-2rem)] before:left-[1rem] relative grid justify-start"
+            class="px-4 pb-12 fill-before before-divide before:border-b before:w-[calc(100%-2rem)] before:left-[1rem] relative grid justify-start"
         >
             <p class="title text-[1.25rem] leading-none mb-3">Inventory</p>
 
@@ -115,14 +115,12 @@
             />
         </div>
 
-        <p class="title mx-4 text-[1.25rem]">Add images{{ !form.files.length ? '*' : '' }}</p>
-        <p class="subtitle m-4 mt-3 text-sm leading-none">At least an image is required</p>
+        <!-- <p class="title mx-4 text-[1.25rem]">Add images{{ !form.files.length ? '*' : '' }}</p>
+        <p class="subtitle m-4 mt-3 text-sm leading-none">At least an image is required</p>-->
 
-        <upload-files :model-value="form.files" @update:modelValue="addFiles" />
+        <!-- <upload-files :model-value="form.files" @update:modelValue="addFiles" /> -->
 
-        <div
-            class="mt-12 pt-6 pb-12 fill-before before-divide before:border-t before:w-[calc(100%-2rem)] before:left-[1rem] relative grid"
-        >
+        <div class="mt-6 pt-6 pb-12 grid">
             <div class="px-6 pb-12">
                 <p class="mb-3 title text-[1.25rem]">Required fields:</p>
 
@@ -165,14 +163,14 @@
 </template>
 
 <script>
-import uploadFiles from '~/components/uploadFiles.vue'
+// import uploadFiles from '~/components/uploadFiles.vue'
 import UiSelect from '~/components/uiSelect.vue'
 import { app } from '~/server-middleware/src/config/config'
 import { capitalize } from '~/utils/main'
 import OrderQuantity from '~/components/orderQuantity.vue'
 export default {
     name: 'CreateProductPage',
-    components: { uploadFiles, UiSelect, OrderQuantity, },
+    components: { UiSelect, OrderQuantity, },
     data: () => ({
         form: {
             files: [],
@@ -215,10 +213,10 @@ export default {
                     title: 'Valid Cost',
                     passed: !!this.form.cost
                 },
-                {
-                    title: 'At least an Image',
-                    passed: !!this.form.files.length
-                }
+                // {
+                //     title: 'At least an Image',
+                //     passed: !!this.form.files.length
+                // }
             ]
         },
         typeSelectOptions() {
@@ -335,10 +333,10 @@ export default {
 
             const invalidDetail = Object.values(this.detailsValidity).includes(false);
 
-            const { type, cost, inventory, files } = this.form;
+            const { type, cost, inventory, } = this.form;
 
 
-            return invalidDetail || !type || !cost || !inventory || !files.length
+            return invalidDetail || !type || !cost || !inventory
         }
     },
     methods: {
@@ -352,7 +350,7 @@ export default {
         },
 
         typeSelectUpdated(value, title) {
-            this.form.type = value;
+            this.form.type = value.toLowerCase();
 
             this.selectedType = capitalize(title)
         },
@@ -363,10 +361,54 @@ export default {
             this.selectedCost = (title)
         },
 
-        submit() {
+        async submit() {
             if (this.disableSubmit) {
                 return null
             }
+
+            this.$commit('UPDATE_', {
+                path: 'processingDone',
+                value: null
+            })
+
+            await this.$nextTick()
+
+            this.$commit('UPDATE_', {
+                path: 'dashboardProcessing',
+                value: true
+            })
+
+            const {
+                files,
+                name,
+                caption,
+                description,
+                cost,
+                inventory,
+            } = this.form;
+
+
+            const productForm = {
+                productName: name,
+                amountAvailable: inventory,
+                cost,
+                type: this.selectedType.toLowerCase(),
+                images: files.map(file => file.src),
+            }
+
+            caption && (productForm.caption = caption);
+
+            description && (productForm.description = description);
+
+            const { data, error } = await this.$apiCall('product', 'POST', productForm)
+
+            this.$commit('UPDATE_', {
+                path: 'processingDone',
+                value: {
+                    title: error ? 'An error occured' : 'Product created',
+                    subtitle: error?.message || data?.message
+                }
+            })
         }
     }
 }
