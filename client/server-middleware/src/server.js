@@ -1,7 +1,5 @@
 const app = require('express')()
 
-const fileUpload = require('express-fileupload')
-
 const bodyParser = require('body-parser')
 
 const cors = require('cors')
@@ -16,17 +14,12 @@ const { sequelize: DB } = require('./models')
 
 const routes = require('./routes/index')
 
-app.use([
-  fileUpload(),
-  morgan('combined'),
-  bodyParser.json(),
-  cors(),
-  cookieParser(),
-  routes
-])
+app.use([morgan('combined'), bodyParser.json(), cors(), cookieParser(), routes])
 
 if (!DB.DB_STARTED) {
-  DB.sync({})
+  DB.sync({
+    force: /test/i.test(process.env.NODE_ENV)
+  })
 
   DB.DB_STARTED = true
 }

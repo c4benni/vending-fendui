@@ -14,7 +14,8 @@ beforeAll(async () => {
     rootDir: resolve(__dirname, '../'),
     serverMiddleware: [
       { path: '/api/v1', handler: '~/server-middleware/src/server.js' }
-    ]
+    ],
+    env: 'test'
   }
 
   nuxt = new Nuxt(config)

@@ -12,7 +12,7 @@ let buyerId
 
 let productCode
 
-let deletedSellerProductCode
+// let deletedSellerProductCode
 
 let sellerIncome
 
@@ -147,50 +147,46 @@ module.exports = function (nuxt, request) {
       expect(statusCode).toEqual(404)
     })
 
-    test("Returns 403 if product's owner is deleted", async () => {
-      // create a dummy seller account;
-      //  create a new user with seller role
-      const dummyInfo = {
-        username: 'dummySeller2',
-        password: sellerInfo.password,
-        role: 'seller'
-      }
-      await User.create(dummyInfo)
+    // test("Returns 403 if product's owner is deleted", async () => {
+    //   // create a dummy seller account;
+    //   //  create a new user with seller role
+    //   const dummyInfo = {
+    //     username: 'dummySeller2',
+    //     password: sellerInfo.password,
+    //     role: 'seller'
+    //   }
+    //   await User.create(dummyInfo)
 
-      //   login that user
-      const { headers } = await Login(dummyInfo)
+    //   //   login that user
+    //   const { headers } = await Login(dummyInfo)
 
-      // lets create a product.
-      const { body } = await createProduct(
-        { ...productInfo, productName: 'Deleted Seller ProductCode' },
-        headers
-      )
+    //   // lets create a product.
+    //   const { body } = await createProduct(
+    //     { ...productInfo, productName: 'Deleted Seller ProductCode' },
+    //     headers
+    //   )
 
-      deletedSellerProductCode = body.data?.product?.id || 'null'
+    //     deletedSellerProductCode = body.data?.product?.id || 'null'
 
-      // delete that user;
-      await request(nuxt().server.app)
-        .delete('/api/v1/user')
-        .set('Cookie', headers['set-cookie'] || 'null')
+    //   // delete that user;
+    //   await request(nuxt().server.app)
+    //     .delete('/api/v1/user')
+    //     .set('Cookie', headers['set-cookie'] || 'null')
 
-      // login as a buyer;
-      const { headers: buyerHeader } = await Login(buyerInfo)
+    //   // login as a buyer;
+    //   const { headers: buyerHeader } = await Login(buyerInfo)
 
-      // try buying the deleted product;
+    //   // try buying the deleted user's product;
+    //   const { statusCode } = await buy(
+    //     {
+    //       id: deletedSellerProductCode,
+    //       amount: 2
+    //     },
+    //     buyerHeader
+    //   )
 
-      //  attempt to buy a product as seller;
-
-      //   buy an unavailable product;
-      const { statusCode } = await buy(
-        {
-          id: deletedSellerProductCode,
-          amount: 2
-        },
-        buyerHeader
-      )
-
-      expect(statusCode).toEqual(403)
-    })
+    //   expect(statusCode).toEqual(403)
+    // })
 
     test("Returns 403 when user doesn't have available coin", async () => {
       //   login a buyer

@@ -88,18 +88,9 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
-    '@nuxtjs/cloudinary',
-    // With options
-    [
-      'nuxt-highcharts',
-      {
-        /* module options */
-      }
-    ]
+    '@nuxtjs/cloudinary'
   ],
 
   cloudinary: {
@@ -108,16 +99,6 @@ export default {
     apiKey: '336555747421799',
     apiSecret: '0TtMTNIreV2Ljo7S1Binntv8dc0',
     useComponent: true
-  },
-
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  axios: {
-    baseURL: 'http://localhost:3000/api/v1',
-    timeout: 5000,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    }
   },
 
   router: {
