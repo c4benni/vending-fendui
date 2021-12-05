@@ -1,5 +1,5 @@
 <template>
-    <article class="w-100 grid grid-cols-1" :class="{ invisible: !user }">
+    <article class="w-100 grid grid-cols-1 fade-appear" :class="{ invisible: !user }">
         <div
             v-if="miniDevice"
             class="h-full w-full fixed top-0 left-0 bg-black bg-opacity-50 transition-opacity z-20"
@@ -20,22 +20,29 @@
         <div
             class="mr-0 mx-0 w-full xl:mr-auto lg:max-w-[calc(100%-280px)] lg:mr-0 lg:ml-[280px] grid justify-center"
         >
-            <Header class="fixed top-0 z-10" />
+            <Header v-if="!errorPage" class="fixed top-0 z-10" />
 
             <div
                 :key="$route.path"
-                class="mt-[80px] lg:mt-[100px] grid gap-y-6 w-screen content-start lg:w-[calc(100vw-280px)] xl:w-[calc(calc(min(100vw,1920px)-3rem)-280px)] max-w-full fade-appear pb-10"
+                class="grid gap-y-6 w-screen content-start lg:w-[calc(100vw-280px)] xl:w-[calc(calc(min(100vw,1920px)-3rem)-280px)] max-w-full fade-appear pb-10"
+                :class="{
+                    'mt-[80px] lg:mt-[100px]': !errorPage,
+                    'invisible': !authenticated
+                }"
             >
-                <div class="grid grid-flow-col justify-between px-6">
+                <div v-if="!errorPage" class="grid grid-flow-col justify-between px-6">
                     <h2 class="text-3xl font-bold tracking-tight">{{ pageTitle }}</h2>
                 </div>
 
                 <p
-                    v-if="!showDeposit"
+                    v-if="!showDeposit && !errorPage"
                     class="px-6 font-semibold opacity-70 text-sm"
                 >Total deposit: $100.40</p>
 
-                <ul v-if="breadcrumbs && showTitle" class="grid grid-flow-col justify-start ml-6">
+                <ul
+                    v-if="breadcrumbs && showTitle && !errorPage"
+                    class="grid grid-flow-col justify-start ml-6"
+                >
                     <li
                         v-for="(path,i) in breadcrumbs"
                         :key="i"
@@ -90,7 +97,7 @@
                     <transition name="anim-slide-y" type="animation" mode="out-in">
                         <div
                             v-if="notifyMessage"
-                            :key="notify.key"
+                            :key="notify.key + $route.path"
                             class="border p-6 rounded-md my-6 mx-8 pointer-events-auto w-[min(calc(100vw-3rem),450px)] text-black text-opacity-80 shadow-lg grid grid-cols-[1fr,auto] gap-x-2"
                             :class="{
                                 'transition-opacity opacity-0': !notifyMessage,
@@ -108,7 +115,7 @@
                                         'text-sm': notify.closeText,
                                         'bg-amber-700 dark:bg-amber-500 bg-opacity-50 dark:bg-opacity-50': notify.closeText && notify.warn
                                     }]"
-                                    @click="closeNotification"
+                                    @click="notify.closeText ? closeNotification : notify.callback"
                                 >
                                     <ui-icon v-if="!notify.closeText" name="close" size="20px"></ui-icon>
 
@@ -138,18 +145,18 @@ export default {
     components: { sideNav, Header, },
 
     data: () => ({
-
+        authenticated: false
     }),
 
-
-
-
     computed: {
+        errorPage() {
+            return this.$route.params.error
+        },
         user() {
             return this.$store.state.user
         },
         showBanner() {
-            return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path)
+            return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path) && !this.errorPage
         },
         showDeposit() {
             return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path)
@@ -215,6 +222,10 @@ export default {
                 {
                     active: /^\/dashboard\/shop/.test(route.path),
                     title: `Shop`
+                },
+                {
+                    active: /^\/dashboard\/create-product/.test(route.path),
+                    title: `Create product`
                 }
             ]
 
@@ -239,6 +250,15 @@ export default {
         }
     },
 
+    beforeMount() {
+        this.redirectUnauthorized('buyer', ['create-product', 'my-products'])
+        this.redirectUnauthorized('seller', ['deposit', 'reset'])
+
+        this.$nextTick(() => {
+            this.authenticated = true;
+        })
+    },
+
     async mounted() {
         await this.$sleep(500);
 
@@ -258,6 +278,25 @@ export default {
     },
 
     methods: {
+        redirectUnauthorized(role, paths) {
+            // redirect to 404 when user is accesses wrong routes;
+
+            const route = this.$route
+
+            if (this.user?.role == role) {
+                const unauthorized = paths
+
+                const isUnauthorized = unauthorized.find((x) => {
+                    const regExp = new RegExp(`^/dashboard/${x}/?`)
+
+                    return regExp.test(route.path)
+                })
+
+                if (isUnauthorized) {
+                    return this.$router.replace('/dashboard/unauthorized')
+                }
+            }
+        },
         caps(str) {
             return capitalize(str)
         },

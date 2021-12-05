@@ -14,7 +14,8 @@ export default function state() {
       expired: [`${mediaPath}flamenco-logged-out_yjfeh2`],
       welcome: `${mediaPath}crayon-welcome-3_yscmh1`,
       alert: `${mediaPath}flamenco-652_mrnn3d`,
-      empty: `${mediaPath}flame-2_kn885a`
+      empty: `${mediaPath}flame-2_kn885a`,
+      upload: `${mediaPath}rush-1_fmqbfj`
     },
 
     user: null,

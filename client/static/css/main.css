@@ -769,6 +769,10 @@ a {
   @apply before:border-b before:opacity-10 before:border-black dark:before:border-white relative pb-4;
 }
 
+.card .body-text {
+  @apply font-normal opacity-90 text-base;
+}
+
 .before-divide {
   @apply before:opacity-10 before:border-black dark:before:border-white;
 }

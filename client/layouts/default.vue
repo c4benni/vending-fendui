@@ -123,6 +123,24 @@ export default {
 
     async '$store.state.vmodel.pageVisible'(n) {
       if (n) {
+        const refreshUser = async () => {
+          const { data } = await this.$refreshUser()
+
+          const path = this.$route.path
+
+          // logged in from another tab on same app, go to dashboard
+          if (data && path == '/') {
+            this.$router.replace('/dashboard')
+          }
+
+          // logged out from another tab on same app, go to login
+          if (!data && /^\/dashboard/.test(path)) {
+            this.$router.replace('/?login=true')
+          }
+        }
+
+        await refreshUser()
+
         await this.$nuxt.refresh()
 
         setTouchDevice.call(this)
@@ -191,20 +209,26 @@ export default {
 
     window.history.scrollRestoration = 'auto'
 
-    Vue.prototype.$refreshUser = async () => {
-      if (this.$route.path == '/') { return }
-
+    Vue.prototype.$storeUser = async () => {
       const res = await fetch('/api/v1/auth')
 
-      const { data } = await res.json()
+      const { data, error } = await res.json()
 
       this.$commit('UPDATE_', {
         path: 'user',
         value: !data ? null : data
       })
 
+      return { data, error }
+    }
+
+    Vue.prototype.$refreshUser = async () => {
+      if (this.$route.path == '/') { return }
+
+      const { data } = await this.$storeUser();
+
       if (!data && this.$c4.mounted) {
-        this.$router.push('/')
+        this.$router.replace('/')
       }
     }
 
@@ -239,7 +263,7 @@ export default {
             path: 'user'
           })
 
-          this.$router.push('/')
+          this.$router.replace('/')
         }
 
         return json
@@ -264,14 +288,14 @@ export default {
 
     // redirect back to dashboard if a logged in user is trying to access login page
     if (session && path == '/') {
-      this.$router.push('/dashboard')
+      this.$router.replace('/dashboard')
     }
 
     // redirect back to login if a logged out user is trying to access dashboard
 
     else
       if (!session && path != '/') {
-        return this.$router.push('/')
+        return this.$router.replace('/')
       }
 
   },

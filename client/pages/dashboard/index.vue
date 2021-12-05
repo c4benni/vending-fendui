@@ -28,7 +28,7 @@
                 <div
                     class="font-medium text-lg bg-opacity-80"
                     :class="[
-                        { 'line-through opacity-60': availableCoins[i] == '0.00' }
+                        { 'line-through opacity-60': availableCoins[i] == '¢0' }
                     ]"
                 >{{ item.title }}</div>
 
@@ -46,7 +46,7 @@
                 </ui-btn>
 
                 <ui-btn
-                    v-if="availableAmount != '0.00'"
+                    v-if="showClearBtn"
                     class="rounded-sm px-5 h-[48px] bg-red-800 dark:bg-red-400 bg-opacity-20 dark:bg-opacity-10 hover:bg-opacity-100 dark:hover:bg-opacity-80 hover:bg-opacity-35 dark:hover:bg-opacity-35 gap-x-1 w-full opacity-80 text-red-900 dark:text-red-200 hover:opacity-100 hover:text-white text-md"
                     title="clear"
                     to="/dashboard/reset-deposit"
@@ -136,6 +136,9 @@ export default {
         }
     },
     computed: {
+        showClearBtn() {
+            return !/^¢0/.test(this.availableAmount)
+        },
         userInfo() {
             return this.$store.getters.userInfo
         },

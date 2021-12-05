@@ -26,6 +26,7 @@
                     ]"
                     :to="item.to"
                     :tag="item.to ? 'nuxt-link' : undefined"
+                    @click="() => !item.to && reset()"
                 >{{ item.title }}</UiBtn>
             </div>
         </div>
@@ -65,6 +66,28 @@ export default {
             ]
         }
     },
+
+    methods: {
+        reset() {
+            this.$commit('UPDATE_', {
+                path: 'notify',
+                value: {
+                    message: 'this.user.alert',
+                    warn: true,
+                    closeText: 'End sessions',
+                    callback: async () => {
+                        await fetch('/api/v1/reset', {
+                            method: 'POST',
+
+                        })
+                    },
+                    key: Date.now()
+
+                }
+            })
+
+        }
+    }
 }
 
 </script>

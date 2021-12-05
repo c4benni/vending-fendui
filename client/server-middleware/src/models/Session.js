@@ -1,3 +1,4 @@
+const { Op } = require('sequelize/dist')
 const { app } = require('../config/config')
 const { sessionId } = require('../utils/generate')
 
@@ -27,6 +28,10 @@ module.exports = (sequelize, dataTypes) => {
         {
           unique: true,
           fields: ['session']
+        },
+        {
+          unique: false,
+          fields: ['timeout', 'id']
         }
       ]
     }
@@ -37,6 +42,14 @@ module.exports = (sequelize, dataTypes) => {
   // if new timeout == 0, delete session;
   Session.prototype.Sign = async function (timeout = app.sessionMaxTime) {
     const now = Date.now()
+
+    await Session.destroy({
+      where: {
+        timeout: {
+          [Op.lte]: now
+        }
+      }
+    })
 
     if (this.timeout <= now) {
       await this.destroy()

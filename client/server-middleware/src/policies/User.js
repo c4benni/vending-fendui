@@ -64,6 +64,8 @@ module.exports = {
           })
         }
 
+        req.body.username = req.body.username.toLowerCase()
+
         next()
       }
     })

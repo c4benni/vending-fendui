@@ -1,14 +1,10 @@
 <template>
     <nav
-        class="root fill-before before:border-r-[1px] before:border-black dark:before:border-white before:opacity-[.1] h-full fixed left-0"
+        class="root fill-before before:border-r-[1px] before:border-black dark:before:border-white before:opacity-[.1] h-full fixed left-0 dark:bg-blue-gray-900 lg:dark:bg-opacity-40 bg-white"
         :class="isMiniDevice ? ['transition-transform transform-gpu left-0 top-0 z-20', {
             'translate-x-[-100%]': !mobileNav,
             'translate-x-0': mobileNav
         }] : []"
-        :style="{
-            background: 'var(--theme-background)',
-        
-        }"
     >
         <div
             ref="scroll"
@@ -58,7 +54,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                            item.title
+                        item.title
                         }}
                     </ui-btn>
                 </div>
@@ -81,7 +77,7 @@
                         >
                             <ui-icon :name="item.icon" size="20px" />
                             {{
-                                item.title
+                            item.title
                             }}
                             <ui-icon
                                 :key="ordersState"
@@ -130,7 +126,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                            item.title
+                        item.title
                         }}
                     </ui-btn>
                 </div>
@@ -139,7 +135,7 @@
                     class="grid mt-[32px] relative fill-before before:border-t before:border-black dark:before:border-white before:opacity-10"
                 >
                     <ui-btn
-                        class="h-[42px] w-10/12 mx-auto mb-1 justify-start gap-x-2 text-[0.9rem] rounded-sm hover:before:bg-red-900 dark:hover:before:bg-red-700 mt-[32px] border border-red-600 dark:border-red-400 bg-red-700 dark:bg-red-600 bg-opacity-40 hover:text-white dark:bg-opacity-25"
+                        class="h-[42px] w-10/12 mx-auto mb-1 justify-start gap-x-2 text-[0.9rem] rounded-sm hover:before:bg-red-900 dark:hover:before:bg-red-700 mt-[32px] border border-red-600 dark:border-red-400 bg-red-700 dark:bg-red-600 bg-opacity-40 hover:text-white hover:bg-opacity-100 dark:bg-opacity-25"
                         tag="nuxt-link"
                         to="/"
                         @click.native="logout"
@@ -244,6 +240,36 @@ export default {
 
             const to = path => `/dashboard/${path}`
 
+            const buyerGeneric = [
+                {
+                    title: 'Deposit coins',
+                    isActive: match('deposit'),
+                    icon: 'deposit',
+                    to: `${to('deposit')}`
+                },
+                {
+                    title: 'Reset deposit',
+                    isActive: match('reset-deposit'),
+                    icon: 'timelineClock',
+                    to: `${to('reset-deposit')}`
+                },
+            ]
+
+            const sellerGeneric = [
+                {
+                    title: 'Create a product',
+                    isActive: match('create-product'),
+                    icon: 'deposit',
+                    to: `${to('create-product')}`
+                },
+                {
+                    title: 'My products',
+                    isActive: match('my-products'),
+                    icon: 'fileChart',
+                    to: `${to('my-products')}`
+                },
+            ]
+
             return {
                 collapse: [{
                     title: 'Orders',
@@ -276,18 +302,8 @@ export default {
                         icon: 'history',
                         to: `${to('transactions')}`
                     },
-                    {
-                        title: 'Deposit coins',
-                        isActive: match('deposit'),
-                        icon: 'deposit',
-                        to: `${to('deposit')}`
-                    },
-                    {
-                        title: 'Reset deposit',
-                        isActive: match('reset-deposit'),
-                        icon: 'timelineClock',
-                        to: `${to('reset-deposit')}`
-                    },
+
+                    ...(this.user.role == 'buyer' ? buyerGeneric : sellerGeneric)
                 ]
             }
         },
@@ -308,15 +324,15 @@ export default {
     methods: {
         async logout() {
 
-            this.$commit('UPDATE_', {
-                path: 'user',
-                value: null
-            })
-
             await fetch('/api/v1/user/logout', { method: 'post' })
 
             requestAnimationFrame(() => {
-                this.$router.push('/')
+                this.$commit('UPDATE_', {
+                    path: 'user',
+                    value: null
+                })
+
+                this.$router.replace('/?login=true')
             })
         }
     }

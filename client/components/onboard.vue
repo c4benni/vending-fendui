@@ -79,7 +79,7 @@
 
                 <ui-input
                     v-for="(item, i) in inputConfig"
-                    id="input"
+                    :id="item.id"
                     :key="i"
                     v-model="item.model"
                     :label="item.label"
@@ -139,7 +139,7 @@
                 <div v-if="!isLogin" class="grid gap-x-2 justify-start grid-flow-col mt-8">
                     <div>
                         <input
-                            id="t-c"
+                            id="terms-conditions"
                             v-model="fields.termsAndConditions"
                             type="checkbox"
                             class="h-[24px] w-[24px] opacity-0 absolute cursor-pointer"
@@ -156,7 +156,7 @@
                     </div>
 
                     <label
-                        for="t-c"
+                        for="terms-conditions"
                         class="cursor-pointer active:scale-[0.99] transition-transform text-opacity-70 text-blue-gray-900 dark:text-cool-gray-50"
                         :class="[{
                             'text-opacity-80': fields.termsAndConditions
@@ -258,6 +258,7 @@ export default {
             const passwordRegExp = new RegExp(`${passwordRegExpStr}`)
             return [
                 {
+                    id: 'username-field',
                     validity: e => {
                         console.log(e);
                         this.validFields.username = e
@@ -267,7 +268,6 @@ export default {
                         this.fields.username = e
                     },
                     label: 'Username',
-                    id: 'us-fd',
                     model: this.fields.username,
                     validate: val => {
                         const e = val?.trim()
@@ -288,6 +288,7 @@ export default {
                 },
 
                 {
+                    id: 'password-field',
                     autocomplete: 'new password',
                     onUpdate: e => {
                         this.fields.password = e
@@ -296,7 +297,6 @@ export default {
                     model: this.fields.password,
                     placeholder: '6+ characters',
                     type: 'password',
-                    id: 'pw-fd',
                     validity: e => {
                         this.validFields.password = e
                     },
@@ -416,7 +416,7 @@ export default {
                 })
 
                 await this.$sleep();
-                this.$router.push('/dashboard')
+                this.$router.replace('/dashboard')
 
                 this.fields = defaultFields()
             }
