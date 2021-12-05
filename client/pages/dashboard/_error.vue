@@ -1,6 +1,6 @@
 <template>
   <div class="grid fade-appear">
-    <div class="h-[400px] w-full mt-4">
+    <div class="h-[400px] w-full mt-[72px] lg:mt-4">
       <app-img aria-label="error illustration" :public-id="publicId" height="400px" />
     </div>
 

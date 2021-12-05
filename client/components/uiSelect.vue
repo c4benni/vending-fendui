@@ -2,12 +2,12 @@
 export default {
   name: 'UiSelect',
   model: {
-    prop: 'vmodel',
-    event: 'vmodel',
+    prop: 'modelValue',
+    event: 'update:modelValue',
   },
   props: {
     multiple: Boolean,
-    vmodel: {
+    modelValue: {
       type: [String, Array],
       default: () => '',
     },
@@ -20,9 +20,7 @@ export default {
       required: true,
     },
   },
-  data: () => ({
-    selfName: 'UiSelect',
-  }),
+
 
   render(h) {
     if (!this.items.length) {
@@ -40,20 +38,23 @@ export default {
           ...scoping,
           'aria-label': this.title,
           name: this.title,
-          value: this.vmodel,
+          value: this.modelValue,
           multiple: this.multiple,
         },
         domProps: {
-          value: this.vmodel,
+          value: this.modelValue,
         },
         staticClass: 'root',
         on: {
+          ...this.$listeners,
+
           input: (e) => {
+            this.$emit('input', e)
             const value = e.currentTarget.value.toLowerCase()
             const title =
               this.items.find((x) => x.value.toLowerCase() == value) || {}
 
-            this.$emit('vmodel', value, title ? title.title : '')
+            this.$emit('update:modelValue', value, title ? title.title : '')
           },
         },
       },
@@ -62,7 +63,7 @@ export default {
           let selected
           if (
             !this.multiple &&
-            item?.value?.toLowerCase?.() == this.vmodel.toLowerCase()
+            item?.value?.toLowerCase?.() == this.modelValue.toLowerCase()
           ) {
             selected = 'true'
           }

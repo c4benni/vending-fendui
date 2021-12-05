@@ -46,7 +46,7 @@
                 }}
             </h3>
             <h4
-                class="font-normal text-base text-blue-gray-600 dark:text-blue-gray-200 text-opacity-50 dark:text-opacity-50"
+                class="font-normal text-base text-blue-gray-600 dark:text-blue-gray-200 text-opacity-70 dark:text-opacity-50"
             >{{ loginText.h4 }}</h4>
 
             <ui-form
@@ -342,10 +342,12 @@ export default {
     },
 
     watch: {
-        isLogin() {
+        async isLogin() {
             this.message = null;
 
-            requestAnimationFrame(() => scrollTo(0, 0))
+            await this.$sleep(50)
+
+            scrollTo(0, 0)
         }
     },
 

@@ -68,17 +68,10 @@ export default {
               setPayload()
             }
 
-            if (!this.useAnimationFrame) {
-              return callback()
-            }
-            if (this.singleAnimationFrame) {
-              await nextAnimFrame()
-              return callback()
-            }
             await nextAnimFrame()
-            // await nextAnimFrame()
             callback()
-            // requestAnimationFrame(() => requestAnimationFrame(callback))
+            this.$emit('on-update', this.payload)
+
           })
         },
       },

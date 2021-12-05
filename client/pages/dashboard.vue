@@ -1,15 +1,24 @@
 <template>
     <article class="w-100 grid grid-cols-1 fade-appear" :class="{ invisible: !user }">
         <div
-            v-if="miniDevice"
-            class="h-full w-full fixed top-0 left-0 bg-black bg-opacity-50 transition-opacity z-20"
+            v-if="renderBackdrop"
+            class="h-full w-full fixed top-0 left-0 bg-black transition-opacity z-20 fade-appear"
             :class="{
-                'opacity-1': mobileNav,
-                'opacity-0': !mobileNav,
-                'pointer-events-none': !mobileNav
+                'opacity-1': backdropValue,
+                'opacity-0': !backdropValue,
+                'pointer-events-none': !backdropValue,
+                'bg-opacity-50': !isProcessing,
+                'bg-opacity-70': isProcessing
             }"
-            @click="closeNav"
-        ></div>
+            @click="hideBackdrop"
+        >
+            <div
+                v-if="isProcessing"
+                class="absolute w-full h-full grid justify-center items-center"
+            >
+                <div class="spinner-border"></div>
+            </div>
+        </div>
         <sideNav
             :key="miniDevice"
             :mini-device="miniDevice"
@@ -18,9 +27,13 @@
         />
 
         <div
-            class="mr-0 mx-0 w-full xl:mr-auto lg:max-w-[calc(100%-280px)] lg:mr-0 lg:ml-[280px] grid justify-center"
+            class="mr-0 mx-0 w-full xl:mr-auto lg:max-w-[calc(100%-280px)] lg:mr-0 lg:ml-[280px] grid justify-center relative"
         >
-            <Header v-if="!errorPage" class="fixed top-0 z-10" />
+            <Header v-if="!errorPage || miniDevice" class="fixed top-0 z-10" :raise="raiseHeader" />
+
+            <ui-intersection @on-update="intersectionUpdated">
+                <div class="h-[1px] w-full absolute invisible" aria-hidden="true"></div>
+            </ui-intersection>
 
             <div
                 :key="$route.path"
@@ -98,7 +111,7 @@
                         <div
                             v-if="notifyMessage"
                             :key="notify.key + $route.path"
-                            class="border p-6 rounded-md my-6 mx-8 pointer-events-auto w-[min(calc(100vw-3rem),450px)] text-black text-opacity-80 shadow-lg grid grid-cols-[1fr,auto] gap-x-2"
+                            class="border p-6 rounded-md my-6 mx-8 pointer-events-auto w-[min(calc(100vw-2rem),450px)] text-black text-opacity-80 shadow-lg grid grid-cols-[1fr,auto] gap-x-2"
                             :class="{
                                 'transition-opacity opacity-0': !notifyMessage,
                                 'border-green-400 dark:border-green-200 bg-green-500 dark:bg-green-300': !notify.error && !notify.warn,
@@ -145,10 +158,14 @@ export default {
     components: { sideNav, Header, },
 
     data: () => ({
-        authenticated: false
+        authenticated: false,
+        raiseHeader: false,
     }),
 
     computed: {
+        renderBackdrop() {
+            return this.miniDevice || this.isProcessing
+        },
         errorPage() {
             return this.$route.params.error
         },
@@ -156,7 +173,7 @@ export default {
             return this.$store.state.user
         },
         showBanner() {
-            return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path) && !this.errorPage
+            return !/^\/dashboard\/(reset-deposit|shop|create-product)\/?$/.test(this.$route.path) && !this.errorPage
         },
         showDeposit() {
             return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path)
@@ -199,6 +216,18 @@ export default {
         },
         mobileNav() {
             return this.$store.state.mobileNav && this.miniDevice
+        },
+        isProcessing() {
+            return this.$store.state.dashboardProcessing
+        },
+        backdropValue() {
+            if (this.mobileNav) {
+                return 1
+            }
+            if (this.isProcessing) {
+                return 1
+            }
+            return 0
         },
         media() {
             return this.$store.state.media
@@ -278,6 +307,17 @@ export default {
     },
 
     methods: {
+        hideBackdrop() {
+            this.closeNav();
+
+            this.$commit('UPDATE_', {
+                path: 'dashboardProcessing',
+                value: false
+            })
+        },
+        intersectionUpdated(e) {
+            this.raiseHeader = !e.isIntersecting
+        },
         redirectUnauthorized(role, paths) {
             // redirect to 404 when user is accesses wrong routes;
 

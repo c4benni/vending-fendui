@@ -274,7 +274,7 @@ module.exports = function (nuxt, request) {
       expect(statusCode).toEqual(400)
     })
 
-    test('Returns 204 successful', async () => {
+    test('Returns 204 if successful', async () => {
       // login
       const headers = await logInSellerInfo()
 

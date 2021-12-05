@@ -26,6 +26,10 @@ export default function state() {
 
     mobileNav: false,
 
-    notify: { message: null }
+    notify: { message: null },
+
+    authSleeping: false,
+
+    dashboardProcessing: false
   }
 }

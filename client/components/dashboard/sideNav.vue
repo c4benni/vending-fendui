@@ -1,10 +1,14 @@
 <template>
     <nav
-        class="root fill-before before:border-r-[1px] before:border-black dark:before:border-white before:opacity-[.1] h-full fixed left-0 dark:bg-blue-gray-900 lg:dark:bg-opacity-40 bg-white"
-        :class="isMiniDevice ? ['transition-transform transform-gpu left-0 top-0 z-20', {
+        ref="root"
+        class="root fill-before before:border-r-[1px] before:border-black dark:before:border-white before:opacity-[.1] h-full fixed left-0 dark:bg-blue-gray-900 lg:dark:bg-opacity-40 bg-white outline-none"
+        :class="isMiniDevice ? ['transition-transform transform-gpu left-0 pb-[64px] top-0 z-20', {
             'translate-x-[-100%]': !mobileNav,
             'translate-x-0': mobileNav
         }] : []"
+        :tabindex="isMiniDevice && mobileNav ? '0' : undefined"
+        @keydown="hackFocus"
+        @keyup="closeOnEsc"
     >
         <div
             ref="scroll"
@@ -148,7 +152,7 @@
 
         <ui-btn
             v-if="isMiniDevice"
-            class="absolute mt-6 mr-3 bg-red-700 dark:bg-red-600 bg-opacity-10 dark:bg-opacity-10 hover:bg-opacity-80 dark:hover:bg-opacity-60 top-0 right-0 z-[2] rounded-full w-[42px] h-[42px] p-0"
+            class="absolute mt-6 mr-3 mb-[64px] bg-red-700 dark:bg-red-600 bg-opacity-10 dark:bg-opacity-10 hover:bg-opacity-80 dark:hover:bg-opacity-60 top-0 right-0 z-[2] rounded-full w-[42px] h-[42px] p-0"
             title="close nav"
             @click="closeNav"
         >
@@ -160,6 +164,8 @@
     <script>
 import appImg from '../appImg.vue'
 import UiBtn from '../UiBtn.vue';
+import { eventKey, hackTabKey } from '~/utils/main';
+import { ControlledFocus } from '~/utils/controlledFocus';
 export default {
     components: { appImg, UiBtn },
 
@@ -314,11 +320,20 @@ export default {
     },
 
     watch: {
-        mobileNav(n) {
-            if (n) {
+        async mobileNav(n) {
+            if (n && this.miniDevice) {
+                await this.$sleep(50)
+
+                document.documentElement.classList.add('overlay-active')
+
                 this.$refs.scroll.scrollTo(0, 0)
+
+                this.$refs.root.focus()
+            } else {
+                document.documentElement.classList.remove('overlay-active')
             }
-        }
+        },
+
     },
 
     methods: {
@@ -334,6 +349,43 @@ export default {
 
                 this.$router.replace('/?login=true')
             })
+        },
+
+        hackFocus(e) {
+
+            if (!this.miniDevice || !this.mobileNav) {
+                return
+            }
+
+            const key = eventKey(e);
+
+            if (key == "esc") {
+                return e.preventDefault();
+            }
+
+
+            hackTabKey(e, (_, evtKey) => {
+                let controlledFocus = new ControlledFocus({
+                    root: e.currentTarget,
+                    children: "*",
+                    uid: this._uid,
+                });
+
+                controlledFocus[e.shiftKey ? "backward" : "forward"]();
+
+                controlledFocus.destroy();
+
+                controlledFocus = 0;
+            });
+
+        },
+
+        closeOnEsc(e) {
+            const key = eventKey(e);
+
+            if (key == 'esc') {
+                return this.closeNav()
+            }
         }
     }
 

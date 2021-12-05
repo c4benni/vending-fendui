@@ -110,8 +110,28 @@ export default {
     async $route(n, o) {
       this.setGreetings()
 
+      this.$commit('UPDATE_', {
+        path: 'mobileNav',
+        value: false
+      })
+
+      this.$c4.mounted && this.$store.state.mobileNav && document.documentElement.classList.remove('overlay-active')
+
+
       if (n.path != '/' && o.path != '/') {
         await this.$refreshUser()
+      }
+    },
+
+    '$store.state.breakpoints'(n) {
+      if (/lg|xl/.test(n.is)) {
+        if (this.$store.state.mobileNav) {
+          document.documentElement.classList.remove('overlay-active')
+          this.$commit('UPDATE_', {
+            path: 'mobileNav',
+            value: false
+          })
+        }
       }
     },
 
@@ -209,7 +229,19 @@ export default {
 
     window.history.scrollRestoration = 'auto'
 
+
     Vue.prototype.$storeUser = async () => {
+      if (this.$store.state.authSleeping) {
+        return {
+          data: this.$store.state.user
+        }
+      }
+
+      this.$commit('UPDATE_', {
+        path: 'authSleeping',
+        value: true
+      })
+
       const res = await fetch('/api/v1/auth')
 
       const { data, error } = await res.json()
@@ -217,6 +249,13 @@ export default {
       this.$commit('UPDATE_', {
         path: 'user',
         value: !data ? null : data
+      })
+
+      this.$sleep(3000).then(() => {
+        this.$commit('UPDATE_', {
+          path: 'authSleeping',
+          value: false
+        })
       })
 
       return { data, error }

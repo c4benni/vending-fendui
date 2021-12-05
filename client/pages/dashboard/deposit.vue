@@ -19,12 +19,19 @@
             >¢{{ coin }}</ui-btn>
         </div>
 
-        <div
+        <label
+            for="order-quantity"
             class="_title fill-before px-6 mt-6"
             :class="{ 'opacity-70': !selected }"
-        >Choose an amount</div>
+        >Choose an amount</label>
 
-        <OrderQuantity id="or-qt" v-model="quantity" class="m-6" max="1000" :disabled="!selected" />
+        <OrderQuantity
+            id="order-quantity"
+            v-model="quantity"
+            class="m-6"
+            max="1000"
+            :disabled="!selected"
+        />
 
         <ui-btn
             class="grid text-white dark:text-black px-8 min-w-[250px] lg:min-w-[300px] my-10 mx-auto h-[56px] font-semibold"

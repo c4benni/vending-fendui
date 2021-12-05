@@ -1,6 +1,6 @@
 <template>
     <div
-        class="card min-h-[360px] lg:min-h-[510px] mx-auto w-full shadow-lg dark:shadow-none relative lg:p-2 p-0 grid lg:grid-flow-col lg:grid-cols-[auto,1fr]"
+        class="card min-h-[360px] lg:min-h-[510px] mx-auto w-full relative lg:p-2 p-0 grid lg:grid-flow-col lg:grid-cols-[auto,1fr]"
         :class="[
             {
                 'before-divide before:border fill-before': $theme.dark

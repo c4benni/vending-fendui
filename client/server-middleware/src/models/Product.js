@@ -2,9 +2,22 @@
 // create product model;
 // should have sellerId varchar(99) primary key, amountAvailable bigint, cost bigInt, & productName varchar(99);
 
+// we need just the api for admin calls;
+const { api: cloudinary } = require('cloudinary').v2
+
 const { app } = require('../config/config')
 
 const { id: generateId } = require('../utils/generate')
+
+async function beforeCreate(user) {
+  const { id } = user.id
+
+  const createFolder = await cloudinary.create_folder(
+    `/vendingApp/Product/${id}`
+  )
+
+  console.log(createFolder)
+}
 
 module.exports = (sequelize, dataTypes) => {
   const Product = sequelize.define(
@@ -21,7 +34,7 @@ module.exports = (sequelize, dataTypes) => {
         allowNull: false
       },
       productName: {
-        type: dataTypes.STRING(255),
+        type: dataTypes.STRING(99),
         allowNull: false,
         unique: true,
         required: true
@@ -43,7 +56,7 @@ module.exports = (sequelize, dataTypes) => {
         allowNull: true
       },
       caption: {
-        type: dataTypes.STRING(99),
+        type: dataTypes.STRING(255),
         allowNull: true
       },
       description: {
@@ -70,7 +83,11 @@ module.exports = (sequelize, dataTypes) => {
           unique: true,
           fields: ['id']
         }
-      ]
+      ],
+
+      hooks: {
+        beforeCreate
+      }
     }
   )
 

@@ -18,7 +18,7 @@
                 {
                     'mt-6': i == 0,
                     'mb-6': i != 4,
-                    'pb-7 relative fill-before before:border-b before:border-black dark:before:border-white before:opacity-10': i == 4,
+                    'pb-7 relative fill-before before:border-b before:border-black dark:before:border-white before:opacity-10': i == 4 && isBuyer,
                 }]"
             >
                 <div :class="[item.color]" class="flex">
@@ -35,7 +35,10 @@
                 <div class="subtitle text-sm">{{ availableCoins[i] }}</div>
             </div>
 
-            <div class="grid gap-3 mt-7 grid-cols-[repeat(auto-fill,minmax(170px,1fr))]">
+            <div
+                v-if="isBuyer"
+                class="grid gap-3 mt-7 grid-cols-[repeat(auto-fill,minmax(170px,1fr))]"
+            >
                 <ui-btn
                     class="rounded-sm px-5 h-[48px] bg-blue-800 dark:bg-blue-400 text-white bg-opacity-100 dark:bg-opacity-20 hover:bg-opacity-35 dark:hover:bg-opacity-35 gap-x-1 hover:bg-opacity-100 dark:hover:bg-opacity-80 hover:text-white hover:bg-opacity-35 dark:hover:bg-opacity-35 w-full text-md"
                     title="deposit"
@@ -65,15 +68,18 @@
             <div class="title lead-subtitle fill-before px-6">Peep the store</div>
 
             <div
-                class="mt-6 grid gap-6 overflow-x-scroll overflow-y-hidden grid-cols-[repeat(10,auto),1px] w-full pl-6 pb-2 hide-scrollbar after:contents after:w-full"
+                class="mt-6 grid gap-3 sm:gap-4 md:gap-6 overflow-x-scroll overflow-y-hidden grid-cols-[repeat(10,auto),1px] w-full pl-6 pb-2 hide-scrollbar after:contents after:w-full"
             >
                 <uiBtn
                     v-for="i in 10"
                     :key="i"
-                    class="w-[min(calc(100vw-4rem),350px)] bg-white dark:bg-blue-gray-800 bg-opacity-100 dark:bg-opacity-60 rounded-sm pb-6 cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-blue-gray-700 shadow-md dark:shadow-none grid-flow-row p-0 text-left"
+                    class="w-[calc(100vw-3rem)] sm:w-[min(calc(100vw-3rem),350px)] bg-white dark:bg-blue-gray-900 bg-opacity-100 dark:bg-opacity-50 rounded-sm pb-6 cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-opacity-90 grid-flow-row p-0 text-left"
                     :class="{ 'mr-6': i == 10 }"
                     tag="nuxt-link"
                     :to="`/dashboard/shop?id=${i}`"
+                    outlined
+                    :outlined-opacity="$theme.dark ? '0.075' : '0.1'"
+                    :outlined-stroke="$theme.dark ? '.75px' : '1px'"
                 >
                     <div
                         class="h-[300px] w-full hover:scale-[1.01] transform-gpu transition-transform"
@@ -142,6 +148,9 @@ export default {
         userInfo() {
             return this.$store.getters.userInfo
         },
+        isBuyer() {
+            return this.userInfo.isBuyer
+        },
         availableAmount() {
             const userInfo = this.userInfo;
 
@@ -161,6 +170,7 @@ export default {
     }
 }
 </script>
+
 
 <style>
 </style>

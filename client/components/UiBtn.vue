@@ -294,7 +294,7 @@ export default {
   --before-color: inherit;
   --fill-opacity: 0.15;
   -webkit-appearance: none;
-  font-weight: 500;
+  font-weight: 600;
   font-family: var(--default-font-family);
   overflow: hidden;
   position: relative;

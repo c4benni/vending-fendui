@@ -568,76 +568,18 @@ export function eventKey(e) {
   return key
 }
 
-export class ArrowNavigate {
-  constructor({ root, children, loop = true, preventScroll = false, closest }) {
-    this.root = root
-    this.$children = this.root.querySelectorAll(`${children}`)
-    this.loop = loop
-    this.preventScroll = preventScroll
-    this.closest = closest || children
+export function hackTabKey(e, cb = () => {}, evtKey) {
+  const key = evtKey || eventKey(e)
 
-    this.focusableNodes =
-      this.$children &&
-      [...this.$children].filter((x) => {
-        const validFocusable =
-          isHTML(x) &&
-          x.tabIndex > -1 &&
-          x.getAttribute('tabindex') > -1 &&
-          !x.getAttribute('disabled') &&
-          x.offsetHeight
-        return validFocusable
-          ? this.closest
-            ? x.closest(this.closest)
-            : x
-          : false
-      })
-    this.index =
-      this.focusableNodes?.length &&
-      this.focusableNodes.indexOf(
-        this.focusableNodes.find((x) =>
-          x.isSameNode(x.ownerDocument.activeElement)
-        )
-      )
-  }
+  if (key == 'tab') {
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault()
 
-  forward(count = 0) {
-    if (!this.focusableNodes.length) {
-      return
+      cb(e, key)
     }
-    const getIndex =
-      this.index + 1 + count > this.focusableNodes.length - 1
-        ? this.loop
-          ? 0
-          : this.focusableNodes.length - 1
-        : this.index + 1 + count
-
-    this.focusableNodes[getIndex].focus({ preventScroll: this.preventScroll })
-
-    this.kill()
   }
 
-  backward(count = 0) {
-    if (!this.focusableNodes.length) {
-      return
-    }
-
-    const getIndex =
-      this.index - 1 - count < 0
-        ? this.loop
-          ? this.focusableNodes.length - 1
-          : 0
-        : this.index - 1 - count
-
-    this.focusableNodes[getIndex].focus({ preventScroll: this.preventScroll })
-
-    this.kill()
-  }
-
-  kill() {
-    this.$children = 0
-    this.root = 0
-    this.focusableNodes = 0
-  }
+  return key
 }
 
 export function vibrate(d = 1) {

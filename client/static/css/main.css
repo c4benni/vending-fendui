@@ -3,10 +3,27 @@ html.dark {
   --theme-background: hsl(222, 47%, 4%);
   color: #fff;
 }
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+    --theme-background: hsl(222, 47%, 4%);
+    color: #fff;
+  }
+}
+
 html.light {
   color: #000;
   color-scheme: light;
   --theme-background: #fff !important;
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    color: #000;
+    color-scheme: light;
+    --theme-background: #fff !important;
+  }
 }
 
 html {
