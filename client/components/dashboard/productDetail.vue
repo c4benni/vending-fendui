@@ -15,7 +15,7 @@
             <div
                 class="w-[calc(100%-1rem)] h-[360px] lg:w-[490px] lg:h-[510px] rounded-md bg-white dark:bg-blue-gray-900 shadow-md justify-self-center mt-2 lg:mt-0"
             >
-                <app-img :public-id="$store.state.media.register" />
+                <app-img :public-id="product.background" class="h-full object-cover" />
             </div>
             <div class="grid lg:p-2 p-4 lg:pl-4 pt-6 lg:pt-6 pb-10 lg:pb-0 content-start">
                 <p class="text-sm font-medium opacity-70 capitalize">{{ product.type }}</p>

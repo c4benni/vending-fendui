@@ -1,4 +1,4 @@
-const { readdirSync } = require('fs')
+const fs = require('fs')
 
 const { join: joinPath } = require('path')
 
@@ -18,7 +18,7 @@ const sequelize = new Sequelize(
 )
 
 // auto import models and add them to DB{}
-readdirSync(__dirname)
+fs.readdirSync(__dirname)
   .filter((file) => file !== 'index.js')
   .forEach((file) => {
     // import and initialize models;

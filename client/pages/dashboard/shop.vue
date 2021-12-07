@@ -13,7 +13,7 @@
             class="grid-flow-row text-left bg-white dark:bg-blue-gray-900 dark:bg-opacity-50 w-full shadow-md p-0"
         >
             <div class="h-[128px] lg:h-[224px] w-full mb-4">
-                <app-img :public-id="$store.state.media.register" />
+                <app-img :public-id="product.background" class="h-full object-cover" />
             </div>
 
             <p class="p-2 lg:px-3">{{ product.productName }}</p>

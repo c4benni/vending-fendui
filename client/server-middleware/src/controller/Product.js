@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const { v2: cloudinary } = require('cloudinary')
+const { app } = require('../config/config')
 const { Product, User } = require('../models')
 const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
@@ -119,32 +119,11 @@ module.exports = {
             })
           }
 
-          const samples = await cloudinary.api.sub_folders('samples')
-
-          let imageFolder
-
-          if (samples?.folders) {
-            imageFolder = samples.folders.map((x) =>
-              /food|ecommerce|landscape/i.test(imageFolder)
-            )
-
-            // randomize image folders
-            imageFolder =
-              imageFolder[Math.floor(Math.random() * imageFolder.length - 1)]
-
-            //  list all contents
-            console.log(`folder:${imageFolder.path}/*`)
-            const folderContents = await cloudinary.search
-              .expression(`folder:${imageFolder.path}/*`)
-              .execute()
-
-            console.log(folderContents)
-          }
-
           // create a new product;
           const product = await Product.create({
             ...req.body,
-            sellerId: id
+            sellerId: id,
+            background: app.productImages
           })
 
           const productJSON = product.toJSON()

@@ -15,6 +15,29 @@ module.exports = {
     jwtSecret: process.env.JWT_SECRET || 'secret'
   },
   app: {
+    get productImages() {
+      const food = '/samples/food'
+      const ecommerce = '/samples/ecommerce'
+      const landscape = '/samples/landscape'
+
+      const output = [
+        `${food}/spices`,
+        `${food}/pot-mussels`,
+        `${food}/fish-vegetables`,
+        `${food}/desert`,
+        `${ecommerce}/accessories-bag`,
+        `${ecommerce}/leather-bag-gray`,
+        `${ecommerce}/car-interior-design`,
+        `${ecommerce}/shoes`,
+        `${ecommerce}/analog-classic`,
+        `${landscape}/landscape-panorama`,
+        `${landscape}/nature-mountains`,
+        `${landscape}/beach-boat`,
+        `${landscape}/architecture-signs`
+      ]
+
+      return output[Math.floor(Math.random() * output.length - 1)]
+    },
     validCost: [5, 10, 20, 50, 100],
     validProductTypes: [
       'creativity',

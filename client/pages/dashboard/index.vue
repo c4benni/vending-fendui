@@ -85,7 +85,7 @@
                     <div
                         class="h-[300px] w-full hover:scale-[1.01] transform-gpu transition-transform"
                     >
-                        <app-img :public-id="$store.state.media.register" />
+                        <app-img :public-id="product.background" class="h-full object-cover" />
                     </div>
 
                     <div class="px-4 pt-2">

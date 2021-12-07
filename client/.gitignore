@@ -9,6 +9,8 @@ yarn-error.log*
 
 unwanted.txt
 
+client
+
 # Runtime data
 pids
 *.pid
