@@ -61,6 +61,7 @@
         </div>
 
         <div
+            v-if="products"
             class="card lg:mx-6 max-w-[100vw] lg:max-w-[calc(calc(min(100vw,1920px)-3rem)-280px)] lg:bg-opacity-100 bg-opacity-0 dark:bg-opacity-0 lg:dark:bg-opacity-50"
         >
             <div class="subtitle px-6">New products added</div>
@@ -71,12 +72,12 @@
                 class="mt-6 grid gap-3 sm:gap-4 md:gap-6 overflow-x-scroll overflow-y-hidden grid-cols-[repeat(10,auto),1px] w-full pl-6 pb-2 hide-scrollbar after:contents after:w-full"
             >
                 <uiBtn
-                    v-for="i in 10"
+                    v-for="(product, i) in products"
                     :key="i"
                     class="w-[calc(100vw-3rem)] sm:w-[min(calc(100vw-3rem),350px)] bg-white dark:bg-blue-gray-900 bg-opacity-100 dark:bg-opacity-50 rounded-sm pb-6 cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-opacity-90 grid-flow-row p-0 text-left"
-                    :class="{ 'mr-6': i == 10 }"
+                    :class="{ 'mr-6': i == products.length - 1 }"
                     tag="nuxt-link"
-                    :to="`/dashboard/shop?id=${i}`"
+                    :to="`/dashboard/shop?id=${product.id}`"
                     outlined
                     :outlined-opacity="$theme.dark ? '0.075' : '0.1'"
                     :outlined-stroke="$theme.dark ? '.75px' : '1px'"
@@ -90,14 +91,16 @@
                     <div class="px-4 pt-2">
                         <div class="flex justify-between items-center">
                             <div
-                                class="text-opacity-70 text-black dark:text-opacity-70 dark:text-white text-sm"
-                            >Entertainment</div>
+                                class="text-opacity-70 text-black dark:text-opacity-70 dark:text-white text-sm capitalize"
+                            >{{ product.type }}</div>
 
-                            <div class="font-semibold">$100</div>
+                            <div class="font-semibold">¢{{ product.cost }}</div>
                         </div>
                     </div>
 
-                    <div class="font-bold text-xl px-4 mt-1 truncate">New product</div>
+                    <div
+                        class="font-bold text-xl px-4 mt-1 truncate capitalize"
+                    >{{ product.productName }}</div>
 
                     <app-rating class="mx-3 mt-2" />
                 </uiBtn>
@@ -112,6 +115,7 @@ import AppRating from '~/components/appRating.vue';
 
 export default {
     components: { UiIcon, AppRating },
+
     data: () => ({
         coins: [
             {
@@ -134,7 +138,8 @@ export default {
                 title: '5 Cents',
                 color: 'text-teal-600 dark:text-teal-500'
             }
-        ]
+        ],
+        products: null,
     }),
     head() {
         return {
@@ -166,6 +171,13 @@ export default {
 
                 return value > 99 ? `$${(value / 100).toFixed(2)}` : `¢${value}`
             })
+        }
+    },
+    async created() {
+        const { data } = await this.$apiCall('product/all?limit=10', 'GET')
+
+        if (data) {
+            this.products = data
         }
     }
 }

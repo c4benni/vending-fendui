@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const { uploader: cloudinary } = require('cloudinary').v2
+const { v2: cloudinary } = require('cloudinary')
 const { Product, User } = require('../models')
 const attempt = require('../utils/attempt')
 const sendError = require('../utils/sendError')
@@ -119,49 +119,32 @@ module.exports = {
             })
           }
 
-          const uploaded = []
+          const samples = await cloudinary.api.sub_folders('samples')
 
-          const images = req.body.images
+          let imageFolder
 
-          let uploadError = false
+          if (samples?.folders) {
+            imageFolder = samples.folders.map((x) =>
+              /food|ecommerce|landscape/i.test(imageFolder)
+            )
 
-          if (images?.length) {
-            for (let i = 0; i < images.length; i++) {
-              const upload = await cloudinary.upload_url(images[i], {
-                overwrite: true,
-                folder: 'Product'
-              })
+            // randomize image folders
+            imageFolder =
+              imageFolder[Math.floor(Math.random() * imageFolder.length - 1)]
 
-              if (upload.success) {
-                const { signature, public_id, url } = upload
-                uploaded.push({
-                  signature,
-                  public_id,
-                  url,
-                  cover: i == 0
-                })
-              } else {
-                uploadError = upload
-                break
-              }
-            }
+            //  list all contents
+            console.log(`folder:${imageFolder.path}/*`)
+            const folderContents = await cloudinary.search
+              .expression(`folder:${imageFolder.path}/*`)
+              .execute()
 
-            if (uploadError) {
-              return res.status(500).send({
-                error: {
-                  message: 'Failed to upload images. Try again',
-                  trace: uploadError
-                }
-              })
-            }
+            console.log(folderContents)
           }
 
           // create a new product;
           const product = await Product.create({
             ...req.body,
-            sellerId: id,
-            background: uploaded[0] || null,
-            slides: uploaded.slice(1, uploaded.length - 1)
+            sellerId: id
           })
 
           const productJSON = product.toJSON()

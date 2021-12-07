@@ -32,6 +32,10 @@ export default function state() {
 
     dashboardProcessing: false,
 
-    processingDone: null
+    processingDone: null,
+
+    productName: null,
+
+    bannerActive: true
   }
 }

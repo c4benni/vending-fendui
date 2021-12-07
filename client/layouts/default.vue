@@ -253,12 +253,20 @@ export default {
       }
     }
 
-    Vue.prototype.$apiCall = async (url, method, data) => {
+    Vue.prototype.$apiCall = async (url, method = 'GET', data) => {
       try {
-        const getData = data ? JSON.stringify(data) : undefined
+
+        const objectMethod = typeof method == 'object'
+
+        const getMethod = objectMethod ? 'POST' : method;
+
+        const payload = objectMethod ? method : data;
+
+        const getData = payload ? JSON.stringify(payload) : undefined
+
 
         const res = await fetch(`/api/v1/${url}`, {
-          method: method || 'get',
+          method: getMethod,
           body: getData,
           headers: {
             Accept: 'application/json',

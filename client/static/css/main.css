@@ -1,6 +1,6 @@
-html.dark {
+#vending.dark {
   color-scheme: dark;
-  --theme-background: hsl(222, 47%, 4%);
+  --theme-background: hsl(222, 47%, 4%) !important;
   color: #fff;
 }
 
@@ -12,7 +12,7 @@ html.dark {
   }
 }
 
-html.light {
+#vending.light {
   color: #000;
   color-scheme: light;
   --theme-background: #fff !important;
@@ -22,7 +22,7 @@ html.light {
   html {
     color: #000;
     color-scheme: light;
-    --theme-background: #fff !important;
+    --theme-background: #fff;
   }
 }
 

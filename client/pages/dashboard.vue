@@ -125,8 +125,8 @@
                         >Your dashboard has been improved! Explore features like Orders, Account, Transactions and more.</h4>
 
                         <ui-btn
-                            class="bg-teal-600 px-4 font-medium text-white dark:text-black rounded-sm"
-                            @click="() => $commit('UPDATE_', { path: 'mobileNav', value: true })"
+                            class="bg-teal-600 px-4 text-white dark:text-black rounded-sm"
+                            @click="closeBanner"
                         >Dismiss banner</ui-btn>
                     </div>
                 </div>
@@ -207,6 +207,8 @@ export default {
             return this.$store.state.user
         },
         showBanner() {
+            if (!this.$store.state.bannerActive) { return false }
+
             return !/^\/dashboard\/(reset-deposit|shop|create-product)\/?$/.test(this.$route.path) && !this.errorPage
         },
         showDeposit() {
@@ -233,8 +235,16 @@ export default {
             const splitPaths = route.fullPath.replace(/\?.+=|&.+=/g, '/').split('/').filter(Boolean)
 
             splitPaths.forEach((path, i, arr) => {
+
+                let title = path;
+
+                if (/^p-/.test(title)) {
+                    title = this.$store.state.productName || 'loading title'
+                }
+
+
                 output.push({
-                    title: capitalize(path),
+                    title: capitalize(title),
                     active: i == arr.length - 1,
                     to: `/${splitPaths.filter((_, key) => key - 1 < i).join('/')}`
                 })
@@ -341,6 +351,7 @@ export default {
     },
 
     methods: {
+        log(e) { console.log(e) },
         hideBackdrop() {
             this.closeNav();
 
@@ -386,6 +397,12 @@ export default {
                     message: null,
                     key: Date.now()
                 }
+            })
+        },
+        closeBanner() {
+            this.$commit('UPDATE_', {
+                path: 'bannerActive',
+                value: false
             })
         }
     }
