@@ -38,6 +38,8 @@ html {
 
   --default-font-family: 'Public sans display', sans-serif;
 
+  --cursive-font-family: 'Satisfy', cursive;
+
   /* --default-font-family: 'Montserrat', sans-serif; */
 
   /* --default-font-family: 'Alegreya sans', sans-serif; */
@@ -63,6 +65,10 @@ html {
   --rounded-sm: 8px;
   --rounded-xs: 4px;
   --rounded-lg: 16px;
+}
+
+.cursive-text {
+  font-family: var(--cursive-font-family);
 }
 
 html.overlay-active {
@@ -794,6 +800,6 @@ a {
   @apply before:opacity-10 before:border-black dark:before:border-white;
 }
 
-.justify-stretch{
+.justify-stretch {
   justify-content: stretch !important;
 }

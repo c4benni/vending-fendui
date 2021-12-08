@@ -16,6 +16,8 @@
         >
             <div class="h-[96px] w-100 flex items-center justify-start px-4">
                 <app-img :public-id="media.favIco" height="38px" width="38px" />
+
+                <p class="ml-1 cursive-text">Vending app</p>
             </div>
 
             <ui-btn

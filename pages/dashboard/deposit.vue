@@ -1,5 +1,5 @@
 <template>
-    <div class="card mx-auto w-full lg:max-w-[min(80%,660px)] relative mb-[64px]">
+    <div class="card mx-auto w-full lg:max-w-[min(80%,660px)] relative mb-[64px] grid">
         <div class="_title fill-before px-6">Choose a coin</div>
 
         <div
@@ -28,7 +28,7 @@
         <OrderQuantity
             id="order-quantity"
             v-model="quantity"
-            class="m-6"
+            class="m-6 justify-self-start"
             max="1000"
             :disabled="!selected"
         />
@@ -84,7 +84,7 @@ export default {
                     value: {
                         message: error.message || 'An error occured. Try again later',
                         error: true,
-                        timeout: 7500,
+                        timeout: 3000,
                         key: Date.now()
 
                     }
@@ -97,9 +97,8 @@ export default {
                     path: 'notify',
                     value: {
                         message: data.message,
-                        timeout: 7500,
+                        timeout: 3000,
                         key: Date.now()
-
                     }
                 })
 

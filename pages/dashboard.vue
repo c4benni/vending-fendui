@@ -80,7 +80,7 @@
                 <p
                     v-if="!showDeposit && !errorPage"
                     class="px-6 font-semibold opacity-70 text-sm"
-                >Total deposit: $100.40</p>
+                >Total deposit: {{ totalDeposit }}</p>
 
                 <ul
                     v-if="breadcrumbs && showTitle && !errorPage"
@@ -158,7 +158,7 @@
                                         'text-sm': notify.closeText,
                                         'bg-amber-700 dark:bg-amber-500 bg-opacity-50 dark:bg-opacity-50': notify.closeText && notify.warn
                                     }]"
-                                    @click="notify.closeText ? closeNotification : notify.callback"
+                                    @click="notificationPrimaryAction"
                                 >
                                     <ui-icon v-if="!notify.closeText" name="close" size="20px"></ui-icon>
 
@@ -194,6 +194,17 @@ export default {
     }),
 
     computed: {
+        userInfo() {
+            return this.$store.getters.userInfo
+        },
+        isBuyer() {
+            return this.userInfo.isBuyer
+        },
+        totalDeposit() {
+            const userInfo = this.userInfo;
+
+            return (userInfo[userInfo.isBuyer ? 'depositTotal' : 'incomeTotal'] || 0)
+        },
         processingDone() {
             return this.$store.state.processingDone || {}
         },
@@ -218,7 +229,7 @@ export default {
             return !/^\/dashboard\/reset-deposit\/?$/.test(this.$route.path)
         },
         notify() {
-            return this.$store.state.notify
+            return this.$store.state.notify;
         },
         notifyMessage() {
             return this.notify.message
@@ -339,6 +350,7 @@ export default {
     },
 
     async mounted() {
+
         await this.$sleep(500);
 
         if (this.user?.alert) {
@@ -357,7 +369,11 @@ export default {
     },
 
     methods: {
-        log(e) { console.log(e) },
+        async notificationPrimaryAction() {
+            console.log(33);
+            this.notify.closeText ? await this.notify.callback() : this.closeNotification()
+        },
+
         hideBackdrop() {
             this.closeNav();
 

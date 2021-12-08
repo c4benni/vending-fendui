@@ -1,16 +1,24 @@
 <template>
+    <edit-product v-if="isEditing" />
+
     <div
-        v-if="loading || errorFetching"
+        v-else-if="loading || errorFetching.message"
         class="card min-h-[128px] grid justify-center items-center mx-6"
     >
-        <div v-if="!errorFetching" class="spinner-border"></div>
+        <div v-if="!errorFetching.message" class="spinner-border"></div>
 
         <div v-else class="grid justify-items-center">
-            <p class="mb-3">Failed to fetch at this time</p>
+            <p class="mb-3">
+                {{
+                    getErrorMessage
+                }}
+            </p>
 
             <ui-btn
                 class="bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 dark:bg-blue-500 dark:text-black dark:hover:bg-blue-600 dark:hover:bg-opacity-70 dark:active:bg-blue-700 dark:active:bg-opacity-60"
-            >Retry</ui-btn>
+                :to="errorBtn.to"
+                :tag="errorBtn.tag"
+            >{{ errorBtn.text }}</ui-btn>
         </div>
     </div>
 
@@ -107,14 +115,19 @@
 <script>
 import uiIcon from '../../components/uiIcon.vue'
 import appRating from '../../components/appRating.vue'
+import editProduct from '~/components/dashboard/editProduct.vue'
 
 export default {
-    components: { uiIcon, appRating },
+    components: { uiIcon, appRating, editProduct },
     data: () => ({
         search: '',
         sortBy: '',
         loading: false,
-        errorFetching: false,
+        errorFetching: {
+            message: '',
+            status: null
+        },
+        errorBtnText: '',
         products: [],
         tableHead: [
             'Name',
@@ -131,6 +144,9 @@ export default {
     },
 
     computed: {
+        isEditing() {
+            return !!this.$route.query.edit
+        },
         user() {
             return this.$store.state.user;
         },
@@ -139,16 +155,40 @@ export default {
             const regExp = new RegExp(`${this.search}`, 'i');
 
             return this.products.filter(product => regExp.test(product.productName))
+        },
+
+        notFound() {
+            return this.errorFetching.status == 404
+        },
+
+        getErrorMessage() {
+            if (this.notFound) {
+                return `You have nothing to show`
+            } else {
+                return this.errorFetching.message;
+            }
+        },
+
+        errorBtn() {
+            const notFound = this.notFound;
+
+            return {
+                text: notFound ? 'Create product' : 'Retry',
+                to: notFound ? '/dashboard/create-product' : undefined,
+                tag: notFound ? 'nuxt-link' : undefined
+            }
         }
     },
 
     async created() {
-        const { data } = await this.$apiCall(`product/all?where={"sellerId":"${this.user.id}"}`);
+        const { data, error } = await this.$apiCall(`product/all?where={"sellerId":"${this.user.id}"}`);
 
         if (data?.length) {
             this.products = data;
+        } else if (error) {
+            this.errorFetching = error
         } else {
-            this.errorFetching = true
+            this.errorFetching.message = 'An error occured'
         }
 
         this.loading = false;

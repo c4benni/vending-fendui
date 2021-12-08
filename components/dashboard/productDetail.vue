@@ -129,7 +129,7 @@ export default {
         const { data } = await this.$apiCall(`product?id=${this.id}`)
 
         if (data) {
-            this.product = data;
+            this.product = { ...data };
 
             this.loading = false
 
@@ -143,12 +143,11 @@ export default {
     methods: {
         async purchase() {
             console.log(this.id);
-            const { data, error } = await this.$apiCall('buy', {
+            await this.$apiCall('buy', {
                 id: this.id,
                 amount: this.quantity
             })
 
-            console.log({ data, error });
         }
     }
 

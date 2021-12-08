@@ -4,22 +4,24 @@ module.exports = {
   db: {
     database:
       process.env.NODE_ENV == 'test'
-        ? 'testdb'
+        ? 'test_db'
         : process.env.DB_NAME || 'postgres',
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASS || 'Fendui',
     options: {
       dialect: process.env.DIALECT || 'postgres',
       host: process.env.HOST || 'localhost',
       storage: './vending.sql'
     }
   },
-  auth: {},
+  auth: {
+    jwtSecret: process.env.JWT_SECRET || 'secret'
+  },
   app: {
     get productImages() {
       const food = '/samples/food'
       const ecommerce = '/samples/ecommerce'
-      const landscape = '/samples/landscape'
+      const landscape = '/samples/landscapes'
 
       const output = [
         `${food}/spices`,
@@ -66,7 +68,7 @@ module.exports = {
       'utilities'
     ],
     saltRounds: 10,
-    // ms * s * min * hr
-    sessionMaxTime: 1000 * 60 * 10
+    // ms * s * min
+    sessionMaxTime: 1000 * 60 * 60
   }
 }

@@ -1,5 +1,5 @@
 <template>
-    <ProductForm @update-parent="formUpdated">
+    <ProductForm :key="id + `${loading}`" :fields="fields" @update-parent="formUpdated">
         <ui-btn
             class="gap-x-2 w-8/12 h-[48px] mx-auto"
             :class="{
@@ -8,19 +8,39 @@
             :disabled="disableSubmit"
             @click="submit"
         >
-            <ui-icon name="plus" />Create product
+            <ui-icon name="update" />Update product
+        </ui-btn>
+
+        <ui-btn
+            class="gap-x-2 w-8/12 h-[48px] mx-auto mt-8 mb-3"
+            :class="{
+                'text-bg-red-800 hover:bg-red-800 hover:text-white active:bg-red-900 active:text-white dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:hover:bg-opacity-70 dark:active:bg-red-700 dark:active:text-white dark:active:bg-opacity-60': !disableSubmit
+            }"
+            :disabled="disableSubmit"
+            outlined
+            @click="submit"
+        >
+            <ui-icon name="delete" />Delete this product
         </ui-btn>
     </ProductForm>
 </template>
 
 <script>
-import ProductForm from '../../components/dashboard/productForm.vue';
+import ProductForm from "./productForm.vue";
 export default {
     components: { ProductForm },
-
     data: () => ({
+        loading: true,
+        product: {
+            productName: 'Loading title',
+            caption: null,
+            description: null,
+            type: null,
+            cost: null,
+            amountAvailable: null
+        },
+
         detailsValidity: {
-            name: false,
             caption: true,
             description: true
         },
@@ -31,29 +51,74 @@ export default {
 
         selectedType: ''
     }),
-
     head() {
         return {
-            title: 'Create product'
+            title: this.loading ? 'Loading product' : `Editing ${this.title}`
         }
     },
 
     computed: {
         disableSubmit() {
-
             const invalidDetail = Object.values(this.detailsValidity).includes(false);
 
             const { type, cost, inventory, } = this.form;
 
-
             return invalidDetail || !type || !cost || !inventory
+        },
+        id() {
+            return this.$route.query.edit
+        },
+
+        fields() {
+            return {
+                name: {
+                    value: this.product.productName || 'Loading...',
+                    disabled: true
+                },
+                caption: {
+                    value: this.product.caption
+                },
+                description: {
+                    value: this.product.description
+                },
+                type: {
+                    value: this.product.type || 'Loading...',
+                    disabled: true,
+                },
+                cost: {
+                    value: this.product.cost || 'Loading'
+                },
+                inventory: {
+                    value: `${this.product.amountAvailable || -1}`
+                }
+            }
+        }
+    },
+
+    async created() {
+        const { data } = await this.$apiCall(`product?id=${this.id}`)
+
+        if (data) {
+            this.product = { ...data };
+
+            this.loading = false
+
+            this.$commit('UPDATE_', {
+                path: 'productName',
+                value: data.productName
+            })
         }
     },
 
     methods: {
         formUpdated(e) {
             this.form = e.form;
-            this.detailsValidity = e.detailsValidity
+
+            const { caption, description } = e.detailsValidity
+            this.detailsValidity = {
+                caption, description
+            }
+
             this.selectedType = e.selectedType
         },
         async submit() {

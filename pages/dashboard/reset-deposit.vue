@@ -72,17 +72,23 @@ export default {
             this.$commit('UPDATE_', {
                 path: 'notify',
                 value: {
-                    message: 'this.user.alert',
+                    message: 'This action will reset your deposit to zero. Are you sure about this?',
                     warn: true,
-                    closeText: 'End sessions',
+                    closeText: 'Clear deposit',
                     callback: async () => {
-                        await fetch('/api/v1/reset', {
-                            method: 'POST',
+                        await this.$apiCall('/api/v1/reset', 'POST')
 
+                        await this.$sleep(100);
+
+                        this.$commit('UPDATE_', {
+                            path: 'notify',
+                            value: {
+                                key: Date.now(),
+                                message: null
+                            }
                         })
                     },
                     key: Date.now()
-
                 }
             })
 
