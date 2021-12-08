@@ -12,7 +12,7 @@ const id = (prefix = 'p-') => {
 
 module.exports = {
   id,
-  sessionId() {
-    return `${id('s-')}-${Date.now().toString(16)}`
+  sessionId(prefix = 's-') {
+    return `${id(prefix)}-${Date.now().toString(16)}`
   }
 }

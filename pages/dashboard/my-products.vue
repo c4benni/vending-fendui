@@ -105,8 +105,8 @@
 </template>
 
 <script>
-import uiIcon from '~/client/components/uiIcon.vue'
-import appRating from '~/client/components/appRating.vue'
+import uiIcon from '../../components/uiIcon.vue'
+import appRating from '../../components/appRating.vue'
 
 export default {
     components: { uiIcon, appRating },

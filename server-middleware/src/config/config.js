@@ -2,18 +2,19 @@ module.exports = {
   base: '/api/v1',
   port: process.env.PORT || 1001,
   db: {
-    database: process.env.DB_NAME || 'postgres',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASS || 'Fendui',
+    database:
+      process.env.NODE_ENV == 'test'
+        ? 'testdb'
+        : process.env.DB_NAME || 'postgres',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
     options: {
       dialect: process.env.DIALECT || 'postgres',
       host: process.env.HOST || 'localhost',
       storage: './vending.sql'
     }
   },
-  auth: {
-    jwtSecret: process.env.JWT_SECRET || 'secret'
-  },
+  auth: {},
   app: {
     get productImages() {
       const food = '/samples/food'

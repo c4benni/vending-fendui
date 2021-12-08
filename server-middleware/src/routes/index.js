@@ -101,6 +101,10 @@ router.get('/auth', async (req, res) => {
     return res.send({ error })
   }
 
+  console.log({
+    toke: process.env.USER_TOKEN
+  })
+
   await session.signUser(data.id, res, req)
 
   const unwanted = unwantedUserFields(data)
