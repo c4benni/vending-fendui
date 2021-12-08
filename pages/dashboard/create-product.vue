@@ -104,6 +104,10 @@ export default {
                     subtitle: error?.message || data?.message
                 }
             })
+
+            await this.$sleep(100);
+
+            this.$router.push('/dashboard/my-products')
         }
     }
 }

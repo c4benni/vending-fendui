@@ -54,6 +54,7 @@ export default {
       type: String,
       default: undefined,
     },
+    disabled: Boolean
   },
 
   emits: ["update:modelValue"],
@@ -168,6 +169,7 @@ export default {
             textarea,
             sm: /^sm$|^small$/i.test(this.size),
             lg: /^lg$|^large$/i.test(this.size),
+            'opacity-60': this.disabled
           },
         ],
       },
@@ -198,7 +200,9 @@ export default {
                   ...scoping,
                   for: id,
                 },
-                class: ["label"],
+                class: ["label", {
+                  'opacity-60': this.focused || vmodel
+                }],
               },
               this.label
             ),
@@ -225,6 +229,10 @@ export default {
                 placeholder: this.placeholder,
                 id,
                 type: this.type,
+                disabled: this.disabled
+              },
+              domProps: {
+                value: vmodel,
               },
               on: {
                 focus: () => {
@@ -363,7 +371,8 @@ export default {
   left: 0px;
   top: 0px;
   transform: translate3d(12px, 14px, 0) scale3d(1, 1, 1);
-  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms,
+    opacity 0.15s linear;
   z-index: 1;
   pointer-events: none;
   color: var(--caption-c);

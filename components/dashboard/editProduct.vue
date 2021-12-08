@@ -3,22 +3,18 @@
         <ui-btn
             class="gap-x-2 w-8/12 h-[48px] mx-auto"
             :class="{
-                'bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 dark:bg-blue-500 dark:text-black dark:hover:bg-blue-600 dark:hover:bg-opacity-70 dark:active:bg-blue-700 dark:active:bg-opacity-60': !disableSubmit
+                'bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 dark:bg-blue-500 dark:text-black dark:hover:bg-blue-600 dark:hover:bg-opacity-70 dark:active:bg-blue-700 dark:active:bg-opacity-60': !disableUpdate
             }"
-            :disabled="disableSubmit"
-            @click="submit"
+            :disabled="disableUpdate"
+            @click="updateProduct"
         >
             <ui-icon name="update" />Update product
         </ui-btn>
 
         <ui-btn
-            class="gap-x-2 w-8/12 h-[48px] mx-auto mt-8 mb-3"
-            :class="{
-                'text-bg-red-800 hover:bg-red-800 hover:text-white active:bg-red-900 active:text-white dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:hover:bg-opacity-70 dark:active:bg-red-700 dark:active:text-white dark:active:bg-opacity-60': !disableSubmit
-            }"
-            :disabled="disableSubmit"
+            class="gap-x-2 w-8/12 h-[48px] mx-auto mt-8 mb-3 text-bg-red-800 hover:bg-red-800 hover:text-white active:bg-red-900 active:text-white dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:hover:bg-opacity-70 dark:active:bg-red-700 dark:active:text-white dark:active:bg-opacity-60"
             outlined
-            @click="submit"
+            @click="deleteProduct"
         >
             <ui-icon name="delete" />Delete this product
         </ui-btn>
@@ -58,7 +54,7 @@ export default {
     },
 
     computed: {
-        disableSubmit() {
+        disableUpdate() {
             const invalidDetail = Object.values(this.detailsValidity).includes(false);
 
             const { type, cost, inventory, } = this.form;
@@ -121,8 +117,8 @@ export default {
 
             this.selectedType = e.selectedType
         },
-        async submit() {
-            if (this.disableSubmit) {
+        async updateProduct() {
+            if (this.disableUpdate) {
                 return null
             }
 
@@ -139,8 +135,6 @@ export default {
             })
 
             const {
-                // files,
-                name,
                 caption,
                 description,
                 cost,
@@ -149,26 +143,59 @@ export default {
 
 
             const productForm = {
-                productName: name,
+                id: this.id,
                 amountAvailable: inventory,
                 cost,
                 type: this.selectedType.toLowerCase(),
-                // images: files.map(file => file.src),
             }
 
             caption && (productForm.caption = caption);
 
             description && (productForm.description = description);
 
-            const { data, error } = await this.$apiCall('product', 'POST', productForm)
+            const { error } = await this.$apiCall('product', 'PATCH', productForm)
 
             this.$commit('UPDATE_', {
                 path: 'processingDone',
                 value: {
-                    title: error ? 'An error occured' : 'Product created',
-                    subtitle: error?.message || data?.message
+                    title: error ? 'An error occured' : 'Product updated',
+                    subtitle: error ? '' : 'Your product has been successfully updated!'
                 }
             })
+
+            await this.$sleep(100);
+
+            this.$router.push('/dashboard/my-products')
+        },
+        deleteProduct() {
+            this.$commit('UPDATE_', {
+                path: 'notify',
+                value: {
+                    message: 'Are you sure you want to delete this product? This action cannot be reversed.',
+                    error: true,
+                    closeText: 'Clear deposit',
+                    callback: async () => {
+
+                        await this.$apiCall(`product?id=${this.id}`, 'DELETE')
+
+                        await this.$sleep(100);
+
+                        this.$commit('UPDATE_', {
+                            path: 'notify',
+                            value: {
+                                key: Date.now(),
+                                message: 'Product successfully deleted!',
+                            }
+                        })
+
+                        await this.$sleep(100);
+
+                        this.$router.replace('/dashboard/my-products')
+                    },
+                    key: Date.now()
+                }
+            })
+
         }
     }
 }

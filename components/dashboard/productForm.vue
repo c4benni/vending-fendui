@@ -344,13 +344,12 @@ export default {
         selectedType() { this.updateParent() }
     },
 
-    beforeMount() {
+    created() {
         this.updateParent();
 
         Object.keys(this.form).forEach(key => {
 
             const initialValue = (this.fields[key] || {}).value;
-
 
             if (typeof initialValue != 'undefined' && initialValue != null) {
 
@@ -363,7 +362,10 @@ export default {
                     return this.costSelectUpdated(initialValue, `¢${initialValue}`)
                 }
 
-                this.form[key] = initialValue
+                this.form = {
+                    ...this.form,
+                    [key]: initialValue
+                }
             }
         })
     },

@@ -39,7 +39,7 @@ module.exports = {
         `${landscape}/architecture-signs`
       ]
 
-      return output[Math.floor(Math.random() * output.length - 1)]
+      return output[Math.floor(Math.random() * (output.length - 1))]
     },
     get userImages() {
       const path = '/samples/people'
@@ -52,7 +52,7 @@ module.exports = {
         `${path}/kitchen-bar`
       ]
 
-      return output[Math.floor(Math.random() * output.length - 1)]
+      return output[Math.floor(Math.random() * (output.length - 1))]
     },
     validCost: [5, 10, 20, 50, 100],
     validProductTypes: [

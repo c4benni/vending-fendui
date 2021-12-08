@@ -156,7 +156,8 @@
                                     :class="[{
                                         'p-0 w-[48px] h-[48px] rounded-full text-opacity-80': !notify.closeText,
                                         'text-sm': notify.closeText,
-                                        'bg-amber-700 dark:bg-amber-500 bg-opacity-50 dark:bg-opacity-50': notify.closeText && notify.warn
+                                        'bg-amber-700 dark:bg-amber-500 bg-opacity-50 dark:bg-opacity-50': notify.closeText && notify.warn,
+                                        'bg-red-700 dark:bg-red-500 bg-opacity-50 dark:bg-opacity-50': notify.closeText && notify.error
                                     }]"
                                     @click="notificationPrimaryAction"
                                 >
@@ -370,7 +371,6 @@ export default {
 
     methods: {
         async notificationPrimaryAction() {
-            console.log(33);
             this.notify.closeText ? await this.notify.callback() : this.closeNotification()
         },
 

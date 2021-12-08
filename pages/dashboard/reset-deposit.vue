@@ -76,9 +76,10 @@ export default {
                     warn: true,
                     closeText: 'Clear deposit',
                     callback: async () => {
-                        await this.$apiCall('/api/v1/reset', 'POST')
+                        await this.$apiCall('reset', 'POST')
 
                         await this.$sleep(100);
+
 
                         this.$commit('UPDATE_', {
                             path: 'notify',
@@ -87,6 +88,10 @@ export default {
                                 message: null
                             }
                         })
+
+                        await this.$nextTick();
+
+                        this.$router.push('/dashboard')
                     },
                     key: Date.now()
                 }

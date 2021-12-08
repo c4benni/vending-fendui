@@ -180,19 +180,39 @@ export default {
         }
     },
 
-    async created() {
-        const { data, error } = await this.$apiCall(`product/all?where={"sellerId":"${this.user.id}"}`);
-
-        if (data?.length) {
-            this.products = data;
-        } else if (error) {
-            this.errorFetching = error
-        } else {
-            this.errorFetching.message = 'An error occured'
+    watch: {
+        isEditing(n) {
+            if (!n) {
+                this.fetchProducts()
+            }
         }
+    },
 
-        this.loading = false;
-    }
+    async created() {
+        await this.fetchProducts()
+    },
+
+    async activated() {
+        await this.fetchProducts()
+    },
+
+    methods: {
+        async fetchProducts() {
+            this.products = [];
+
+            const { data, error } = await this.$apiCall(`product/all?where={"sellerId":"${this.user.id}"}`);
+
+            if (data?.length) {
+                this.products = data;
+            } else if (error) {
+                this.errorFetching = error
+            } else {
+                this.errorFetching.message = 'An error occured'
+            }
+
+            this.loading = false;
+        }
+    },
 }
 </script>
 
