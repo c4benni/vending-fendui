@@ -158,7 +158,7 @@ module.exports = {
       if (!user) {
         return sendError.withStatus(res, {
           message: 'user not found',
-          status: 401
+          status: 404
           // unauthorized
         })
       }

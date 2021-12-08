@@ -793,3 +793,7 @@ a {
 .before-divide {
   @apply before:opacity-10 before:border-black dark:before:border-white;
 }
+
+.justify-stretch{
+  justify-content: stretch !important;
+}

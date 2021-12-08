@@ -382,10 +382,6 @@ export default {
       this.showUserPrefTheme = false
 
       this.$c4.mounted = true
-      this.$commit('UPDATE_', {
-        path: 'appLoaded',
-        value: true,
-      })
     })
   },
   methods: {
@@ -430,29 +426,10 @@ export default {
             'touch-device': this.$store.state.isTouchDevice,
             'strict-touch': this.$store.state.isStrictTouchDevice,
             'can-hover': !this.$store.state.isStrictTouchDevice,
-            'page-transitioning': !this.pageEntered,
-            'backdrop-false': !this.$store.state.supportsBackdrop,
-            'backdrop-true': this.$store.state.supportsBackdrop,
-            'no-page-anim': this.$store.state.noPageAnimation,
           },
 
           breakpointsClasses.call(this),
         ],
-        on: {
-          '&mousedown': () => { },
-          '&mousemove': () => { },
-          '&mouseup': () => { },
-          '&touchstart': () => { },
-          '&touchmove': () => { },
-          '&touchcancel': () => { },
-          '&touchend': () => { },
-          '&keydown': () => { },
-          '&keyup': () => { },
-          '&blur': () => { },
-          '&click': () => { },
-          '&load': () => { },
-          '&error': () => { },
-        },
       },
       [
         this.$c4.mounted ?

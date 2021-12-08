@@ -74,7 +74,7 @@
                 <uiBtn
                     v-for="(product, i) in products"
                     :key="i"
-                    class="w-[calc(100vw-3rem)] sm:w-[min(calc(100vw-3rem),350px)] bg-white dark:bg-blue-gray-900 bg-opacity-100 dark:bg-opacity-50 rounded-sm pb-6 cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-opacity-90 grid-flow-row p-0 text-left"
+                    class="w-[calc(100vw-3rem)] sm:w-[min(calc(100vw-3rem),350px)] bg-white dark:bg-blue-gray-900 bg-opacity-100 dark:bg-opacity-50 rounded-sm pb-6 cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-opacity-90 grid-flow-row p-0 text-left justify-stretch font-normal"
                     :class="{ 'mr-6': i == products.length - 1 }"
                     tag="nuxt-link"
                     :to="`/dashboard/shop?id=${product.id}`"
@@ -85,7 +85,10 @@
                     <div
                         class="h-[300px] w-full hover:scale-[1.01] transform-gpu transition-transform"
                     >
-                        <app-img :public-id="product.background" class="h-full object-cover" />
+                        <app-img
+                            :public-id="product.background"
+                            class="h-full object-cover w-full"
+                        />
                     </div>
 
                     <div class="px-4 pt-2">
@@ -102,7 +105,7 @@
                         class="font-bold text-xl px-4 mt-1 truncate capitalize"
                     >{{ product.productName }}</div>
 
-                    <app-rating class="mx-3 mt-2" />
+                    <app-rating class="mx-3 mt-2" readonly />
                 </uiBtn>
             </div>
         </div>

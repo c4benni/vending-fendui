@@ -87,7 +87,7 @@
                     :placeholder="item.placeholder"
                     :pattern="item.pattern"
                     :validate="item.validate"
-                    :main-class="['rounded-md bg-blue-gray-50 dark:bg-blue-gray-900 md:h-[64px]', { 'mt-4': i == 1 }]"
+                    :main-class="['rounded-md bg-blue-gray-50 dark:bg-blue-gray-900 md:h-[64px] rounded-md bg-white dark:bg-blue-gray-900 md:h-[64px] border border-black dark:border-white border-opacity-10 dark:border-opacity-10', { 'mt-4': i == 1 }]"
                     required
                     :autocomplete="item.autocomplete"
                     @update:modelValue="item.onUpdate"

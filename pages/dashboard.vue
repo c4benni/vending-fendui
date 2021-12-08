@@ -240,6 +240,8 @@ export default {
 
                 if (/^p-/.test(title)) {
                     title = this.$store.state.productName || 'loading title'
+                } else {
+                    title = title.replace(/-/g, ' ')
                 }
 
 
@@ -299,6 +301,10 @@ export default {
                 {
                     active: /^\/dashboard\/create-product/.test(route.path),
                     title: `Create product`
+                },
+                {
+                    active: /^\/dashboard\/my-products/.test(route.path),
+                    title: `My products`
                 }
             ]
 
@@ -325,7 +331,7 @@ export default {
 
     beforeMount() {
         this.redirectUnauthorized('buyer', ['create-product', 'my-products'])
-        this.redirectUnauthorized('seller', ['deposit', 'reset'])
+        this.redirectUnauthorized('seller', ['deposit', 'reset',])
 
         this.$nextTick(() => {
             this.authenticated = true;

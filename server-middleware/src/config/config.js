@@ -38,6 +38,19 @@ module.exports = {
 
       return output[Math.floor(Math.random() * output.length - 1)]
     },
+    get userImages() {
+      const path = '/samples/people'
+
+      const output = [
+        `${path}/bicycle`,
+        `${path}/jazz`,
+        `${path}/boy-snow-hoodie`,
+        `${path}/smiling-man`,
+        `${path}/kitchen-bar`
+      ]
+
+      return output[Math.floor(Math.random() * output.length - 1)]
+    },
     validCost: [5, 10, 20, 50, 100],
     validProductTypes: [
       'creativity',

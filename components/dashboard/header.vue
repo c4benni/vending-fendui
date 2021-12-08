@@ -45,12 +45,7 @@
             </ui-btn>
 
             <ui-btn title="profile" class="p-0 w-[32px] h-[32px] min-h-[32px] rounded-full">
-                <app-img
-                    :public-id="$store.state.media.favIco"
-                    height="32px"
-                    width="32px"
-                    class="object-contain"
-                ></app-img>
+                <app-img :public-id="user.image" height="32px" width="32px" class="object-contain"></app-img>
             </ui-btn>
         </div>
     </header>
@@ -79,6 +74,9 @@ export default {
     computed: {
         mobileHeader() {
             return /xxs|xs|sm|md/.test(this.$store.state.breakpoints.is)
+        },
+        user() {
+            return this.$store.state.user || {}
         }
     },
     methods: {

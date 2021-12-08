@@ -10,15 +10,21 @@
             :key="i"
             tag="nuxt-link"
             :to="`/dashboard/shop?id=${product.id}`"
-            class="grid-flow-row text-left bg-white dark:bg-blue-gray-900 dark:bg-opacity-50 w-full shadow-md p-0"
+            class="grid-flow-row text-left bg-white dark:bg-blue-gray-900 dark:bg-opacity-50 w-full p-0 justify-stretch transform-gpu transition-transform hover:translate-y-[-0.25rem] hover:shadow-lg"
+            outlined
+            :outlined-storke="`${$theme.light ? '0.75px' : '0.5px'}`"
+            :outlined-opacity="`${$theme.light ? '0.1' : '0.05'}`"
         >
             <div class="h-[128px] lg:h-[224px] w-full mb-4">
                 <app-img :public-id="product.background" class="h-full object-cover" />
             </div>
 
-            <p class="p-2 lg:px-3">{{ product.productName }}</p>
+            <div class="px-2 pb-3 lg:px-3 overflow-hidden">
+                <p class="truncate opacity-70 mb-1 font-sm font-medium">{{ product.type }}</p>
+                <p class="truncate mb-2">{{ product.productName }}</p>
 
-            <p class="px-2 lg:px-3 text-sm opacity-80 mb-6">¢{{ product.cost }}</p>
+                <p class="text-sm opacity-80">¢{{ product.cost }}</p>
+            </div>
         </ui-btn>
     </div>
 </template>

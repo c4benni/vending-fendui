@@ -10,6 +10,8 @@ const {
   unwantedUserFields
 } = require('../../utils/utils')
 
+const { app } = require('../../config/config')
+
 // logout helper function;
 async function logoutLogic({ req, res, all }) {
   const mainCallback = async () => {
@@ -87,8 +89,8 @@ module.exports = {
           if (findUser) {
             return sendError.withStatus(res, {
               message: 'user exist',
-              status: 401
-              // unauthorized
+              status: 403
+              // forbidden
             })
           }
 
@@ -110,7 +112,8 @@ module.exports = {
             password,
             role: getRole,
             deposit,
-            income
+            income,
+            image: app.userImages
           })
 
           // send success if okay;

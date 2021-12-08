@@ -1,6 +1,9 @@
 <script>
 export default {
     name: 'AppRating',
+    props: {
+        readonly: Boolean
+    },
     data: () => ({
         rating: 4
     }),
@@ -27,10 +30,11 @@ export default {
                     {
                         key: key + "rating",
                         class: ["rating w-[32px] h-[32px] min-h-[32px] p-0 rounded-full before:bg-yellow-500 hover:bg-opacity-100", { "text-yellow-500": isActive }],
+                        size: 'sm',
+                        readonly: this.readonly,
 
                         on: {
                             'click': () => {
-                                console.log(33);
                                 if (this.rating == item) {
                                     this.rating = null;
                                 } else {
@@ -52,7 +56,7 @@ export default {
                             UiIcon({
                                 props: {
                                     name: isActive ? "star" : "starOutline",
-                                    size: '20px'
+                                    size: '16px'
                                 }
                             })
                         ])

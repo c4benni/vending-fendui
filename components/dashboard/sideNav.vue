@@ -24,7 +24,7 @@
                 <div
                     class="h-[48px] w-[48px] rounded-full bg-blue-gray-400 overflow-hidden mr-[10%]"
                 >
-                    <app-img :public-id="media.favIco" height="48px" width="48px" />
+                    <app-img :public-id="user.image" height="48px" width="48px" />
                 </div>
 
                 <div>
@@ -58,7 +58,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                        item.title
+                            item.title
                         }}
                     </ui-btn>
                 </div>
@@ -81,7 +81,7 @@
                         >
                             <ui-icon :name="item.icon" size="20px" />
                             {{
-                            item.title
+                                item.title
                             }}
                             <ui-icon
                                 :key="ordersState"
@@ -130,7 +130,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                        item.title
+                            item.title
                         }}
                     </ui-btn>
                 </div>
@@ -214,7 +214,7 @@ export default {
                     icon: 'pieChart',
                     to: `${to('analytics')}`
                 },
-                {
+                this.isBuyer && {
                     title: 'Shop',
                     isActive: match('shop'),
                     icon: 'basket',
@@ -232,7 +232,7 @@ export default {
                     icon: 'accountCircle',
                     to: `${to('account')}`
                 }
-            ]
+            ].filter(Boolean)
         },
 
         managementLinks() {
@@ -316,7 +316,9 @@ export default {
 
         user() {
             return this.$store.state.user || {}
-        }
+        },
+
+        isBuyer() { return this.user.role == 'buyer' }
     },
 
     watch: {

@@ -13,20 +13,20 @@
 
         <template v-else>
             <div
-                class="w-[calc(100%-1rem)] h-[360px] lg:w-[490px] lg:h-[510px] rounded-md bg-white dark:bg-blue-gray-900 shadow-md justify-self-center mt-2 lg:mt-0"
+                class="w-[calc(100%-1rem)] h-[360px] lg:w-[490px] lg:h-[510px] rounded-sm bg-white dark:bg-blue-gray-900 shadow-md justify-self-center mt-2 lg:mt-0 isolate overflow-hidden"
             >
                 <app-img :public-id="product.background" class="h-full object-cover" />
             </div>
             <div class="grid lg:p-2 p-4 lg:pl-4 pt-6 lg:pt-6 pb-10 lg:pb-0 content-start">
                 <p class="text-sm font-medium opacity-70 capitalize">{{ product.type }}</p>
-                <p class="text-2xl font-bold py-1 capitalize">{{ product.productName }}</p>
+                <p class="text-xl font-bold py-1 capitalize">{{ product.productName }}</p>
                 <p
                     v-if="product.caption"
                     class="text-[0.9rem] mb-2 font-light opacity-80"
                 >{{ product.caption }}</p>
                 <AppRating />
                 <p
-                    class="before-divide before:border-b fill-before pb-4 relative text-3xl font-bold mt-3"
+                    class="before-divide before:border-b fill-before pb-4 relative text-xl font-bold mt-3"
                 >¢{{ product.cost }}</p>
 
                 <p class="text-sm font-medium opacity-70 mt-4">Choose quantity</p>
@@ -50,8 +50,14 @@
                 </ui-btn>
 
                 <p
+                    v-if="!isSeller"
                     class="text-sm font-light mt-2 text-center opacity-70"
                 >You spend {{ getTotalCost }} in total</p>
+
+                <p
+                    v-else
+                    class="text-sm font-light mt-2 text-center opacity-70"
+                >You need to create a buyer's account first.</p>
             </div>
         </template>
     </div>
@@ -74,7 +80,10 @@ export default {
 
     head() {
         return {
-            title: this.loading ? 'Loading product' : `Product name`
+            title: this.loading ?
+                'Loading product'
+                : this.product.productName ||
+                'Failed to fetch'
         }
     },
 
@@ -94,8 +103,8 @@ export default {
         },
         requiredCoin() {
             return this.user.deposit?.[this.product.cost] || 0;
-
         },
+
         disableQuantity() {
             return !this.requiredCoin
         },
@@ -103,7 +112,14 @@ export default {
         disablePurchase() {
             return this.disableQuantity || this.quantity > this.requiredCoin
         },
+        isSeller() {
+            return this.user.role == 'seller'
+        },
         purchaseText() {
+            if (this.isSeller) {
+                return 'Buyers only!'
+            }
+
             const text = this.disableQuantity ? `¢${this.product.cost} coin required` : this.disablePurchase ? `Insufficient coins` : 'Purchase'
             return this.purchasing ? '' : text
         }
