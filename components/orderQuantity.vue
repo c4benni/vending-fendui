@@ -6,6 +6,11 @@ export default {
     event: 'vmodel',
   },
   props: {
+    useChevron: Boolean,
+    step: {
+      type: [String, Number],
+      default: 1
+    },
     vmodel: {
       type: [Number, String],
       default: 1,
@@ -31,10 +36,19 @@ export default {
     }
   },
 
+  computed: {
+    parseStep() {
+      return parseFloat(this.step)
+    },
+    parseVmodel() {
+      return this.vmodel
+    }
+  },
+
 
   watch: {
     max(n) {
-      if (+this.vmodel >= +n) {
+      if (this.parseVmodel >= +n) {
         this.$emit('vmodel', n)
       }
     },
@@ -47,7 +61,7 @@ export default {
     const btn = (d, c) => h('ui-btn', d, c)
     const icon = (d, c) => h('ui-icon', d, c)
     const input = (d) => h('input', d)
-    const action = ({ disabled, iconName, mousedown }) => {
+    const action = ({ disabled, iconName, staticClass, click }) => {
       return btn(
         {
           props: {
@@ -61,11 +75,10 @@ export default {
             ...scoping,
             title: iconName == 'plus' ? 'increase' : 'reduce',
           },
-          staticClass: iconName,
+          staticClass,
           class: [(this.disabled || disabled ? 'bg-none' : 'before:bg-blue-700')],
           on: {
-            mousedown,
-            'active-click': mousedown,
+            click,
           },
         },
         [
@@ -84,13 +97,15 @@ export default {
       },
       [
         action({
-          disabled: this.vmodel <= this.min,
-          iconName: 'minus',
-          mousedown: () => {
-            requestAnimationFrame(() => {
-              this.$emit('vmodel', this.vmodel - 1)
-            })
+          disabled: this.parseVmodel <= this.min,
+          iconName: this.useChevron ? 'chevronLeft' : 'minus',
+          click: () => {
+            this.parseVmodel > this.min &&
+              requestAnimationFrame(() => {
+                this.$emit('vmodel', this.parseVmodel - this.parseStep)
+              })
           },
+          staticClass: 'rounded-l-sm'
         }),
         input({
           attrs: {
@@ -101,9 +116,12 @@ export default {
             tabindex: this.disabled ? '-1' : undefined,
             id: this.id,
             readonly: this.disabled,
+            step: this.step,
+            min: this.min,
+            max: this.max
           },
           domProps: {
-            value: this.disabled ? '--' : parseFloat(this.vmodel),
+            value: this.disabled ? '--' : parseFloat(this.parseVmodel),
           },
           class: [{
             'opacity-50': this.disabled
@@ -123,23 +141,41 @@ export default {
             change: (e) => {
               let value = parseFloat(e.currentTarget.value)
               if (!value || value == 0) {
-                value = this.min
+                value = parseFloat(this.min)
+              } else
+                if (value > this.max) {
+                  value = parseFloat(this.max)
+                }
+
+              // update value if it's not in accordance to step;
+              const parseStep = this.parseStep;
+              const stepModulus = value % parseStep;
+
+              if (stepModulus) {
+                if (stepModulus < 3) {
+                  value -= stepModulus
+                } else {
+                  value += (parseStep - stepModulus)
+                }
               }
-              if (value > this.max) {
-                value = this.max
-              }
+
               this.$emit('vmodel', value)
             },
           },
         }),
         action({
-          disabled: this.vmodel >= this.max,
-          iconName: 'plus',
-          mousedown: () => {
-            requestAnimationFrame(() => {
-              this.$emit('vmodel', this.vmodel + 1)
-            })
+          disabled: this.parseVmodel >= this.max,
+          iconName: this.useChevron ? 'chevronRight' : 'plus',
+
+          click: () => {
+            this.parseVmodel < this.max &&
+
+              requestAnimationFrame(() => {
+                this.$emit('vmodel', this.parseVmodel + this.parseStep)
+                console.log(this.vmodel);
+              })
           },
+          staticClass: 'rounded-r-sm'
         }),
       ]
     )
@@ -251,15 +287,5 @@ input[data-oqy][type="number"] {
 
 .root[data-oqy] > .ui-btn.__disabled .ui-icon {
   opacity: 0.5 !important;
-}
-
-.root[data-oqy] > .minus {
-  border-top-left-radius: inherit;
-  border-bottom-left-radius: inherit;
-}
-
-.root[data-oqy] > .plus {
-  border-top-right-radius: inherit;
-  border-bottom-right-radius: inherit;
 }
 </style>

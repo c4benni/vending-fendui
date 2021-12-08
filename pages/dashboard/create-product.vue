@@ -101,7 +101,8 @@ export default {
                 path: 'processingDone',
                 value: {
                     title: error ? 'An error occured' : 'Product created',
-                    subtitle: error?.message || data?.message
+                    subtitle: error?.message || data?.message,
+                    error: !!error
                 }
             })
 

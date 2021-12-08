@@ -12,7 +12,7 @@
             </p>
 
             <div
-                class="grid grid-flow-col grid-cols-[repeat(autofill,minmax(250px,1fr))] mt-8 justify-center gap-x-1"
+                class="grid grid-flow-col grid-cols-[repeat(auto-fill,minmax(250px,1fr))] mt-8 justify-center gap-x-1"
             >
                 <UiBtn
                     v-for="(item, i) in actions"

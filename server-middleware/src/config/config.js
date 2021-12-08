@@ -24,7 +24,7 @@ module.exports = {
         `${food}/spices`,
         `${food}/pot-mussels`,
         `${food}/fish-vegetables`,
-        `${food}/desert`,
+        `${food}/dessert`,
         `${ecommerce}/accessories-bag`,
         `${ecommerce}/leather-bag-gray`,
         `${ecommerce}/car-interior-design`,

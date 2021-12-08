@@ -35,75 +35,12 @@ routes.forEach((route) => {
   router[method](url, callbacks)
 })
 
-// router.get('/build', async (req, res) => {
-//   // organize images;
-
-//   const favIco = await mediaTable.findOne({
-//     where: {
-//       title: 'icons8-vending-machine-96'
-//     },
-//     attributes: ['url']
-//   })
-
-//   const registerImg = await mediaTable.findOne({
-//     where: {
-//       title: 'bermuda-profitable-growth'
-//     },
-//     attributes: ['url']
-//   })
-
-//   const loginImg = await mediaTable.findOne({
-//     where: {
-//       title: 'sammy-woman-financial-analyst'
-//     },
-//     attributes: ['url']
-//   })
-
-//   const notFound = await mediaTable.findAll({
-//     where: {
-//       [Op.or]: [
-//         {
-//           [Op.like]: '%jaconda-17%'
-//         },
-//         {
-//           [Op.like]: '%bermuda-page-not-found%'
-//         },
-//         {
-//           [Op.like]: '%pixeltrue-error-1%'
-//         }
-//       ]
-//     },
-//     attributes: ['url']
-//   })
-
-//   const noConnection = await mediaTable.findOne({
-//     where: {
-//       [Op.like]: '%urban-677%'
-//     },
-//     attributes: ['url']
-//   })
-
-//   const media = {
-//     favIco,
-//     registerImg,
-//     loginImg,
-//     notFound,
-//     noConnection
-//   }
-
-//   res.send(media)
-// })
-
 router.get('/auth', async (req, res) => {
   const { data, error } = await signedInRole({ req, res })
 
   if (error) {
     return res.send({ error })
   }
-
-  console.log({
-    toke: process.env.USER_TOKEN
-  })
 
   await session.signUser(data.id, res, req)
 

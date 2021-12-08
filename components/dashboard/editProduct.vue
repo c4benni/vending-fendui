@@ -82,10 +82,10 @@ export default {
                     disabled: true,
                 },
                 cost: {
-                    value: this.product.cost || 'Loading'
+                    value: parseFloat(this.product.cost) || 'Loading'
                 },
                 inventory: {
-                    value: `${this.product.amountAvailable || -1}`
+                    value: parseFloat(this.product.amountAvailable || -1)
                 }
             }
         }
@@ -173,7 +173,7 @@ export default {
                 value: {
                     message: 'Are you sure you want to delete this product? This action cannot be reversed.',
                     error: true,
-                    closeText: 'Clear deposit',
+                    closeText: 'Delete product',
                     callback: async () => {
 
                         await this.$apiCall(`product?id=${this.id}`, 'DELETE')
@@ -185,6 +185,7 @@ export default {
                             value: {
                                 key: Date.now(),
                                 message: 'Product successfully deleted!',
+                                timeout: 2000
                             }
                         })
 

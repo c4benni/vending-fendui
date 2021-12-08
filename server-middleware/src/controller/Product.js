@@ -2,8 +2,6 @@
 const { app } = require('../config/config')
 const { Product, User } = require('../models')
 const attempt = require('../utils/attempt')
-const sendError = require('../utils/sendError')
-const sendSuccess = require('../utils/sendSuccess')
 const { signUserFromCookie } = require('../utils/sessions')
 
 async function deleteProductLogic({ req, res, productID, sendMessage }) {
@@ -14,11 +12,12 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
     if (!userId) {
       return (
         sendMessage &&
-        sendError.withStatus(res, {
-          message: 'session expired',
-          status: 401
-          // unauthorized
+        res.status(401).send({
+          error: {
+            message: 'session expired'
+          }
         })
+        // unauthorized
       )
     }
 
@@ -30,11 +29,13 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
     if (!product) {
       return (
         sendMessage &&
-        sendError.withStatus(res, {
-          message: 'item not found or might have been deleted',
-          status: 404
-          // not found
+        res.status(404).send({
+          error: {
+            message: 'item not found or might have been deleted',
+            status: 404
+          }
         })
+        // not found
       )
     }
 
@@ -42,11 +43,13 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
     if (product.sellerId !== userId) {
       return (
         sendMessage &&
-        sendError.withStatus(res, {
-          message: 'only the owner of this product can delete it',
-          status: 401
-          // unauthorized
+        res.status(401).send({
+          error: {
+            message: 'only the owner of this product can delete it',
+            status: 401
+          }
         })
+        // unauthorized
       )
     }
 
@@ -79,11 +82,13 @@ module.exports = {
           const { id } = req.cookies
 
           if (!id) {
-            return sendError.withStatus(res, {
-              message: 'you need to login first',
-              status: 401
-              // unauthorized
+            return res.status(401).send({
+              error: {
+                message: 'you need to login first',
+                status: 401
+              }
             })
+            // unauthorized
           }
 
           const user = await User.findOne({
@@ -91,20 +96,24 @@ module.exports = {
           })
 
           if (!user) {
-            return sendError.withStatus(res, {
-              message: 'this account may have been deleted',
-              status: 404
-              // not found
+            return res.status(404).send({
+              error: {
+                message: 'this account may have been deleted',
+                status: 404
+              }
             })
+            // not found
           }
 
           if (user.role != 'seller') {
-            return sendError.withStatus(res, {
-              message:
-                'only a seller can add a product. Create a seller account?',
-              status: 401
-              // unauthorized
+            return res.status(401).send({
+              error: {
+                message:
+                  'only a seller can add a product. Create a seller account?',
+                status: 401
+              }
             })
+            // unauthorized
           }
 
           // check if product name exist;
@@ -113,10 +122,13 @@ module.exports = {
           })
 
           if (findProduct) {
-            return sendError.withStatus(res, {
-              message: 'product exists. Choose another name.',
-              status: 403
+            return res.status(403).send({
+              error: {
+                message: 'product exists. Choose another name.',
+                status: 403
+              }
             })
+            // forbidden
           }
 
           // create a new product;
@@ -167,11 +179,13 @@ module.exports = {
           })
 
           if (!product) {
-            return sendError.withStatus(res, {
-              message: 'product not found or might have been deleted',
-              status: 404
-              // not found
+            return res.send(404)({
+              error: {
+                message: 'product not found or might have been deleted',
+                status: 404
+              }
             })
+            // not found
           }
 
           // send filtered result;
@@ -234,11 +248,13 @@ module.exports = {
       })
 
       if (!findProducts.length) {
-        return sendError.withStatus(res, {
-          message: 'no product(s) found',
-          status: 404
-          // not found
+        return res.send(404)({
+          error: {
+            message: 'no product(s) found',
+            status: 404
+          }
         })
+        // not found
       } else {
         const data = []
 
@@ -293,11 +309,13 @@ module.exports = {
       const { id: userId } = req.cookies
 
       if (!userId) {
-        return sendError.withStatus(res, {
-          message: 'session expired',
-          status: 401
-          // unauthorized
+        return res.status(401).send({
+          error: {
+            message: 'session expired',
+            status: 401
+          }
         })
+        // unauthorized
       }
 
       const { id: productID } = req.body
@@ -308,20 +326,24 @@ module.exports = {
       })
 
       if (!product) {
-        return sendError.withStatus(res, {
-          message: 'item not found or might have been deleted',
-          status: 404
-          // not found
+        return res.status(404).send({
+          error: {
+            message: 'item not found or might have been deleted',
+            status: 404
+          }
         })
+        // not found
       }
 
       // check that product.sellerId == userId;
       if (product.sellerId !== userId) {
-        return sendError.withStatus(res, {
-          message: 'only the owner of this product can update it',
-          status: 401
-          // unauthorized
+        return res.status(401).send({
+          error: {
+            message: 'only the owner of this product can update it',
+            status: 401
+          }
         })
+        // unauthorized
       }
 
       // ensure new productName doesn't exist;
@@ -331,11 +353,13 @@ module.exports = {
         })
 
         if (existingProductName) {
-          return sendError.withStatus(res, {
-            message: 'product name is taken. Choose another name',
-            status: 403
-            // forbidden
+          return res.status(403).send({
+            error: {
+              message: 'product name is taken. Choose another name',
+              status: 403
+            }
           })
+          // forbidden
         }
       }
 
@@ -345,7 +369,7 @@ module.exports = {
 
       await product.save()
 
-      sendSuccess.plain(res, {
+      res.send({
         data: product.toJSON()
       })
     }
@@ -385,14 +409,18 @@ module.exports = {
     }
 
     errorCaught
-      ? sendError.withStatus(res, {
-          message: 'an error occured',
-          status: 500
+      ? res.status(500).send({
+          error: {
+            message: 'an error occured',
+            status: 500
+          }
         })
-      : sendSuccess.withStatus(res, {
-          message: 'item(s) deleted',
-          status: 204
-          // no content
+      : res.status(204).send({
+          error: {
+            message: 'item(s) deleted',
+            status: 204
+          }
         })
+    // no content
   }
 }

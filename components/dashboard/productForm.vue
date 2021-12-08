@@ -70,33 +70,37 @@
         >
             <p class="title text-[1.25rem] leading-none mb-3">Product cost{{ addAsterisk('cost') }}</p>
 
-            <p class="subtitle text-sm mt-0 leading-none">How much is this product worth?</p>
+            <p class="subtitle text-sm mt-0 leading-none">Choose a coin preset below.</p>
 
-            <ui-btn
-                tag="label"
-                role="button"
-                for="prodcut-cost"
-                class="rounded-md bg-white dark:bg-blue-gray-900 md:h-[64px] mt-6 w-full min-w-full justify-between h-[56px] cursor-pointer font-lg font-medium"
-                outlined
-                :outlined-opacity="costSelectActive ? '0.4' : '0.1'"
+            <div
+                class="grid grid-cols-[repeat(auto-fill,minmax(min(45%,320px),1fr))] lg:grid-cols-[repeat(auto-fill,minmax(min(30%,320px),1fr))] gap-3 my-6"
             >
-                <ui-select
-                    id="prodcut-cost"
-                    v-model="form.cost"
-                    :title="'choose cost'"
-                    :items="costSelectOptions"
-                    class="absolute min-w-full h-full"
-                    @update:modelValue="costSelectUpdated"
-                    @focus="costSelectActive = true"
-                    @blur="costSelectActive = false"
-                />
-                {{
-                    selectedCost || 'Choose a price'
-                }}
-                <div class="opacity-75 flex">
-                    <ui-icon name="menuSwap" />
-                </div>
-            </ui-btn>
+                <ui-btn
+                    v-for="(cost, i) in costPreset"
+                    :key="`${i}-${form.cost == cost}`"
+                    :title="`select ¢${cost}coin`"
+                    class="h-[96px] w-full hover:bg-blue-800 hover:bg-opacity-70 active:bg-blue-900 dark:hover:bg-opacity-80 dark:active:bg-blue-700 dark:active:bg-opacity-60"
+                    :class="{
+                        'bg-blue-700 text-white dark:bg-blue-500 dark:text-black  fade-appear':
+                            form.cost == cost
+                    }"
+                    outlined
+                    :outlined-opacity="form.cost == cost ? '0.35' : '0.1'"
+                    @click="() => setCost(cost)"
+                >¢{{ cost }}</ui-btn>
+            </div>
+
+            <p class="subtitle text-sm leading-none pt-6">Or enter an amount in multiples of 5</p>
+
+            <order-quantity
+                id="product-cost"
+                v-model.number="form.cost"
+                class="mt-3"
+                max="1000"
+                min="5"
+                step="5"
+                use-chevron
+            />
         </div>
 
         <div
@@ -111,7 +115,7 @@
 
             <order-quantity
                 id="product-inventory"
-                v-model="form.inventory"
+                v-model.number="form.inventory"
                 class="mt-6"
                 max="1000"
                 min="1"
@@ -186,7 +190,6 @@ export default {
         selectedCost: '',
 
         typeSelectActive: false,
-        costSelectActive: false,
 
         detailsValidity: {
             name: false,
@@ -200,6 +203,21 @@ export default {
         }
     },
     computed: {
+        breakpoints() {
+            return this.$store.state.breakpoints;
+        },
+        miniDevice() {
+            return /xxs|xs|sm/.test(this.breakpoints.is);
+        },
+        costPreset() {
+            // filter out 10 & 500 on mini devices.
+            const output = [
+                '5', '10', '20',
+                '50', '100', '500'
+            ].filter(cost => this.miniDevice ? !/^10$|500/.test(cost) : true)
+
+            return output;
+        },
         requiredFields() {
             return [
                 {
@@ -371,6 +389,9 @@ export default {
     },
 
     methods: {
+        setCost(cost) {
+            this.form.cost = parseFloat(cost)
+        },
         updateParent() {
             this.$emit('update-parent', {
                 detailsValidity: this.detailsValidity,

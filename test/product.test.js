@@ -3,7 +3,7 @@ const { User } = require('../server-middleware/src/models')
 const validValues = {
   productName: 'new product',
   amountAvailable: '100',
-  cost: '100',
+  cost: '200',
   type: 'social'
 }
 
@@ -80,11 +80,11 @@ module.exports = function (nuxt, request) {
     describe('Returns 401 when accessed by a "seller" with wrong payload', () => {
       const { productName, type, amountAvailable, cost } = validValues
 
-      test('Invalid coin return 400', async () => {
+      test('Only accepts coins in multiple of 5', async () => {
         //  create a new user with seller role
         await User.create(sellerInfo)
 
-        //   login seller
+        //  login seller
         const headers = await logInSellerInfo()
 
         const { statusCode } = await createProduct(
@@ -92,7 +92,7 @@ module.exports = function (nuxt, request) {
             productName,
             type,
             amountAvailable,
-            cost: '90'
+            cost: '9'
           },
           headers
         )
@@ -100,6 +100,7 @@ module.exports = function (nuxt, request) {
         expect(statusCode).toEqual(400)
       })
 
+      // products type are required for future sorting
       test('Invalid type return 400', async () => {
         //   login seller
         const headers = await logInSellerInfo()

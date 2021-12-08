@@ -343,7 +343,7 @@ export default {
     methods: {
         async logout() {
 
-            await fetch('/api/v1/user/logout', { method: 'post' })
+            await this.$apiCall('user/logout', 'POST')
 
             requestAnimationFrame(() => {
                 this.$commit('UPDATE_', {

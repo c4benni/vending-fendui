@@ -22,10 +22,14 @@
                     <div
                         class="grid start-center justify-center mt-2 pl-6"
                         :class="{
-                            'text-green-700': !!processingDone
+                            'text-green-700': !!processingDone && !processingDone.error,
+                            'text-red-700': !!processingDone && processingDone.error
                         }"
                     >
-                        <ui-icon v-if="processingDone" name="check"></ui-icon>
+                        <ui-icon
+                            v-if="processingDone"
+                            :name="processingDone.error ? 'close' : 'check'"
+                        ></ui-icon>
                         <div v-else class="spinner-border"></div>
                     </div>
                     <div>
@@ -315,8 +319,12 @@ export default {
                     title: `Create product`
                 },
                 {
-                    active: /^\/dashboard\/my-products/.test(route.path),
+                    active: /^\/dashboard\/my-products/.test(route.path) && !this.$route.query.edit,
                     title: `My products`
+                },
+                {
+                    active: /^\/dashboard\/my-products/.test(route.path) && this.$route.query.edit,
+                    title: `Edit product`
                 }
             ]
 
