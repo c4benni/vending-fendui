@@ -71,51 +71,6 @@ export function breakpointsClasses() {
 export const functionalEmit = ({ event, payload, c }) =>
   c?.data?.on?.[event]?.(payload)
 
-export function logoSVG({ h, size }) {
-  return h(
-    'svg',
-    {
-      attrs: {
-        alt: 'app icon',
-        height: size,
-        width: size,
-        viewBox: `0 0 48 48`
-      },
-      staticClass: 'logo-loader'
-    },
-    [
-      {
-        fill: '#8097a2',
-        d: 'M20.466,4.464L15.18,9.75l8.833,8.838l8.818-8.828l-5.296-5.296C26.558,3.488,25.279,3,24,3 C22.721,3,21.442,3.488,20.466,4.464z'
-      },
-      {
-        fill: '#37474f',
-        d: 'M15.18,9.75L4.464,20.466C3.488,21.442,3,22.721,3,24c0,1.279,0.488,2.558,1.464,3.534l5.309,5.309 l14.24-14.255L15.18,9.75z'
-      },
-      {
-        fill: '#1565c0',
-        d: 'M41.569 18.499L32.831 9.76 24.013 18.588 32.687 27.269z'
-      },
-      {
-        fill: '#90caf9',
-        d: 'M43.536,20.466l-1.967-1.967l-8.882,8.77l5.555,5.559l5.293-5.293 c0.968-0.968,1.456-2.234,1.464-3.503C45.008,22.742,44.52,21.45,43.536,20.466z'
-      },
-      {
-        fill: '#03a9f4',
-        d: 'M9.773,32.843l10.693,10.693C21.442,44.512,22.721,45,24,45c1.279,0,2.558-0.488,3.534-1.464 l10.708-10.708l-14.23-14.24L9.773,32.843z'
-      }
-    ].map((item, key) => {
-      return h('path', {
-        key,
-        attrs: {
-          fill: item.fill,
-          d: item.d
-        }
-      })
-    })
-  )
-}
-
 export const promiser = (val = true) => {
   return new Promise((r) => r(val))
 }
@@ -594,39 +549,6 @@ export const computedBR = {
   }
 }
 
-export const minutes = (val) => {
-  const ms = 1000 * 60
-
-  const minutes = val
-
-  return ms * minutes
-}
-
-export async function getUid() {
-  let uid = null
-
-  if (!this.$store.state.idb.init) {
-    return promiser(null)
-  }
-
-  if (this.$store.state.user) {
-    uid = this.$store.state.uid
-  } else {
-    const { data, error } = await this.$IDB({
-      action: 'select',
-      args: { from: 'logger', query: 'id' }
-    })
-
-    if (error || !data?.length) {
-      return promiser(null)
-    }
-
-    uid = data[0].value
-  }
-
-  return promiser(uid)
-}
-
 export const sortBy = (remove = []) => {
   return [
     {
@@ -666,54 +588,6 @@ export const sortBy = (remove = []) => {
   ].filter((x) => !remove.includes(x.value))
 }
 
-export const sortRecipes = ({ array, sortBy }) => {
-  const by = sortBy
-
-  if (by == 'default') {
-    return array
-  }
-
-  const arr = [...array]
-
-  if (/areadesc|areaasc/.test(by)) {
-    return arr.sort((x, y) => {
-      const a = x.area || 0
-      const b = y.area || 0
-
-      if (by == 'areadesc') {
-        return a > b ? -1 : b > a ? 1 : 0
-      }
-      return a > b ? 1 : b > a ? -1 : 0
-    })
-  }
-
-  if (/titledesc|titleasc/.test(by)) {
-    return arr.sort((x, y) => {
-      const a = (x.title || '').toLowerCase()
-      const b = (y.title || '').toLowerCase()
-
-      if (by == 'titleasc') {
-        return a > b ? -1 : b > a ? 1 : 0
-      }
-      return a > b ? 1 : b > a ? -1 : 0
-    })
-  }
-
-  if (/likedesc|likeasc/.test(by)) {
-    return arr.sort((x, y) => {
-      const a = x.likes || 0
-      const b = y.likes || 0
-
-      if (by == 'likedesc') {
-        return a > b ? -1 : b > a ? 1 : 0
-      }
-      return a > b ? 1 : b > a ? -1 : 0
-    })
-  }
-
-  return arr
-}
-
 export function isIOS() {
   return (
     [
@@ -727,83 +601,6 @@ export function isIOS() {
     // iPad on iOS 13 detection
     (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
   )
-}
-
-export function getRouteTo({ path, query }) {
-  const route = this.$route
-
-  let to = path
-
-  Object.entries({
-    ...route.query,
-    ...query
-  }).forEach((item, key) => {
-    to += `${key == 0 ? '?' : '&'}${item[0]}=${item[1]}`
-  })
-
-  to += route.hash || ''
-
-  return to
-}
-
-export function getViewAllTo({
-  title,
-  showingFor,
-  fetched,
-  path,
-  limit = 10,
-  variable,
-  get,
-  // if avialable, fetched will be based on this instead of path.
-  test,
-  // used in rare cases where the view all links to another view all;
-  innerShowingFor,
-  innerGet
-}) {
-  const all = () => {
-    let value = ''
-
-    // short name (first and last letters for most) the _ is for formatting;
-    title && (value = 't_')
-    showingFor && (value += 'f_')
-    fetched && (value += 'fd_')
-    path && (value += 'ph_')
-    limit && (value += 'lim_')
-    variable && (value += 'cst_')
-    get && (value += 'gt_')
-    test && (value += 'tt_')
-    innerShowingFor && (value += 'isf_')
-    innerGet && (value += 'igt_')
-
-    value = value.replace(/_$/, '').replace(/_/g, ':')
-
-    return value
-  }
-
-  return getRouteTo.call(this, {
-    path: '/view-all/',
-    query: {
-      'v-t': title,
-      'v-f': showingFor,
-      'v-fd': /^:/.test(fetched)
-        ? fetched
-        : fetched == 'check'
-        ? ':c'
-        : fetched == (true || 'true')
-        ? ':t'
-        : ':f',
-      'v-gt': get,
-      'v-cst': variable,
-      'v-ph': path?.replace?.(/\./g, ':') || '',
-      'v-lim': limit,
-      'v-tt': test?.replace?.(/undefined|null/, '') || '',
-      'v-ish': innerShowingFor?.replace?.(/undefined|null/, '') || '',
-      'v-igt': innerGet || '',
-      'v-a-z': all(),
-      page: '1',
-      sortBy: 'default'
-    }
-  })
 }
 
 export const extractQueryVariables = (str, variable) => {
@@ -834,3 +631,15 @@ export const setCSSVariable = (str) => {
 }
 
 export const btnClasses = `bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 dark:bg-blue-500 dark:text-black dark:hover:bg-blue-600 dark:hover:bg-opacity-70 dark:active:bg-blue-700 dark:active:bg-opacity-60`
+
+export const formatAmount = (amount) => {
+  const parseAmount = parseFloat(amount)
+
+  if (isNaN(parseAmount)) {
+    return null
+  }
+
+  if (parseAmount < 100) {
+    return `¢${parseAmount}`
+  } else return `$${(parseAmount / 100).toFixed(2)}`
+}

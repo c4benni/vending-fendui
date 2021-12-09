@@ -69,12 +69,12 @@
             <div class="title lead-subtitle fill-before px-6">Peep the store</div>
 
             <div
-                class="mt-6 grid gap-3 sm:gap-4 md:gap-6 overflow-x-scroll overflow-y-hidden grid-cols-[repeat(10,auto),1px] w-full pl-6 pb-2 hide-scrollbar after:contents after:w-full"
+                class="mt-6 grid gap-3 sm:gap-4 md:gap-6 overflow-x-scroll overflow-y-visible py-3 grid-cols-[repeat(10,auto),1px] w-full pl-6 pb-2 hide-scrollbar after:contents after:w-full"
             >
                 <uiBtn
                     v-for="(product, i) in products"
                     :key="i"
-                    class="w-[calc(100vw-3rem)] sm:w-[min(calc(100vw-3rem),350px)] bg-white dark:bg-blue-gray-900 bg-opacity-100 dark:bg-opacity-50 rounded-sm pb-6 cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-opacity-90 grid-flow-row p-0 text-left justify-stretch font-normal"
+                    class="w-[calc(100vw-3rem)] sm:w-[min(calc(100vw-3rem),350px)] bg-white dark:bg-blue-gray-900 bg-opacity-100 dark:bg-opacity-50 rounded-sm pb-6 cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-opacity-90 grid-flow-row p-0 text-left justify-stretch font-normal transform-gpu transition-transform hover:translate-y-[-0.25rem]"
                     :class="{ 'mr-6': i == products.length - 1 }"
                     tag="nuxt-link"
                     :to="`/dashboard/shop?id=${product.id}`"

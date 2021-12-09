@@ -79,10 +79,10 @@
                     v-for="(cost, i) in costPreset"
                     :key="`${i}-${form.cost == cost}`"
                     :title="`select ¢${cost}coin`"
-                    class="h-[96px] w-full hover:bg-blue-800 hover:bg-opacity-70 active:bg-blue-900 dark:hover:bg-opacity-80 dark:active:bg-blue-700 dark:active:bg-opacity-60"
+                    class="h-[96px] w-full hover:bg-blue-700 hover:bg-opacity-80 active:bg-blue-900 active:text-white dark:hover:bg-opacity-80 dark:active:bg-blue-700 dark:active:bg-opacity-60 dark:active:text-black"
                     :class="{
                         'bg-blue-700 text-white dark:bg-blue-500 dark:text-black  fade-appear':
-                            form.cost == cost
+                            form.cost == cost,
                     }"
                     outlined
                     :outlined-opacity="form.cost == cost ? '0.35' : '0.1'"

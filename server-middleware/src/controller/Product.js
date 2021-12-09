@@ -75,85 +75,76 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
 module.exports = {
   async createProduct(req, res) {
     const mainCallback = async () => {
-      await attempt({
-        express: { res },
-        callback: async () => {
-          // only logged in users with role == 'seller' can access this route.
-          const { id } = req.cookies
+      // only logged in users with role == 'seller' can access this route.
+      const { id } = req.cookies
 
-          if (!id) {
-            return res.status(401).send({
-              error: {
-                message: 'you need to login first',
-                status: 401
-              }
-            })
-            // unauthorized
+      if (!id) {
+        return res.status(401).send({
+          error: {
+            message: 'you need to login first',
+            status: 401
           }
-
-          const user = await User.findOne({
-            where: { id }
-          })
-
-          if (!user) {
-            return res.status(404).send({
-              error: {
-                message: 'this account may have been deleted',
-                status: 404
-              }
-            })
-            // not found
-          }
-
-          if (user.role != 'seller') {
-            return res.status(401).send({
-              error: {
-                message:
-                  'only a seller can add a product. Create a seller account?',
-                status: 401
-              }
-            })
-            // unauthorized
-          }
-
-          // check if product name exist;
-          const findProduct = await Product.findOne({
-            where: { productName: req.body.productName }
-          })
-
-          if (findProduct) {
-            return res.status(403).send({
-              error: {
-                message: 'product exists. Choose another name.',
-                status: 403
-              }
-            })
-            // forbidden
-          }
-
-          // create a new product;
-          const product = await Product.create({
-            ...req.body,
-            sellerId: id,
-            background: app.productImages
-          })
-
-          const productJSON = product.toJSON()
-
-          delete productJSON.createdAt
-
-          // send success if okay;
-          res.send({
-            data: {
-              message: 'product successfully created!',
-              product: productJSON
-            }
-          })
-        },
-        errorMessage: (err) => ({
-          message: err.message,
-          status: 403
         })
+        // unauthorized
+      }
+
+      const user = await User.findOne({
+        where: { id }
+      })
+
+      if (!user) {
+        return res.status(404).send({
+          error: {
+            message: 'this account may have been deleted',
+            status: 404
+          }
+        })
+        // not found
+      }
+
+      if (user.role != 'seller') {
+        return res.status(401).send({
+          error: {
+            message:
+              'only a seller can add a product. Create a seller account?',
+            status: 401
+          }
+        })
+        // unauthorized
+      }
+
+      // check if product name exist;
+      const findProduct = await Product.findOne({
+        where: { productName: req.body.productName }
+      })
+
+      if (findProduct) {
+        return res.status(403).send({
+          error: {
+            message: 'product exists. Choose another name.',
+            status: 403
+          }
+        })
+        // forbidden
+      }
+
+      // create a new product;
+      const product = await Product.create({
+        ...req.body,
+        sellerId: id,
+        background: app.productImages
+      })
+
+      const productJSON = product.toJSON()
+
+      delete productJSON.createdAt
+
+      // send success if okay;
+      res.send({
+        data: {
+          message: 'product successfully created!',
+          product: productJSON
+        }
       })
     }
 
@@ -165,67 +156,58 @@ module.exports = {
 
   async readProduct(req, res) {
     const mainCallback = async () => {
-      await attempt({
-        express: { res },
-        callback: async () => {
-          // anyone can view this
-          const { id } = req.query
+      // anyone can view this
+      const { id } = req.query
 
-          // still renew signed in users.
-          await signUserFromCookie(req, res)
+      // still renew signed in users.
+      await signUserFromCookie(req, res)
 
-          const product = await Product.findOne({
-            where: { id }
-          })
+      const product = await Product.findOne({
+        where: { id }
+      })
 
-          if (!product) {
-            return res.send(404)({
-              error: {
-                message: 'product not found or might have been deleted',
-                status: 404
-              }
-            })
-            // not found
+      if (!product) {
+        return res.status(404).send({
+          error: {
+            message: 'product not found or might have been deleted',
+            status: 404
           }
-
-          // send filtered result;
-          const disAllowedFields = ['id', 'updatedAt']
-
-          const productJSON = product.toJSON()
-
-          const sellerUser = await User.findOne({
-            where: {
-              id: productJSON.sellerId
-            }
-          })
-
-          const sellerInfo = {}
-
-          if (sellerUser) {
-            sellerInfo.username = sellerUser.username
-          } else {
-            sellerInfo.error = {
-              message: 'this user has been deleted'
-            }
-          }
-
-          const data = {
-            ...productJSON,
-            sellerInfo
-          }
-
-          disAllowedFields.forEach((field) => {
-            delete data[field]
-          })
-
-          return res.send({
-            data
-          })
-        },
-        errorMessage: (err) => ({
-          message: err.message,
-          status: 403
         })
+        // not found
+      }
+
+      // send filtered result;
+      const disAllowedFields = ['id', 'updatedAt']
+
+      const productJSON = product.toJSON()
+
+      const sellerUser = await User.findOne({
+        where: {
+          id: productJSON.sellerId
+        }
+      })
+
+      const sellerInfo = {}
+
+      if (sellerUser) {
+        sellerInfo.username = sellerUser.username
+      } else {
+        sellerInfo.error = {
+          message: 'this user has been deleted'
+        }
+      }
+
+      const data = {
+        ...productJSON,
+        sellerInfo
+      }
+
+      disAllowedFields.forEach((field) => {
+        delete data[field]
+      })
+
+      return res.send({
+        data
       })
     }
 
@@ -248,7 +230,7 @@ module.exports = {
       })
 
       if (!findProducts.length) {
-        return res.send(404)({
+        return res.status(404).send({
           error: {
             message: 'no product(s) found',
             status: 404
@@ -290,8 +272,7 @@ module.exports = {
 
         res.send({
           data,
-          length: data.length,
-          status: 200
+          length: data.length
         })
       }
     }
@@ -416,7 +397,7 @@ module.exports = {
           }
         })
       : res.status(204).send({
-          error: {
+          data: {
             message: 'item(s) deleted',
             status: 204
           }

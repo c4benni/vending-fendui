@@ -60,16 +60,6 @@ module.exports = {
     }
   },
 
-  defaultDeposit() {
-    const deposit = {}
-
-    app.validCost.forEach((cost) => {
-      deposit[cost] = 0
-    })
-
-    return deposit
-  },
-
   unwantedUserFields: (user) =>
     [
       'password',
@@ -81,5 +71,31 @@ module.exports = {
     ].flat(),
 
   bearerToken: (req) =>
-    req.headers?.Authorization?.token?.split?.(' ')?.[0] || ''
+    req.headers?.Authorization?.token?.split?.(' ')?.[0] || '',
+
+  getChange: (total) => {
+    if (total % 5) {
+      return [null]
+    }
+
+    const change = []
+    let money = total
+    // sort so we can get the highest change first
+    const availableCoins = app.validCost.sort((a, b) =>
+      b > a ? 1 : b < a ? -1 : 0
+    )
+
+    //  loop and deduct money till money is 0;
+    while (money) {
+      availableCoins.forEach((coin, i) => {
+        const isLesser = i == 0 ? true : money < availableCoins[i - 1]
+
+        if (money > coin - 1 && isLesser) {
+          change.push(coin)
+          money -= coin
+        }
+      })
+    }
+    return change
+  }
 }

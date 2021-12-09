@@ -112,9 +112,9 @@
                         size="lg"
                         class="px-6 dark:hover:bg-blue-gray-800 hover:bg-blue-gray-100 hover:bg-opacity-70 dark:hover:text-white hover:text-black w-full justify-start my-1 grid-cols-1 h-[96px] content-center rounded-sm"
                         :class="[{
-                            'dark:bg-blue-gray-800 dark:text-white bg-blue-gray-300 text-black': fields.role == item.title,
+                            'dark:bg-blue-gray-800 dark:text-white bg-blue-gray-300 text-black': form.role == item.title,
                         }]"
-                        @click="() => fields.role = item.title"
+                        @click="() => form.role = item.title"
                     >
                         <div class="grid h-full w-full text-left">
                             <div
@@ -122,7 +122,7 @@
                             >
                                 {{ item.title }}
                                 <ui-icon
-                                    v-if="fields.role == item.title"
+                                    v-if="form.role == item.title"
                                     name="check"
                                     size="24px"
                                     class="absolute right-0 rounded-full bg-blue-800 dark:bg-blue-600 w-[28px] h-[28px] opacity-100 text-white"
@@ -140,17 +140,17 @@
                     <div>
                         <input
                             id="terms-conditions"
-                            v-model="fields.termsAndConditions"
+                            v-model="form.termsAndConditions"
                             type="checkbox"
                             class="h-[24px] w-[24px] opacity-0 absolute cursor-pointer"
                             required="required"
                         />
                         <ui-icon
-                            :key="fields.termsAndConditions"
-                            :name="fields.termsAndConditions ? 'checkboxChecked' : 'blankCheckboxOutline'"
+                            :key="form.termsAndConditions"
+                            :name="form.termsAndConditions ? 'checkboxChecked' : 'blankCheckboxOutline'"
                             class="fade-appear pointer-events-none"
                             :svg-class="[{
-                                'bg-blue-800 dark:bg-blue-600 text-white': fields.termsAndConditions
+                                'bg-blue-800 dark:bg-blue-600 text-white': form.termsAndConditions
                             }]"
                         />
                     </div>
@@ -159,7 +159,7 @@
                         for="terms-conditions"
                         class="cursor-pointer active:scale-[0.99] transition-transform text-opacity-70 text-blue-gray-900 dark:text-cool-gray-50"
                         :class="[{
-                            'text-opacity-80': fields.termsAndConditions
+                            'text-opacity-80': form.termsAndConditions
                         }]"
                     >Agree to terms and conditions</label>
                 </div>
@@ -195,7 +195,7 @@ export default {
         message: null,
         isLoading: false,
         userDetail: {},
-        fields: defaultFields(),
+        form: defaultFields(),
 
         validFields: {
             username: false,
@@ -234,21 +234,21 @@ export default {
                 return true
             }
 
-            const fields = [
+            const form = [
                 ...Object.values(this.validFields),
-                !this.isLogin && this.fields.termsAndConditions
+                !this.isLogin && this.form.termsAndConditions
             ].filter(Boolean)
 
             if (!this.isLogin) {
-                const fieldsValid = fields.length == 3
-                    && !fields.includes(false)
-                    && !!this.fields.role
+                const fieldsValid = form.length == 3
+                    && !form.includes(false)
+                    && !!this.form.role
 
                 return !fieldsValid
             }
 
-            const fieldsValid = fields.length == 2
-                && !fields.includes(false)
+            const fieldsValid = form.length == 2
+                && !form.includes(false)
 
             return !fieldsValid
         },
@@ -265,10 +265,10 @@ export default {
                     },
                     autocomplete: 'username',
                     onUpdate: e => {
-                        this.fields.username = e
+                        this.form.username = e
                     },
                     label: 'Username',
-                    model: this.fields.username,
+                    model: this.form.username,
                     validate: val => {
                         const e = val?.trim()
 
@@ -291,10 +291,10 @@ export default {
                     id: 'password-field',
                     autocomplete: 'new password',
                     onUpdate: e => {
-                        this.fields.password = e
+                        this.form.password = e
                     },
                     label: 'Password',
-                    model: this.fields.password,
+                    model: this.form.password,
                     placeholder: '6+ characters',
                     type: 'password',
                     validity: e => {
@@ -356,7 +356,7 @@ export default {
             this.message = null;
             this.isLoading = true;
 
-            const { username, password, role } = this.fields;
+            const { username, password, role } = this.form;
 
             const form = { username, password }
 
@@ -375,15 +375,15 @@ export default {
 
             const { data, error } = await res.json()
 
-            this.fields.termsAndConditions = false
+            this.form.termsAndConditions = false
 
             this.fetchKey = Date.now()
 
-            window.scrollTo({
-                left: 0, top: 0,
-            })
+            scrollTo(0, 0)
 
             if (error) {
+                this.form.password = '';
+
                 this.message = {
                     text: error.message,
                     error: true
@@ -391,6 +391,8 @@ export default {
             }
             // don't show success message on login as we re-route immediately
             else if (!this.isLogin) {
+                this.form = defaultFields();
+
                 this.message = {
                     text: 'Account created successfully!',
                     error: false
@@ -420,7 +422,7 @@ export default {
                 await this.$sleep();
                 this.$router.replace('/dashboard')
 
-                this.fields = defaultFields()
+                this.form = defaultFields()
             }
         }
     }

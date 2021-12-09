@@ -10,7 +10,7 @@
         <div v-else class="grid justify-items-center">
             <p class="mb-3">
                 {{
-                    getErrorMessage
+                getErrorMessage
                 }}
             </p>
 
@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <div v-else class="card p-0 mx-6 shadow-md dark:shadow-none overflow-x-auto">
+    <div v-else class="card p-0 mx-6 shadow-md dark:shadow-none overflow-x-auto fade-appear">
         <form
             action="."
             name="search-products"
@@ -122,7 +122,7 @@ export default {
     data: () => ({
         search: '',
         sortBy: '',
-        loading: false,
+        loading: true,
         errorFetching: {
             message: '',
             status: null
@@ -182,6 +182,7 @@ export default {
 
     watch: {
         isEditing(n) {
+            scrollTo(0, 0)
             if (!n) {
                 this.fetchProducts()
             }

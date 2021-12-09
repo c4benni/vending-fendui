@@ -143,7 +143,6 @@
                     <ui-btn
                         class="h-[42px] w-10/12 mx-auto mb-1 justify-start gap-x-2 text-[0.9rem] rounded-sm hover:before:bg-red-900 dark:hover:before:bg-red-700 mt-[32px] border border-red-600 dark:border-red-400 bg-red-700 dark:bg-red-600 bg-opacity-40 hover:text-white hover:bg-opacity-100 dark:bg-opacity-25"
                         tag="nuxt-link"
-                        to="/"
                         @click.native="logout"
                     >
                         <ui-icon name="powerOff" size="20px" />Logout

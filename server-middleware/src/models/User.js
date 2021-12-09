@@ -7,6 +7,8 @@ const { id: generateId } = require('../utils/generate')
 const { findSession } = require('../utils/sessions')
 const { clearCookies } = require('../utils/utils')
 
+const { TransactionHistory } = require('./index')
+
 async function hashPassword(user) {
   if (!user.changed('password')) {
     return
@@ -17,6 +19,14 @@ async function hashPassword(user) {
   await user.setDataValue('password', hash)
 
   return user
+}
+
+async function afterDestroy(user) {
+  await TransactionHistory.destroy({
+    where: {
+      userId: user.id
+    }
+  })
 }
 
 // define a User model;
@@ -40,20 +50,20 @@ module.exports = (sequelize, dataTypes) => {
         allowNull: false
       },
       deposit: {
-        type: dataTypes.JSON,
+        type: dataTypes.BIGINT,
         allowNull: true
       },
       income: {
-        type: dataTypes.JSON,
+        type: dataTypes.BIGINT,
         allowNull: true
       },
-      purchased: {
-        type: dataTypes.ARRAY(dataTypes.JSON),
-        allowNull: true
-      },
+
       role: {
         type: dataTypes.STRING(6),
-        allowNull: false
+        allowNull: false,
+        validate: {
+          is: /^(buyer|seller)$/
+        }
       },
       sessions: {
         type: dataTypes.ARRAY(dataTypes.TEXT),
@@ -80,7 +90,8 @@ module.exports = (sequelize, dataTypes) => {
     },
     {
       hooks: {
-        beforeSave: hashPassword
+        beforeSave: hashPassword,
+        afterDestroy
       },
       indexes: [
         {
@@ -155,19 +166,6 @@ module.exports = (sequelize, dataTypes) => {
         return this.role == 'seller'
       }
     }
-    // totalMoney: {
-    //   get () {
-    //     if (this.isSeller) {
-    //       const income = Object.values(this.income || [])
-
-    //       return income.reduce((a, b) => a + b, 0)
-    //     } else {
-    //       const deposit = Object.values(this.deposit || [])
-
-    //       return deposit.reduce((a, b) => a + b, 0)
-    //     }
-    //   }
-    // }
   })
 
   return User

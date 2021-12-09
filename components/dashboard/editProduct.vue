@@ -1,5 +1,10 @@
 <template>
-    <ProductForm :key="id + `${loading}`" :fields="fields" @update-parent="formUpdated">
+    <ProductForm
+        :key="id + `${loading}`"
+        :fields="fields"
+        class="fade-appear"
+        @update-parent="formUpdated"
+    >
         <ui-btn
             class="gap-x-2 w-8/12 h-[48px] mx-auto"
             :class="{

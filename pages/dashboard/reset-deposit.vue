@@ -7,13 +7,11 @@
 
             <p class="mt-6 font-semibold text-lg opacity-80 text-center">
                 {{
-                    emptyDeposit ? 'You have nothing to clear' : 'Are you sure about this action?'
+                emptyDeposit ? 'You have nothing to clear' : 'Are you sure about this action?'
                 }}
             </p>
 
-            <div
-                class="grid grid-flow-col grid-cols-[repeat(auto-fill,minmax(250px,1fr))] mt-8 justify-center gap-x-1"
-            >
+            <div class="grid grid-flow-col mt-8 justify-center gap-x-1">
                 <UiBtn
                     v-for="(item, i) in actions"
                     :key="i"

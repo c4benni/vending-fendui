@@ -136,7 +136,7 @@
                 </div>
                 <!-- banner end-->
 
-                <nuxt-child />
+                <nuxt-child :key="$route.fullPath" />
 
                 <div
                     class="z-10 fixed h-full bottom-0 pointer-events-none grid items-end md:max-w-full mx-auto justify-center left-0 lg:left-[280px] w-full lg:w-[calc(100vw-280px)]"

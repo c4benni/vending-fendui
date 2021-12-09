@@ -20,7 +20,7 @@ module.exports = {
 
       if (validate.error) {
         return sendError.withStatus(res, {
-          message: validate.error.message || 'invalid credentials',
+          message: validate.error.message || 'invalid parameters',
           status: 400
           // bad request
         })
@@ -48,7 +48,7 @@ module.exports = {
 
       if (validate.error) {
         return sendError.withStatus(res, {
-          message: validate.error.message || 'invalid credentials',
+          message: validate.error.message || 'invalid parameters',
           status: 400
           // bad request
         })
@@ -73,7 +73,7 @@ module.exports = {
 
       if (validate.error) {
         return sendError.withStatus(res, {
-          message: validate.error.message || 'invalid credentials',
+          message: validate.error.message || 'invalid parameters',
           status: 400
           // bad request
         })
