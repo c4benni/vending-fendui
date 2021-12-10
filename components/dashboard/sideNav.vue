@@ -53,7 +53,7 @@
                         class="h-[42px] w-10/12 mx-auto mb-1 justify-start gap-x-2 text-[0.9rem] rounded-sm bg-opacity-10 dark:bg-opacity-10 hover:before:bg-teal-500 dark:hover:before:bg-teal-300"
                         :class="{
                             'bg-teal-500 dark:bg-teal-300 text-teal-800 dark:text-teal-400 opacity-100': item.isActive,
-                            'opacity-80': !item.isActive
+                            'opacity-70': !item.isActive
                         }"
                         tag="nuxt-link"
                         :to="item.to"
@@ -77,7 +77,7 @@
                             class="h-[42px] w-full justify-start gap-x-2 text-[0.9rem] rounded-sm bg-opacity-10 dark:bg-opacity-10 grid-cols-[auto,1fr,auto] justify-items-start hover:before:bg-teal-500 dark:hover:before:bg-teal-300"
                             :class="{
                                 'bg-teal-500 dark:bg-teal-300 text-teal-800 dark:text-teal-400 opacity-100': item.isActive,
-                                'opacity-80': !item.isActive,
+                                'opacity-70': !item.isActive,
                             }"
                             @click="ordersState = !ordersState"
                         >
@@ -107,7 +107,7 @@
                                 class="h-[42px] w-11/12 justify-start gap-x-2 text-[0.9rem] rounded-sm bg-opacity-10 dark:bg-opacity-10 hover:before:bg-teal-500 dark:hover:before:bg-teal-300 pl-6"
                                 :class="{
                                     'bg-teal-500 dark:bg-teal-300 text-teal-800 dark:text-teal-400 opacity-100': item.isActive,
-                                    'opacity-80': !item.isActive,
+                                    'opacity-70': !item.isActive,
                                     'grid-cols-[auto,1fr,auto] justify-items-start': item.collapse,
                                     'mt-[8px]': i == 0
                                 }"
@@ -124,7 +124,7 @@
                         class="h-[42px] w-10/12 mx-auto mb-1 justify-start gap-x-2 text-[0.9rem] rounded-sm bg-opacity-10 dark:bg-opacity-10 hover:before:bg-teal-500 dark:hover:before:bg-teal-300"
                         :class="{
                             'bg-teal-500 dark:bg-teal-300 text-teal-800 dark:text-teal-400 opacity-100': item.isActive,
-                            'opacity-80': !item.isActive,
+                            'opacity-70': !item.isActive,
                             'grid-cols-[auto,1fr,auto] justify-items-start': item.collapse
                         }"
                         tag="nuxt-link"

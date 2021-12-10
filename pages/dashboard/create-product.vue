@@ -73,6 +73,15 @@ export default {
                 value: true
             })
 
+            this.$commit('UPDATE_', {
+                path: 'processingDone',
+                value: {
+                    title: 'Creating product',
+                    subtitle: 'Please wait while we create your product.',
+                    key: Date.now()
+                }
+            })
+
             const {
                 // files,
                 name,
@@ -102,13 +111,14 @@ export default {
                 value: {
                     title: error ? 'An error occured' : 'Product created',
                     subtitle: error?.message || data?.message,
-                    error: !!error
+                    error: !!error,
+                    key: Date.now()
                 }
             })
 
             await this.$sleep(100);
 
-            this.$router.push('/dashboard/my-products')
+            !error && this.$router.push('/dashboard/my-products')
         }
     }
 }

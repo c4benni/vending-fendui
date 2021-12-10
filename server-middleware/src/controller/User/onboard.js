@@ -1,11 +1,7 @@
 const { User, Session } = require('../../models')
 const attempt = require('../../utils/attempt')
 const { findSession, signUser, signCookies } = require('../../utils/sessions')
-const {
-  clearCookies,
-  bearerToken,
-  unwantedUserFields
-} = require('../../utils/utils')
+const { clearCookies, unwantedUserFields } = require('../../utils/utils')
 
 const { app } = require('../../config/config')
 
@@ -13,7 +9,7 @@ const { app } = require('../../config/config')
 async function logoutLogic({ req, res, all }) {
   const mainCallback = async () => {
     const { id } = req.cookies
-    const token = req.cookies?.token || bearerToken(req)
+    const token = req.cookies?.token
 
     // find existing user
     const session = await findSession(token, id)
@@ -73,7 +69,9 @@ module.exports = {
       const { username, password, role } = req.body
       // check that user doesnt exist.
       const findUser = await User.findOne({
-        where: { username }
+        where: { username },
+        attributes: ['id'],
+        raw: true
       })
 
       if (findUser) {

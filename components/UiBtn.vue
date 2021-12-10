@@ -106,6 +106,8 @@ export default {
   },
 
   render(h, c) {
+    const span = (d, c) => h('span', d, c)
+
     const attrs = c.data?.attrs || {}
 
     const slots = c.slots?.()
@@ -117,10 +119,6 @@ export default {
     const staticClass = c.data.staticClass
 
     const $class = c.data.class
-
-    const canRaise = () => !props.flat && !props.text && !props.outlined
-
-    const span = (d, c) => h('span', d, c)
 
     const slot = slots?.default?.[0] || {}
 
@@ -145,9 +143,6 @@ export default {
       __flat: props.flat,
       __disabled: props.disabled,
       'bg-cool-gray-400 black-text text-opacity-60 dark:bg-cool-gray-600 white-text text-opacity-60': props.disabled && !props.text,
-      'theme-primary':
-        props.background === '' && !props.text && !props.outlined,
-      '__default-color': props.color === '' && (props.text || props.outlined),
       __outlined: props.outlined,
     }
 
@@ -212,16 +207,6 @@ export default {
               __action: props.actionButton,
             },
           !props.text && !props.outlined ? props.background : '',
-          props.color
-            ? /-text$/i.test(props.color)
-              ? props.color
-              : `${props.color}-text`
-            : '',
-          props.raise === true && canRaise
-            ? 'raise-light'
-            : typeof props.raise === 'string' && canRaise
-              ? props.raise
-              : '',
         ],
         style:
           props.filledText || props.outlined

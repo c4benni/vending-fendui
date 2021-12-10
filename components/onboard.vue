@@ -30,7 +30,7 @@
                     class="text-base font-normal text-right text-blue-gray-900 dark:text-blue-gray-100"
                 >
                     {{ loginText.h2 }}
-                    <nuxt-link :to="loginText.to" class="text-blue-400">
+                    <nuxt-link :to="loginText.to" class="text-blue-400 hover:underline">
                         {{
                             loginText.nuxtLink
                         }}

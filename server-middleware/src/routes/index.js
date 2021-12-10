@@ -7,9 +7,9 @@ const session = require('../utils/sessions')
 const { signedInRole, unwantedUserFields } = require('../utils/utils')
 const User = require('./User')
 const Product = require('./Products')
-const Media = require('./client/media')
+const clientRoutes = require('./clientRoutes')
 
-const routes = [...User, ...Product, ...Media]
+const routes = [...User, ...Product, ...clientRoutes]
 
 routes.forEach((route) => {
   const method = route.method

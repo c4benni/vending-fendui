@@ -12,47 +12,9 @@
             }"
             @click="hideBackdrop"
         >
-            <div
-                v-if="isProcessing"
-                class="absolute w-full h-full grid justify-center items-start fade-appear"
-            >
-                <div
-                    class="pt-4 rounded-b-sm bg-white dark:bg-blue-gray-900 grid overflow-hidden isolate grid-flow-col"
-                >
-                    <div
-                        class="grid start-center justify-center mt-2 pl-6"
-                        :class="{
-                            'text-green-700': !!processingDone && !processingDone.error,
-                            'text-red-700': !!processingDone && processingDone.error
-                        }"
-                    >
-                        <ui-icon
-                            v-if="processingDone"
-                            :name="processingDone.error ? 'close' : 'check'"
-                        ></ui-icon>
-                        <div v-else class="spinner-border"></div>
-                    </div>
-                    <div>
-                        <p class="px-6 font-bold text-xl">
-                            {{
-                                processingDone.title ||
-                                    'Creating product'
-                            }}
-                        </p>
-                        <p
-                            class="px-6 mb-6 opacity-80 text-sm mt-1"
-                            :class="{
-                                'pr-12': !!processingDone
-                            }"
-                        >
-                            {{
-                                processingDone.subtitle || 'Please wait while we create your product.'
-                            }}
-                        </p>
-                    </div>
-                </div>
-            </div>
+            <process-dialog />
         </div>
+
         <sideNav
             :key="miniDevice"
             :mini-device="miniDevice"
@@ -83,8 +45,22 @@
 
                 <p
                     v-if="!showDeposit && !errorPage"
-                    class="px-6 font-semibold opacity-70 text-sm"
-                >Total deposit: {{ totalDeposit }}</p>
+                    class="px-6 font-semibold opacity-70 text-sm flex items-center"
+                >
+                    Total deposit:
+                    <span
+                        :key="showBalanceIcon"
+                        class="ml-2 fade-appear inline-block"
+                    >{{ totalDeposit }}</span>
+
+                    <ui-btn
+                        class="ml-1 min-h-[38px]"
+                        :title="showBalance ? 'hide balance' : 'show balance'"
+                        @click="$toggleShowBalance"
+                    >
+                        <ui-icon :name="showBalanceIcon" size="18" />
+                    </ui-btn>
+                </p>
 
                 <ul
                     v-if="breadcrumbs && showTitle && !errorPage"
@@ -112,7 +88,8 @@
                 <!-- banner -->
                 <div
                     v-if="showBanner"
-                    class="rounded-md bg-gradient-to-b md:bg-gradient-to-r from-blue-600 to-blue-900 dark:from-blue-400 dark:to-blue-600 text-white dark:text-blue-gray-900 p-8 grid md:grid-flow-col md:grid-cols-[auto 1fr] justify-start gap-x-4 mx-6"
+                    class="rounded-md bg-gradient-to-b md:bg-gradient-to-r from-blue-600 to-blue-900 dark:from-blue-400 dark:to-blue-600 text-white dark:text-blue-gray-900 p-8 grid md:grid-flow-col md:grid-cols-[auto 1fr] justify-start gap-x-4 mx-6 fade-slide-y-appear"
+                    style="--slide-y:10px;--appear-duration:150ms;"
                 >
                     <div class="w-[200px] h-[200px] mx-auto">
                         <app-img width="200px" height="200px" :public-id="media.welcome" />
@@ -184,14 +161,15 @@
 </template>
 
 <script>
-import sideNav from '~/components/dashboard/sideNav.vue'
+import SideNav from '~/components/dashboard/sideNav.vue'
+import ProcessDialog from '~/components/dashboard/processDialog.vue'
 import Header from '~/components/dashboard/header.vue';
 import { capitalize } from '~/utils/main';
 import UiIcon from '~/components/uiIcon.vue';
 
 export default {
     name: 'DashboardPage',
-    components: { sideNav, Header, UiIcon, },
+    components: { SideNav, Header, UiIcon, ProcessDialog },
 
     data: () => ({
         authenticated: false,
@@ -199,6 +177,12 @@ export default {
     }),
 
     computed: {
+        showBalance() {
+            return this.$store.state.showBalance
+        },
+        showBalanceIcon() {
+            return this.showBalance ? 'eyeOff' : 'eye'
+        },
         userInfo() {
             return this.$store.getters.userInfo
         },
@@ -208,10 +192,13 @@ export default {
         totalDeposit() {
             const userInfo = this.userInfo;
 
-            return (userInfo[userInfo.isBuyer ? 'depositTotal' : 'incomeTotal'] || 0)
-        },
-        processingDone() {
-            return this.$store.state.processingDone || {}
+            const availableAmount = (userInfo[userInfo.isBuyer ? 'depositTotal' : 'incomeTotal'] || 0)
+
+            if (!this.showBalance) {
+                return '*'.repeat(5)
+            }
+
+            return availableAmount
         },
         renderBackdrop() {
             return this.miniDevice || this.isProcessing
@@ -436,8 +423,6 @@ export default {
             })
         }
     }
-
-
 }
 </script>
 

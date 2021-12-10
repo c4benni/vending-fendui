@@ -7,7 +7,7 @@ const { id: generateId } = require('../utils/generate')
 const { findSession } = require('../utils/sessions')
 const { clearCookies } = require('../utils/utils')
 
-const { TransactionHistory } = require('./index')
+const { TransactionHistory, Session } = require('./index')
 
 async function hashPassword(user) {
   if (!user.changed('password')) {
@@ -22,7 +22,15 @@ async function hashPassword(user) {
 }
 
 async function afterDestroy(user) {
+  // remove saved transactions
   await TransactionHistory.destroy({
+    where: {
+      userId: user.id
+    }
+  })
+
+  // remove saved sessions;
+  await Session.destroy({
     where: {
       userId: user.id
     }
@@ -65,12 +73,6 @@ module.exports = (sequelize, dataTypes) => {
           is: /^(buyer|seller)$/
         }
       },
-      sessions: {
-        type: dataTypes.ARRAY(dataTypes.TEXT),
-        allowNull: true,
-        defaultValue: []
-      },
-
       displayName: {
         type: dataTypes.STRING(99),
         allowNull: true
@@ -96,7 +98,11 @@ module.exports = (sequelize, dataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ['id']
+          fields: ['id', 'username']
+        },
+        {
+          unique: false,
+          fields: ['role']
         }
       ]
     }
@@ -118,8 +124,7 @@ module.exports = (sequelize, dataTypes) => {
     return hash
   }
 
-  // this function generates a new active session,
-  // then returns if (jwt) is found;
+  // returns if (session) is found;
   User.prototype.isSignedIn = async function (token) {
     if (!token) {
       return {
@@ -127,25 +132,27 @@ module.exports = (sequelize, dataTypes) => {
       }
     }
 
-    const { Session } = require('../models')
+    // const { Session } = require('../models')
 
-    const sessions = await Session.findAll({
+    const sessions = await Session.findOne({
       where: {
         id: this.id
-      }
+      },
+      raw: true
     })
 
     return {
-      sessions
+      sessions: sessions || []
     }
   }
 
-  // remove session(s) from user - logout;
   User.prototype.logout = async function ({ token, all, req, res }) {
+    // not current is used when trying to log out all sessions;
     const notCurrent = req.query.notCurrent === 'true'
-    const session = await findSession(token, this.id)
 
     if (!all) {
+      const session = await findSession(token, this.id)
+
       await session.sign(0)
     } else {
       const { Session } = require('../models')

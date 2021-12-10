@@ -72,18 +72,7 @@ async function signUser(userId, res, req) {
 }
 
 async function verify(req, res, next) {
-  const { token: cookiesToken, id: cookiesId } = req.cookies
-
-  const bearerToken = cookiesToken
-    ? null
-    : req.headers?.Authorization?.split?.(' ')?.[0]
-  const bearerId = cookiesId ? null : req.headers?.uid
-
-  const bodyToken = cookiesToken || bearerToken ? null : req.body.session
-  const bodyId = cookiesId || bearerId ? null : req.body.id
-
-  const token = cookiesToken || bearerToken || bodyToken || ''
-  const userId = cookiesId || bearerId || bodyId || ''
+  const { token, id: userId } = req.cookies
 
   const expiredSession = () =>
     sendError.withStatus(res, {

@@ -17,6 +17,10 @@ const sequelize = new Sequelize(
   dbConfig.options
 )
 
+console.log({
+  DB_NAME: dbConfig.database
+})
+
 // auto import models and add them to DB{}
 fs.readdirSync(__dirname)
   .filter((file) => file !== 'index.js')

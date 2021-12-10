@@ -10,8 +10,6 @@ module.exports = {
   },
 
   async signedInRole({ req, role, invalidRole }) {
-    const { User } = require('../models')
-
     // only logged in users with role == '${role}' can access this route.
     const { id } = req.cookies
 
@@ -24,6 +22,8 @@ module.exports = {
         }
       }
     }
+
+    const { User } = require('../models')
 
     const user = await User.findOne({
       where: { id }
@@ -70,32 +70,34 @@ module.exports = {
       user.isSeller ? ['deposit', 'purchased'] : 'income'
     ].flat(),
 
-  bearerToken: (req) =>
-    req.headers?.Authorization?.token?.split?.(' ')?.[0] || '',
+  // bearerToken: (req) =>
+  //   req.headers?.Authorization?.token?.split?.(' ')?.[0] || '',
 
   getChange: (total) => {
+    const change = []
+
     if (total % 5) {
-      return [null]
+      return change
     }
 
-    const change = []
     let money = total
     // sort so we can get the highest change first
-    const availableCoins = app.validCost.sort((a, b) =>
-      b > a ? 1 : b < a ? -1 : 0
-    )
+    const availableCoins = [...app.validCost].sort().reverse()
 
     //  loop and deduct money till money is 0;
     while (money) {
       availableCoins.forEach((coin, i) => {
-        const isLesser = i == 0 ? true : money < availableCoins[i - 1]
+        const previousCoin = availableCoins[i - 1]
 
-        if (money > coin - 1 && isLesser) {
+        const canPush = i == 0 ? true : money < previousCoin
+
+        if (money > coin - 1 && canPush) {
           change.push(coin)
           money -= coin
         }
       })
     }
+
     return change
   }
 }

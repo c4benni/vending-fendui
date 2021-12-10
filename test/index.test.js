@@ -15,7 +15,13 @@ beforeAll(async () => {
     serverMiddleware: [
       { path: '/api/v1', handler: '~/server-middleware/src/server.js' }
     ],
-    env: 'test'
+    build: {
+      extend(config) {
+        config.node = {
+          fs: 'empty'
+        }
+      }
+    }
   }
 
   nuxt = new Nuxt(config)

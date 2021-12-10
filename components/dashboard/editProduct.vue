@@ -127,6 +127,7 @@ export default {
                 return null
             }
 
+            // reset dialog message
             this.$commit('UPDATE_', {
                 path: 'processingDone',
                 value: null
@@ -134,6 +135,18 @@ export default {
 
             await this.$nextTick()
 
+            // set dialog message
+            this.$commit('UPDATE_', {
+                path: 'processingDone',
+                value: {
+                    title: 'Updating product',
+                    subtitle: 'Please wait while we update your product.'
+                }
+            })
+
+            await this.$nextTick()
+
+            // show dialog
             this.$commit('UPDATE_', {
                 path: 'dashboardProcessing',
                 value: true

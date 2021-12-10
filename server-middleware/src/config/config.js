@@ -1,8 +1,11 @@
+require('dotenv').config('../../../.env')
+
 module.exports = {
   base: '/api/v1',
   port: process.env.PORT || 1001,
   db: {
-    database: process.env.NODE_ENV == 'test' ? 'test_db' : process.env.DB_NAME,
+    database: process.env.DB_NAME,
+
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     options: {
@@ -11,9 +14,7 @@ module.exports = {
       storage: './vending.sql'
     }
   },
-  auth: {
-    jwtSecret: process.env.JWT_SECRET || 'secret'
-  },
+
   app: {
     get productImages() {
       const food = '/samples/food'

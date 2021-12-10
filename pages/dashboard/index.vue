@@ -1,64 +1,6 @@
 <template>
     <div class="grid gap-y-6">
-        <div class="card mx-6 px-6">
-            <div
-                class="subtitle uppercase text-[0.8rem]"
-            >Total {{ userInfo.isBuyer ? 'deposit' : 'income' }}</div>
-            <div
-                class="title lead-title fill-before flex justify-between items-end"
-            >{{ availableAmount }}</div>
-
-            <div class="uppercase subtitle text-[0.8rem] mt-6">Available Coins</div>
-
-            <div
-                v-for="(item, i) in coins"
-                :key="i"
-                class="grid grid-flow-col grid-cols-[auto,1fr,auto] gap-x-3 items-center"
-                :class="[
-                {
-                    'mt-6': i == 0,
-                    'mb-6': i != 4,
-                    'pb-7 relative fill-before before:border-b before:border-black dark:before:border-white before:opacity-10': i == 4 && isBuyer,
-                }]"
-            >
-                <div :class="[item.color]" class="flex">
-                    <ui-icon name="ring" />
-                </div>
-
-                <div
-                    class="font-medium text-lg bg-opacity-80"
-                    :class="[
-                        { 'line-through opacity-60': availableCoins[i] == '¢0' }
-                    ]"
-                >{{ item.title }}</div>
-
-                <div class="subtitle text-sm">{{ availableCoins[i] }}</div>
-            </div>
-
-            <div
-                v-if="isBuyer"
-                class="grid gap-3 mt-7 grid-cols-[repeat(auto-fill,minmax(170px,1fr))]"
-            >
-                <ui-btn
-                    class="rounded-sm px-5 h-[48px] bg-blue-800 dark:bg-blue-400 text-white bg-opacity-100 dark:bg-opacity-20 hover:bg-opacity-35 dark:hover:bg-opacity-35 gap-x-1 hover:bg-opacity-100 dark:hover:bg-opacity-80 hover:text-white hover:bg-opacity-35 dark:hover:bg-opacity-35 w-full text-md"
-                    title="deposit"
-                    to="/dashboard/deposit"
-                    tag="nuxt-link"
-                >
-                    <ui-icon name="plus" size="28px"></ui-icon>Deposit coins
-                </ui-btn>
-
-                <ui-btn
-                    v-if="showClearBtn"
-                    class="rounded-sm px-5 h-[48px] bg-red-800 dark:bg-red-400 bg-opacity-20 dark:bg-opacity-10 hover:bg-opacity-100 dark:hover:bg-opacity-80 hover:bg-opacity-35 dark:hover:bg-opacity-35 gap-x-1 w-full opacity-80 text-red-900 dark:text-red-200 hover:opacity-100 hover:text-white text-md"
-                    title="clear"
-                    to="/dashboard/reset-deposit"
-                    tag="nuxt-link"
-                >
-                    <ui-icon name="delete" size="28px"></ui-icon>Clear coins
-                </ui-btn>
-            </div>
-        </div>
+        <TransactionHistory />
 
         <div
             v-if="products"
@@ -113,35 +55,13 @@
 </template>
 
 <script>
-import UiIcon from '~/components/uiIcon.vue';
+import TransactionHistory from '~/components/dashboard/transactionHistory.vue';
 import AppRating from '~/components/appRating.vue';
 
 export default {
-    components: { UiIcon, AppRating },
+    components: { TransactionHistory, AppRating },
 
     data: () => ({
-        coins: [
-            {
-                title: '100 Cents',
-                color: 'text-amber-600 dark:text-amber-500'
-            },
-            {
-                title: '50 Cents',
-                color: 'text-pink-700 dark:text-pink-600'
-            },
-            {
-                title: '20 Cents',
-                color: 'text-blue-600 dark:text-blue-500'
-            },
-            {
-                title: '10 Cents',
-                color: 'text-red-600 dark:text-red-500'
-            },
-            {
-                title: '5 Cents',
-                color: 'text-teal-600 dark:text-teal-500'
-            }
-        ],
         products: null,
     }),
     head() {
@@ -149,35 +69,9 @@ export default {
             title: 'Overview'
         }
     },
-    computed: {
-        showClearBtn() {
-            return !/^¢0/.test(this.availableAmount)
-        },
-        userInfo() {
-            return this.$store.getters.userInfo
-        },
-        isBuyer() {
-            return this.userInfo.isBuyer
-        },
-        availableAmount() {
-            const userInfo = this.userInfo;
 
-            return (userInfo[userInfo.isBuyer ? 'depositTotal' : 'incomeTotal'] || 0)
-        },
-        availableCoins() {
-            const userInfo = this.userInfo
-            return Object.entries(userInfo[userInfo.isBuyer ? 'deposit' : 'income'] || {}).reverse().map(entry => {
-                const coin = entry[0];
-                const qty = entry[1]
-
-                const value = ((coin * qty));
-
-                return value > 99 ? `$${(value / 100).toFixed(2)}` : `¢${value}`
-            })
-        }
-    },
     async created() {
-        const { data } = await this.$apiCall('product/all?limit=10', 'GET')
+        const { data } = await this.$apiCall('product/all?limit=10')
 
         if (data) {
             this.products = data
@@ -185,7 +79,3 @@ export default {
     }
 }
 </script>
-
-
-<style>
-</style>

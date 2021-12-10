@@ -587,7 +587,7 @@ a {
   }
 }
 .fade-slide-x-appear {
-  animation: fade-slide-x-appear var(--appear-duration, 500ms)
+  animation: fade-slide-x-appear var(--appear-duration, 150ms)
     var(--appear-ease, linear);
 }
 @keyframes fade-slide-x-leave {
@@ -629,7 +629,7 @@ a {
   }
 }
 .fade-slide-y-appear {
-  animation: fade-slide-y-appear var(--appear-duration, 500ms)
+  animation: fade-slide-y-appear var(--appear-duration, 150ms)
     var(--appear-ease, linear);
 }
 @keyframes fade-scale-appear {
@@ -647,7 +647,7 @@ a {
   }
 }
 .fade-scale-appear {
-  animation: fade-scale-appear var(--appear-duration, 500ms)
+  animation: fade-scale-appear var(--appear-duration, 150ms)
     var(--appear-ease, linear);
   transform-origin: var(--appear-origin, center);
 }

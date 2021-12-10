@@ -13,20 +13,28 @@ const buyerInfo = {
 }
 
 module.exports = function (nuxt, request) {
+  const $fetch = () => request(nuxt().server.app)
+
+  const reset = async (headers) => {
+    const response = await $fetch()
+      .post('/api/v1/reset')
+      .set('Cookie', headers['set-cookie'] || 'null')
+
+    return response
+  }
+
   const Login = async (user) => {
     const { username, password } = user
-    const response = await request(nuxt().server.app)
-      .post('/api/v1/user/login')
-      .send({
-        username,
-        password
-      })
+    const response = await $fetch().post('/api/v1/user/login').send({
+      username,
+      password
+    })
 
     return response
   }
 
   const deposit = async (payload, headers) => {
-    const api = () => request(nuxt().server.app)
+    const api = () => $fetch()
     const POST = api().post
 
     const cookie = headers
@@ -109,13 +117,17 @@ module.exports = function (nuxt, request) {
       //   login a buyer
       const { headers, body } = await Login(buyerInfo)
 
-      const depositOf50 = body.data.deposit?.['50'] || 0
+      const initialDeposit = body.data.deposit
 
       //   no deposit yet;
-      expect(depositOf50).toEqual(0)
+      expect(initialDeposit).toEqual(null)
 
       //   make a deposit;
-      const { statusCode, body: depositBody } = await deposit(
+      const {
+        statusCode,
+        body: depositBody,
+        headers: buyHeader
+      } = await deposit(
         {
           amount: 50,
           quantity: 10
@@ -123,17 +135,23 @@ module.exports = function (nuxt, request) {
         headers
       )
 
-      const newDepositOf50 = depositBody.data.deposit['50']
+      const newDeposit = depositBody.data.deposit
 
-      expect(newDepositOf50).toEqual(10)
+      expect(newDeposit).toEqual(500)
 
       expect(statusCode).toEqual(200)
+
+      // reset deposit so we don't keep track of total deposits;
+
+      const { statusCode: resetStatusCode } = await reset(buyHeader)
+
+      expect(resetStatusCode).toEqual(200)
     })
   })
 
   describe('Valid buyer can reset deposit', () => {
     const reset = async (headers) => {
-      const api = () => request(nuxt().server.app)
+      const api = () => $fetch()
       const POST = api().post
 
       const cookie = headers
@@ -166,24 +184,25 @@ module.exports = function (nuxt, request) {
       const { headers } = await Login(buyerInfo)
 
       // deposit 10 100cent coins;
-      const { body } = await deposit(
-        {
-          amount: 100,
-          quantity: 10
-        },
-        headers
+      const depositPayload = {
+        amount: 100,
+        quantity: 1
+      }
+
+      const { body } = await deposit(depositPayload, headers)
+
+      const newBalance = body.data.deposit
+
+      expect(newBalance).toEqual(
+        depositPayload.amount * depositPayload.quantity
       )
-
-      const newBalance = body.data.deposit['100']
-
-      expect(newBalance).toEqual(10)
 
       //   attemt to reset
       const { statusCode, body: resetBody } = await reset(headers)
 
       expect(statusCode).toEqual(200)
 
-      const resetBalance = resetBody.data.deposit['100']
+      const resetBalance = resetBody.data.deposit
 
       expect(resetBalance).toEqual(0)
     })

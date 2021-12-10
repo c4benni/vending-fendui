@@ -36,6 +36,8 @@ export default function state() {
 
     productName: null,
 
-    bannerActive: true
+    bannerActive: true,
+
+    showBalance: true
   }
 }

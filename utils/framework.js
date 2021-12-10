@@ -33,8 +33,8 @@ class Theme {
 }
 
 export class C4UiLib {
-  constructor(Vue) {
-    this.theme = Vue.observable(new Theme())
+  constructor(observable) {
+    this.theme = observable(new Theme())
     this.componentZIndex = []
     this.overlays = []
     this.htmlOverlayClassAdded = false

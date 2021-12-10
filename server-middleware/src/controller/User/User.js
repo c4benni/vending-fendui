@@ -3,11 +3,7 @@ const attempt = require('../../utils/attempt')
 const sendError = require('../../utils/sendError')
 const sendSuccess = require('../../utils/sendSuccess')
 const { signUser, signUserFromCookie } = require('../../utils/sessions')
-const {
-  clearCookies,
-  unwantedUserFields,
-  bearerToken
-} = require('../../utils/utils')
+const { clearCookies, unwantedUserFields } = require('../../utils/utils')
 const { Product } = require('../../models')
 const onboard = require('./onboard')
 
@@ -31,11 +27,7 @@ module.exports = {
       } else {
         // check that self query is passed only for signed in users;
         if (self) {
-          let { id } = req.cookies
-
-          if (!id) {
-            id = bearerToken(req)
-          }
+          const { id } = req.cookies
 
           const isSignedIn = await findUser.isSignedIn({ id })
 
@@ -98,7 +90,8 @@ module.exports = {
       const findUsers = await User.findAll({
         ...where,
         limit,
-        offset
+        offset,
+        raw: true
       })
 
       if (!findUsers.length) {
@@ -195,7 +188,9 @@ module.exports = {
       if (username) {
         // check that user doesnt exist on DB;
         const findUsername = await User.findOne({
-          where: { username }
+          where: { username },
+          attributes: ['username'],
+          raw: true
         })
 
         if (findUsername) {
@@ -286,7 +281,7 @@ module.exports = {
           })
         }
 
-        const removeSellerProducts = async () => {
+        const updateSellerProduct = async () => {
           if (!findUser.isSeller) {
             return
           }
@@ -303,7 +298,7 @@ module.exports = {
           )
         }
 
-        await removeSellerProducts()
+        await updateSellerProduct()
 
         const remove = await findUser.destroy()
 

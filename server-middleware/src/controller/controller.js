@@ -29,7 +29,7 @@ module.exports = {
       const depositTotal = parseFloat(quantity) * parseFloat(amount)
 
       await user.update({
-        deposit: parseFloat(user.deposit) + depositTotal
+        deposit: parseFloat(user.deposit || 0) + depositTotal
       })
 
       const saveTx = await addTx({
@@ -49,7 +49,7 @@ module.exports = {
 
       res.status(200).send({
         data: {
-          message: 'deposit successfully made',
+          message: 'Deposit successfully made',
           deposit: user.deposit
         }
       })
@@ -64,7 +64,7 @@ module.exports = {
   async buy(req, res) {
     const mainCallback = async () => {
       // only logged in users with role == 'buyer' can access this route.
-      const { data: user, error } = await signedInRole({
+      const { data: buyer, error } = await signedInRole({
         req,
         res,
         role: 'buyer',
@@ -84,7 +84,7 @@ module.exports = {
       })
 
       if (!product) {
-        return res.status(400).send({
+        return res.status(404).send({
           error: {
             message: "this product doesn't exist might have been deleted.",
             status: 404
@@ -114,7 +114,7 @@ module.exports = {
 
       const totalCost = productPrice * parsedAmount
 
-      const totalDeposit = parseFloat(user.deposit)
+      const totalDeposit = parseFloat(buyer.deposit || 0)
 
       // insufficient coins
       if (totalDeposit < totalCost) {
@@ -143,132 +143,155 @@ module.exports = {
       // all checked;
       // start the transaction;
 
-      const buyTx = await sequelize.transaction(async function (tx) {
-        // deduct from product.amountAvailable;
+      try {
+        await sequelize.transaction(async function (tx) {
+          // deduct from product.amountAvailable;
 
-        const txError = {
-          error: 1
-        }
-
-        const updateProduct = async () => {
-          const updateStock = await product.update({
-            amountAvailable: productStock - parsedAmount
-          })
-
-          if (updateStock.error) {
-            return txError
+          const txError = {
+            error: 1
           }
 
-          const saveUpdate = await product.save({
-            fields: ['amountAvailable'],
-            transaction: tx
-          })
+          const updateProduct = async () => {
+            const updateStock = await product.update({
+              amountAvailable: productStock - parsedAmount
+            })
 
-          if (saveUpdate.error) {
-            return txError
-          }
-
-          return {}
-        }
-
-        const { error: updateProductError } = await updateProduct()
-
-        if (updateProductError) {
-          throw new Error('Update product error')
-        }
-
-        // update buyer to deduct deposit;
-        const updateBuyer = async () => {
-          const deductDeposit = await user.update(
-            {
-              deposit: totalDeposit - totalCost
-            },
-            {
-              transaction: tx
+            if (updateStock.error) {
+              return txError
             }
-          )
 
-          if (deductDeposit.error) {
-            return txError
+            const saveUpdate = await product.save({
+              fields: ['amountAvailable'],
+              transaction: tx
+            })
+
+            if (saveUpdate.error) {
+              return txError
+            }
+
+            return {}
           }
 
-          const saveDeposit = await user.save({
-            fields: ['deposit'],
-            transaction: tx
-          })
+          const { error: updateProductError } = await updateProduct()
 
-          if (saveDeposit.error) {
-            return txError
+          if (updateProductError) {
+            throw new Error('Update product error')
           }
 
-          return {}
-        }
-
-        const { error: updateBuyerError } = await updateBuyer()
-
-        if (updateBuyerError) {
-          throw new Error('Update buyer error')
-        }
-
-        const updateSeller = async () => {
-          const seller = await User.findOne(
-            {
-              where: {
-                id: product.sellerId
+          // update buyer to deduct deposit;
+          const updateBuyer = async () => {
+            const deductDeposit = await buyer.update(
+              {
+                deposit: totalDeposit - totalCost
+              },
+              {
+                transaction: tx
               }
-            },
-            { transaction: tx }
-          )
+            )
 
-          if (seller) {
-            const addIncome = await seller.update({
-              income: parseFloat(seller.income) + totalCost,
-              transaction: tx
-            })
-
-            if (addIncome.error) {
+            if (deductDeposit.error) {
               return txError
             }
 
-            const saveIncome = await seller.save({
-              fields: ['income'],
+            const saveDeposit = await buyer.save({
+              fields: ['deposit'],
               transaction: tx
             })
 
-            if (saveIncome.error) {
+            if (saveDeposit.error) {
               return txError
             }
-          } else {
-            return txError
+
+            const saveTx = await addTx({
+              userId: buyer.id,
+              amount: `¢${productPrice}`,
+              quantity: parseFloat(amount),
+              type: 'purchase'
+            })
+
+            if (saveTx.error) {
+              return txError
+            }
+
+            return {}
+          }
+
+          const { error: updateBuyerError } = await updateBuyer()
+
+          if (updateBuyerError) {
+            throw new Error('Update buyer error')
+          }
+
+          const updateSeller = async () => {
+            const seller = await User.findOne(
+              {
+                where: {
+                  id: product.sellerId
+                }
+              },
+              { transaction: tx }
+            )
+
+            if (seller) {
+              const addIncome = await seller.update({
+                income: parseFloat(seller.income || 0) + totalCost,
+                transaction: tx
+              })
+
+              if (addIncome.error) {
+                return txError
+              }
+
+              const saveIncome = await seller.save({
+                fields: ['income'],
+                transaction: tx
+              })
+
+              if (saveIncome.error) {
+                return txError
+              }
+
+              const saveTx = await addTx({
+                userId: seller.id,
+                amount: `¢${productPrice}`,
+                quantity: parseFloat(amount),
+                type: 'purchase'
+              })
+
+              if (saveTx.error) {
+                return txError
+              }
+            } else {
+              return txError
+            }
+
+            return {}
+          }
+
+          const { error: updateSellerError } = await updateSeller()
+
+          if (updateSellerError) {
+            throw new Error('Update seller error')
           }
 
           return {}
-        }
-
-        const { error: updateSellerError } = await updateSeller()
-
-        if (updateSellerError) {
-          throw new Error('Update seller error')
-        }
-
-        return {}
-      })
-
-      // conflict error
-      if (buyTx.error) {
-        return res.status(409).send({
-          error: {
-            message: buyTx.error.message
-          }
         })
+      } catch (err) {
+        // conflict error
+        if (err) {
+          return res.status(409).send({
+            error: {
+              message: err.message
+            }
+          })
+        }
       }
 
       res.status(200).send({
         data: {
-          message: 'deposit successfully made',
-          purchased: user.purchased,
-          change: getChange(user.deposit),
-          changeTotal: user.deposit
+          message: 'Purchase successfully made',
+          change: getChange(buyer.deposit || 0),
+          changeTotal: buyer.deposit
         }
       })
     }

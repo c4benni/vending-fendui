@@ -8,7 +8,7 @@ const sellerInfo = {
 
 let sellerId
 
-let buyerId
+// let buyerId
 
 let productCode
 
@@ -30,21 +30,29 @@ const buyerInfo = {
 }
 
 module.exports = function (nuxt, request) {
+  const $fetch = () => request(nuxt().server.app)
+
   const Login = async (user) => {
     const { username, password } = user
-    const response = await request(nuxt().server.app)
-      .post('/api/v1/user/login')
-      .send({
-        username,
-        password
-      })
+    const response = await $fetch().post('/api/v1/user/login').send({
+      username,
+      password
+    })
+
+    return response
+  }
+
+  const reset = async (headers) => {
+    const response = await $fetch()
+      .post('/api/v1/reset')
+      .set('Cookie', headers['set-cookie'] || 'null')
 
     return response
   }
 
   describe('Logged in buyers can buy a product successfully and the seller gets paid', () => {
     const createProduct = async (payload, headers) => {
-      const api = () => request(nuxt().server.app)
+      const api = () => $fetch()
       const POST = api().post
 
       const cookie = headers
@@ -59,7 +67,7 @@ module.exports = function (nuxt, request) {
     }
 
     const buy = async (payload, headers) => {
-      const api = () => request(nuxt().server.app)
+      const api = () => $fetch()
       const POST = api().post
 
       const cookie = headers
@@ -74,7 +82,7 @@ module.exports = function (nuxt, request) {
     }
 
     const deposit = async (payload, headers) => {
-      const api = () => request(nuxt().server.app)
+      const api = () => $fetch()
       const POST = api().post
 
       const cookie = headers
@@ -131,9 +139,9 @@ module.exports = function (nuxt, request) {
       await User.create(buyerInfo)
 
       //   login that user
-      const { headers, body } = await Login(buyerInfo)
+      const { headers } = await Login(buyerInfo)
 
-      buyerId = body.data.id
+      // buyerId = body.data.id
 
       //   buy an unavailable product;
       const { statusCode } = await buy(
@@ -169,7 +177,7 @@ module.exports = function (nuxt, request) {
     //     deletedSellerProductCode = body.data?.product?.id || 'null'
 
     //   // delete that user;
-    //   await request(nuxt().server.app)
+    //   await $fetch()
     //     .delete('/api/v1/user')
     //     .set('Cookie', headers['set-cookie'] || 'null')
 
@@ -188,33 +196,13 @@ module.exports = function (nuxt, request) {
     //   expect(statusCode).toEqual(403)
     // })
 
-    test("Returns 403 when user doesn't have available coin", async () => {
-      //   login a buyer
-      const { headers, body } = await Login(buyerInfo)
-
-      const expectedCoin = body.data.deposit?.['10'] || 0
-
-      expect(expectedCoin).toEqual(0)
-
-      //   attempt to buy;
-      const { statusCode } = await buy(
-        {
-          id: productCode,
-          amount: 1
-        },
-        headers
-      )
-
-      expect(statusCode).toEqual(403)
-    })
-
     test("Returns 403 when user doesn't have sufficient coins", async () => {
       //   login a buyer
       const { headers, body } = await Login(buyerInfo)
 
-      const expectedCoin = body.data.deposit?.['10'] || 0
+      const expectedCoin = body.data.deposit
 
-      expect(expectedCoin).toEqual(0)
+      expect(expectedCoin).toEqual(null)
 
       //   deposit 1 10cent coin
 
@@ -227,12 +215,12 @@ module.exports = function (nuxt, request) {
         headers
       )
 
-      const expectedCoinDeposit = depositBody.data.deposit?.['10']
+      const expectedCoinDeposit = depositBody.data.deposit
 
-      expect(expectedCoinDeposit).toEqual(1)
+      expect(expectedCoinDeposit).toEqual(10)
 
-      //   attempt to buy with insufficient coins;
-      const { statusCode } = await buy(
+      // attempt to buy with insufficient coins;
+      const { statusCode, headers: buyHeader } = await buy(
         {
           id: productCode,
           amount: 100
@@ -241,6 +229,12 @@ module.exports = function (nuxt, request) {
       )
 
       expect(statusCode).toEqual(403)
+
+      // reset deposit so we don't keep track of total deposits;
+
+      const { statusCode: resetStatusCode } = await reset(buyHeader)
+
+      expect(resetStatusCode).toEqual(200)
     })
 
     test('Returns 403 when product.avaliableAmount is less than requested amount', async () => {
@@ -248,17 +242,19 @@ module.exports = function (nuxt, request) {
       const { headers } = await Login(buyerInfo)
 
       //   make sufficient deposit;
-      const { body } = await deposit(
-        {
-          amount: 10,
-          quantity: 1000
-        },
-        headers
+
+      const depositPayload = {
+        amount: 10,
+        quantity: 1000
+      }
+
+      const { body } = await deposit(depositPayload, headers)
+
+      const expectedCoinDeposit = body.data.deposit
+
+      expect(expectedCoinDeposit).toEqual(
+        depositPayload.amount * depositPayload.quantity
       )
-
-      const expectedCoinDeposit = body.data.deposit?.['10']
-
-      expect(expectedCoinDeposit).toEqual(1001)
 
       // available is 100, attempt to buy 101 pieces;
 
@@ -283,67 +279,71 @@ module.exports = function (nuxt, request) {
       test(`Seller's income for 10cent coin is 0`, async () => {
         const { body: sellerLogin } = await Login(sellerInfo)
 
-        sellerIncome = sellerLogin.data.income?.['10'] || 0
+        sellerIncome = sellerLogin.data.income
 
-        expect(sellerIncome).toEqual(0)
+        expect(sellerIncome).toEqual(null)
       })
       //    make a successful purchase
       test('Returns 200 on successful purchase', async () => {
         //   login a buyer
         const { headers, body: buyerLogin } = await Login(buyerInfo)
 
-        const initialDeposit = buyerLogin.data.deposit['10']
+        const initialDeposit = +buyerLogin.data.deposit
 
-        expect(initialDeposit).toEqual(1001)
+        expect(initialDeposit).toEqual(10000)
 
         //   1 should be left;
+        const purchasePayload = {
+          id: productCode,
+          amount: 99
+        }
+
         const { statusCode, body: purchaseBody } = await buy(
-          {
-            id: productCode,
-            amount: 99
-          },
+          purchasePayload,
           headers
         )
 
         expect(statusCode).toEqual(200)
 
-        expect(purchaseBody.data.spent).toBeTruthy()
+        expect(Array.isArray(purchaseBody.data.change)).toBe(true)
 
         //   check that user.purchased is updated;
         //   get user;
-        const { body: currentBuyer } = await request(nuxt().server.app)
-          .get(`/api/v1/user?id=${buyerId}&self=true`)
-          .set('Cookie', headers['set-cookie'])
+        // const { body: currentBuyer } = await $fetch()
+        //   .get(`/api/v1/user?id=${buyerId}&self=true`)
+        //   .set('Cookie', headers['set-cookie'])
 
-        const purchased = currentBuyer.data.purchased
+        // const purchased = currentBuyer.data.purchased
 
-        const findPurchasedProduct = purchased.find(
-          (product) => product.id == productCode
-        )
+        // const findPurchasedProduct = purchased.find(
+        //   (product) => product.id == productCode
+        // )
 
-        expect(findPurchasedProduct).toBeTruthy()
+        // expect(findPurchasedProduct).toBeTruthy()
 
         //   check that buyer's deposit is updated;
 
-        const newBuyerDeposit = currentBuyer.data.deposit['10']
+        const newBuyerDeposit = purchaseBody.data.changeTotal
 
-        // 99 items were bought, meaning 99 coins will be subtracted from initial 1001 (= 902)
+        // 99 items were bought, meaning 99 * 10 (+productInfo.cost) will be subtracted from initial 10000 (= 9010)
 
-        expect(newBuyerDeposit).toEqual(902)
+        const totalAmount = +productInfo.cost * purchasePayload.amount
+
+        expect(newBuyerDeposit).toEqual(
+          parseFloat(initialDeposit - totalAmount)
+        )
 
         //   Seller's income is updated;
         const { body: sellerLogin, headers: sellerHeader } = await Login(
           sellerInfo
         )
 
-        console.log({ sellerLogin: sellerLogin.data.income })
+        sellerIncome = sellerLogin.data.income || 0
 
-        sellerIncome = sellerLogin.data.income?.['10'] || 0
-
-        expect(sellerIncome).toEqual(99)
+        expect(+sellerIncome).toEqual(totalAmount)
 
         //   product.amountAvailable is 1;
-        const { body: getProduct } = await request(nuxt().server.app)
+        const { body: getProduct } = await $fetch()
           .get(`/api/v1/product?id=${productCode}`)
           .set('Cookie', sellerHeader['set-cookie'])
 

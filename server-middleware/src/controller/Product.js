@@ -115,7 +115,9 @@ module.exports = {
 
       // check if product name exist;
       const findProduct = await Product.findOne({
-        where: { productName: req.body.productName }
+        where: { productName: req.body.productName },
+        attributes: ['id'],
+        raw: true
       })
 
       if (findProduct) {
@@ -184,7 +186,9 @@ module.exports = {
       const sellerUser = await User.findOne({
         where: {
           id: productJSON.sellerId
-        }
+        },
+        attributes: ['username'],
+        raw: true
       })
 
       const sellerInfo = {}
@@ -226,7 +230,8 @@ module.exports = {
       const findProducts = await Product.findAll({
         where: JSON.parse(getWhere),
         limit,
-        offset
+        offset,
+        raw: true
       })
 
       if (!findProducts.length) {
@@ -238,41 +243,37 @@ module.exports = {
         })
         // not found
       } else {
-        const data = []
-
-        findProducts.forEach((product) => {
-          const {
-            id,
-            sellerId,
-            productName,
-            cost,
-            amountAvailable,
-            type,
-            background,
-            rating,
-            caption,
-            ownerDeleted
-          } = product
-
-          data.push({
-            id,
-            sellerId,
-            productName,
-            cost,
-            amountAvailable,
-            type,
-            background,
-            rating,
-            caption,
-            ownerDeleted
-          })
-        })
-
         await signUserFromCookie(req, res)
 
         res.send({
-          data,
-          length: data.length
+          data: findProducts.map((x) => {
+            const {
+              id,
+              sellerId,
+              productName,
+              cost,
+              amountAvailable,
+              type,
+              background,
+              rating,
+              caption,
+              ownerDeleted
+            } = x
+
+            return {
+              id,
+              sellerId,
+              productName,
+              cost,
+              amountAvailable,
+              type,
+              background,
+              rating,
+              caption,
+              ownerDeleted
+            }
+          }),
+          length: findProducts.length
         })
       }
     }
@@ -330,7 +331,8 @@ module.exports = {
       // ensure new productName doesn't exist;
       if (req.body.productName) {
         const existingProductName = await Product.findOne({
-          where: { productName: req.body.productName }
+          where: { productName: req.body.productName },
+          attributes: ['productName']
         })
 
         if (existingProductName) {

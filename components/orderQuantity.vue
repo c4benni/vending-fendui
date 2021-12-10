@@ -101,7 +101,7 @@ export default {
           iconName: this.useChevron ? 'chevronLeft' : 'minus',
           click: () => {
             this.parseVmodel > this.min &&
-              requestAnimationFrame(() => {
+              this.$nextTick(() => {
                 this.$emit('vmodel', this.parseVmodel - this.parseStep)
               })
           },
@@ -170,9 +170,8 @@ export default {
           click: () => {
             this.parseVmodel < this.max &&
 
-              requestAnimationFrame(() => {
+              this.$nextTick(() => {
                 this.$emit('vmodel', this.parseVmodel + this.parseStep)
-                console.log(this.vmodel);
               })
           },
           staticClass: 'rounded-r-sm'

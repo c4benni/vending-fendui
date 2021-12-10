@@ -1,5 +1,34 @@
-/* eslint-disable no-console */
+
+
+<template>
+  <div
+    id="ui-root"
+    :class="[
+      `${$theme.is}`,
+      {
+        'touch-device': state.isTouchDevice,
+        'strict-touch': state.isStrictTouchDevice,
+        'can-hover': !state.isStrictTouchDevice,
+      },
+    
+      breakpointsClasses,
+    ]"
+  >
+    <nuxt-child v-if="$c4.mounted" />
+
+    <!-- tailwind hasn't loaded yet,
+    so render the page loader to hide unhydrated app-->
+    <div
+      v-else
+      style="width:100%;height:100%;position:fixed;z-index:1000;display:grid;justify-content:center;align-items:center"
+    >
+      <div class="spinner-border" style="--size:2rem;"></div>
+    </div>
+  </div>
+</template>
+
 <script>
+/* eslint-disable no-console */
 import Vue from 'vue'
 import smoothscroll from 'smoothscroll-polyfill'
 
@@ -75,14 +104,21 @@ export default {
   },
   computed: {
     ...breakpoints.computed,
+
+    breakpointsClasses,
+
+    state() {
+      return this.$store.state
+    },
+
     pageEntered() {
       return this.$store.getters.pageEntered
     },
 
     pageLoading() {
       return {
-        appLoaded: this.$store.state.appLoaded,
-        showLoading: this.$store.state.showPageLoading,
+        appLoaded: this.state.appLoaded,
+        showLoading: this.state.showPageLoading,
       }
     },
   },
@@ -103,17 +139,19 @@ export default {
         value: false
       })
 
-      this.$c4.mounted && this.$store.state.mobileNav && document.documentElement.classList.remove('overlay-active')
-
+      if (this.$c4.mounted && this.state.mobileNav) {
+        document.documentElement
+          .classList.remove('overlay-active')
+      }
 
       if (n.path != '/' && o.path != '/') {
         await this.$refreshUser()
       }
     },
 
-    '$store.state.breakpoints'(n) {
+    'state.breakpoints'(n) {
       if (/lg|xl/.test(n.is)) {
-        if (this.$store.state.mobileNav) {
+        if (this.state.mobileNav) {
           document.documentElement.classList.remove('overlay-active')
           this.$commit('UPDATE_', {
             path: 'mobileNav',
@@ -129,7 +167,7 @@ export default {
       }
     },
 
-    async '$store.state.vmodel.pageVisible'(n) {
+    async 'state.vmodel.pageVisible'(n) {
       if (n) {
         const refreshUser = async () => {
           const { data } = await this.$refreshUser()
@@ -167,14 +205,21 @@ export default {
 
     Vue.prototype.$commit = this.$store.commit
 
-    Vue.prototype.$c4 = Vue.observable(new C4UiLib(Vue))
+    Vue.prototype.$c4 = Vue.observable(new C4UiLib(Vue.observable))
 
     Vue.prototype.$theme = Vue.prototype.$c4.theme
-
   },
   created() {
 
     this.setGreetings()
+
+
+    Vue.prototype.$toggleShowBalance = () => {
+      this.$commit('UPDATE_', {
+        path: 'showBalance',
+        value: !this.$store.state.showBalance
+      })
+    }
   },
   async beforeMount() {
 
@@ -219,9 +264,9 @@ export default {
 
 
     Vue.prototype.$storeUser = async () => {
-      if (this.$store.state.authSleeping) {
+      if (this.state.authSleeping) {
         return {
-          data: this.$store.state.user
+          data: this.state.user
         }
       }
 
@@ -318,7 +363,7 @@ export default {
 
     await this.$nextTick();
 
-    const session = this.$store.state.user
+    const session = this.state.user
     const path = this.$route.path
 
     // redirect back to dashboard if a logged in user is trying to access login page
@@ -369,7 +414,7 @@ export default {
 
       await this.$sleep(200, true)
 
-      Object.entries(this.$store.state).forEach((x) => {
+      Object.entries(this.state).forEach((x) => {
         this.$commit('UPDATE_', {
           path: x[0],
           value: x[1],
@@ -410,56 +455,6 @@ export default {
         value: greeting(),
       })
     },
-  },
-  render(h) {
-    const scoping = { 'data-l-dt': '' }
-    const div = (d, c) => h('div', d, c)
-    const Nuxt = (d) => h('nuxt', d)
-
-    return div(
-      {
-        attrs: {
-          ...scoping,
-        },
-        domProps: {
-          id: 'ui-root',
-        },
-        // staticClass: '',
-        class: [
-          `${this.$theme.is}`,
-          this.$store.state.pageTransition,
-          {
-            'touch-device': this.$store.state.isTouchDevice,
-            'strict-touch': this.$store.state.isStrictTouchDevice,
-            'can-hover': !this.$store.state.isStrictTouchDevice,
-          },
-
-          breakpointsClasses.call(this),
-        ],
-      },
-      [
-        this.$c4.mounted ?
-          Nuxt()
-          : div({
-            style: {
-              width: '100%',
-              height: '100%',
-              position: 'fixed',
-              zIndex: '1000',
-              display: 'grid',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }
-          }, [
-            div({
-              staticClass: 'spinner-border',
-              style: {
-                '--size': '2rem'
-              }
-            })
-          ])
-      ]
-    )
   },
 }
 </script>
