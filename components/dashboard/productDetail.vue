@@ -187,7 +187,7 @@ export default {
 
                 this.loading = false
 
-                this.$commit('UPDATE_', {
+                this.$commit('UPDATE', {
                     path: 'productName',
                     value: data.productName
                 })
@@ -199,7 +199,7 @@ export default {
             }
 
             // reset dashboard's processing text;
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: null
             })
@@ -220,7 +220,7 @@ export default {
 
 
             // open processing modal
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'dashboardProcessing',
                 value: true
             })
@@ -229,7 +229,7 @@ export default {
 
             // update processingText;
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: {
                     title: error ? 'An error occured' : 'Purchase successful',

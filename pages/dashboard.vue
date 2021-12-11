@@ -44,10 +44,10 @@
                 </div>
 
                 <p
-                    v-if="!showDeposit && !errorPage"
+                    v-if="!showTotalBalance && !errorPage"
                     class="px-6 font-semibold opacity-70 text-sm flex items-center"
                 >
-                    Total deposit:
+                    Total {{ isBuyer ? 'deposit' : 'income' }}:
                     <span
                         :key="showBalanceIcon"
                         class="ml-2 fade-appear inline-block"
@@ -214,7 +214,7 @@ export default {
 
             return !/^\/dashboard\/(reset-deposit|shop|create-product)\/?$/.test(this.$route.path) && !this.errorPage
         },
-        showDeposit() {
+        showTotalBalance() {
             return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path)
         },
         showTitle() {
@@ -350,13 +350,13 @@ export default {
         await this.$sleep(500);
 
         if (this.user?.alert) {
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'notify',
                 value: {
                     message: this.user.alert,
                     warn: true,
                     closeText: 'End sessions',
-                    callback: () => this.$logout(),
+                    callback: () => this.$logout({ notCurrent: true }),
                     key: Date.now()
 
                 }
@@ -372,7 +372,7 @@ export default {
         hideBackdrop() {
             this.closeNav();
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'dashboardProcessing',
                 value: false
             })
@@ -403,12 +403,12 @@ export default {
             return capitalize(str)
         },
         closeNav() {
-            this.$commit('UPDATE_', { path: 'mobileNav', value: false })
+            this.$commit('UPDATE', { path: 'mobileNav', value: false })
         },
         async closeNotification() {
             await this.$sleep(200);
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'notify',
                 value: {
                     message: null,
@@ -417,7 +417,7 @@ export default {
             })
         },
         closeBanner() {
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'bannerActive',
                 value: false
             })

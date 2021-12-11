@@ -1,7 +1,24 @@
-export default function ({ store, redirect, route }) {
+export default async function ({ store, redirect, route, req }) {
   const app = store.$router.app
   // redirect if not logged in and path isnt / and app mounted
   const appMounted = app?.$c4?.mounted
+
+  if (req) {
+    const scheme = req.connection.encrypted ? 'https://' : 'http://'
+
+    const host = req.headers.host
+
+    const res = await fetch(`${scheme}${host}/api/v1/auth`, {
+      headers: req.headers
+    })
+
+    const { data } = await res.json()
+
+    store.commit('UPDATE', {
+      path: 'user',
+      value: data || null
+    })
+  }
 
   if (!appMounted) {
     return

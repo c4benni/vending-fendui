@@ -35,7 +35,7 @@
 
         <ui-btn
             class="grid text-white dark:text-black px-8 min-w-[250px] lg:min-w-[300px] my-10 mx-auto h-[56px] font-semibold"
-            :disabled="!selected"
+            :disabled="!selected || isLoading"
             :class="[{
                 'bg-blue-gray-400 dark:bg-blue-gray-700': !selected,
                 'bg-blue-700 dark:bg-blue-500': selected
@@ -72,14 +72,14 @@ export default {
                 quantity: this.quantity
             }
 
-            console.log(payload);
-
             const { data, error } = await this.$apiCall('deposit', 'post', payload)
 
             this.isLoading = false
 
+            this.selected = ''
+
             if (error) {
-                return this.$commit('UPDATE_', {
+                return this.$commit('UPDATE', {
                     path: 'notify',
                     value: {
                         message: error.message || 'An error occured. Try again later',
@@ -93,7 +93,7 @@ export default {
             }
 
             if (data) {
-                return this.$commit('UPDATE_', {
+                return this.$commit('UPDATE', {
                     path: 'notify',
                     value: {
                         message: data.message,
@@ -101,7 +101,6 @@ export default {
                         key: Date.now()
                     }
                 })
-
             }
         }
     }

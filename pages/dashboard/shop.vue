@@ -2,6 +2,26 @@
     <product-detail v-if="queryId" :query-id="queryId" />
 
     <div
+        v-else-if="loading"
+        class="w-full py-[128px] grid justify-center justify-items-center items-center"
+    >
+        <div class="spinner-border" style="--size:1.75rem"></div>
+
+        <p class="mt-2 text-sm opacity-60">LOADING...</p>
+    </div>
+
+    <div
+        v-else-if="!products.length"
+        class="lg:w-[calc(100vw-280px)] xl:w-[calc(calc(min(100vw,1920px)-3rem)-280px)] w-full pb-6 min-h-screen"
+    >
+        <div class="min-h-[200px] grid justify-center">
+            <app-img :public-id="media.empty" height="200px" />
+        </div>
+
+        <p class="mt-6 font-semibold text-lg text-center">The shop is empty!</p>
+    </div>
+
+    <div
         v-else
         class="grid grid-cols-[repeat(auto-fill,minmax(40%,180px))] lg:grid-cols-[repeat(auto-fill,minmax(30%,200px))] justify-center lg:gap-4 gap-2 lg:p-3 py-3 lg:w-[calc(100vw-280px)] xl:w-[calc(calc(min(100vw,1920px)-3rem)-280px)] w-full"
     >
@@ -30,12 +50,15 @@
 </template>
 
 <script>
+import AppImg from '~/components/appImg.vue';
 import productDetail from '~/components/dashboard/productDetail.vue'
 export default {
-    components: { productDetail },
+    components: { productDetail, AppImg },
 
     data: () => ({
-        products: []
+        products: [],
+        loading: true,
+        errorFetching: null
     }),
 
     head() {
@@ -47,6 +70,10 @@ export default {
     computed: {
         queryId() {
             return this.$route.query.id;
+        },
+
+        media() {
+            return this.$store.state.media
         }
     },
 
@@ -57,10 +84,22 @@ export default {
     },
 
     async created() {
-        const { data } = await this.$apiCall('product/all', 'GET')
+        await this.getItems();
+    },
 
-        if (data) {
-            this.products = data
+    methods: {
+        async getItems() {
+            this.loading = true;
+
+            const { data, error } = await this.$apiCall('product/all')
+
+            if (data) {
+                this.products = data
+            } else {
+                this.errorFetching = error
+            }
+
+            this.loading = false;
         }
     }
 }

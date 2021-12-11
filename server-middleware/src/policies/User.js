@@ -94,6 +94,31 @@ module.exports = {
     })
   },
 
+  async logoutAll(req, res, next) {
+    await attempt({
+      express: { res },
+      callback: () => {
+        const schema = Joi.object({
+          notCurrent: Joi.boolean()
+        })
+
+        const validate = schema.validate(req.body)
+
+        if (validate.error) {
+          return sendError.withStatus(res, {
+            message:
+              validate?.error?.message ||
+              'an error occured. Check your credentials and try again.',
+            status: 400
+            // bad request
+          })
+        }
+
+        next()
+      }
+    })
+  },
+
   // id must be present in req.params and must be a valid id
   async getUser(req, res, next) {
     const mainCallback = () => {

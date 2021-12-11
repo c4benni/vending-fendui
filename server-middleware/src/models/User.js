@@ -1,11 +1,12 @@
 /* eslint-disable require-await */
 
 const bcrypt = require('bcrypt')
+// const { Op } = require('sequelize/dist')
 const { app } = require('../config/config')
 const { id: generateId } = require('../utils/generate')
 
-const { findSession } = require('../utils/sessions')
-const { clearCookies } = require('../utils/utils')
+// const { findSession } = require('../utils/sessions')
+// const { clearCookies } = require('../utils/utils')
 
 const { TransactionHistory, Session } = require('./index')
 
@@ -132,7 +133,7 @@ module.exports = (sequelize, dataTypes) => {
       }
     }
 
-    // const { Session } = require('../models')
+    const { Session } = require('../models')
 
     const sessions = await Session.findOne({
       where: {
@@ -144,27 +145,6 @@ module.exports = (sequelize, dataTypes) => {
     return {
       sessions: sessions || []
     }
-  }
-
-  User.prototype.logout = async function ({ token, all, req, res }) {
-    // not current is used when trying to log out all sessions;
-    const notCurrent = req.query.notCurrent === 'true'
-
-    if (!all) {
-      const session = await findSession(token, this.id)
-
-      await session.sign(0)
-    } else {
-      const { Session } = require('../models')
-
-      await Session.destroy({
-        where: {
-          id: notCurrent ? '0' : this.id
-        }
-      })
-    }
-
-    clearCookies(res)
   }
 
   Object.defineProperties(User.prototype, {

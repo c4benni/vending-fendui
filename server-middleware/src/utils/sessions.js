@@ -2,8 +2,7 @@
 const { Op } = require('sequelize/dist')
 const { app } = require('../config/config')
 
-const { clearCookies } = require('../utils/utils')
-const sendError = require('./sendError')
+const { clearCookies, getCookie } = require('../utils/utils')
 
 function signCookies({ res, token, userId }) {
   const { sessionMaxTime } = app
@@ -19,35 +18,41 @@ function signCookies({ res, token, userId }) {
   })
 }
 
-async function findSession(token, userId) {
+async function findSession(token, userId, deviceHash) {
   const { Session } = require('../models')
 
   const session = await Session.findOne({
     where: {
-      id: userId,
+      session: token,
       [Op.and]: {
-        session: token
+        id: userId,
+        deviceHash
       }
     }
   })
+
+  console.log({ session, token, userId, deviceHash })
+
+  if (session && session.timeout <= Date.now()) {
+    await session.Sign(0)
+
+    return null
+  }
 
   return session
 }
 
 async function signUser(userId, res, req) {
+  // use cookie parser;
   let token = req.cookies?.token
 
+  // cookie parser's value might not be available on first
+  // req. Use getCookie() then;
   if (!token) {
-    const bearer = req.headers?.Authorization?.split?.(' ')
-
-    token = bearer?.[1]
+    token = getCookie(req.headers.cookie).token || '0'
   }
 
-  if (!token) {
-    token = '0'
-  }
-
-  const session = await findSession(token, userId)
+  const session = await findSession(token, userId, req.machineId)
 
   let signedSession
 
@@ -63,8 +68,6 @@ async function signUser(userId, res, req) {
     })
   }
 
-  req.token = token
-
   return {
     token,
     id: userId
@@ -75,7 +78,7 @@ async function verify(req, res, next) {
   const { token, id: userId } = req.cookies
 
   const expiredSession = () =>
-    sendError.withStatus(res, {
+    res.status(401).send({
       message: {
         text: 'your session has expired. Login and try again'
       },
@@ -87,13 +90,10 @@ async function verify(req, res, next) {
     return expiredSession()
   }
 
-  const session = await findSession(token, userId)
+  const session = await findSession(token, userId, req.machineId)
 
-  if (!session || session?.timeout <= Date.now()) {
+  if (!session) {
     clearCookies(res)
-
-    // delete session if expired;
-    session && session?.sign?.(0)
 
     return expiredSession()
   } else {
@@ -104,14 +104,10 @@ async function verify(req, res, next) {
 }
 
 async function signUserFromCookie(req, res) {
-  let { id } = req.cookies
-
-  if (!id) {
-    id = req.headers.uid
-  }
+  const { id } = req.cookies
 
   if (id) {
-    signUser(id, req, res)
+    await signUser(id, res, req)
   }
 
   return 1

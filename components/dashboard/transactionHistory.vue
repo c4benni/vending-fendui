@@ -6,7 +6,7 @@
 
         <!-- header -->
         <div
-            class="title lead-title fill-before grid md:flex md:justify-between items-center px-6 pb-6 before:border-dotted"
+            class="title lead-title fill-before grid md:flex md:justify-between items-center px-6 pb-6 before:border-dotted relative"
         >
             <div>
                 <span :key="showBalanceIcon" class="fade-appear inline-block">{{ availableAmount }}</span>
@@ -30,7 +30,7 @@
                     :disabled="disableWithdraw"
                 >
                     <ui-icon :name="isBuyer ? 'deposit' : 'withdraw'" size="28px"></ui-icon>
-                    {{ isBuyer ? 'Deposit coins' : 'Instant withdraw' }}
+                    {{ isBuyer ? 'Deposit coins' : 'Instant withdrawal' }}
                 </ui-btn>
 
                 <ui-btn
@@ -46,9 +46,7 @@
         </div>
         <!-- header ends -->
 
-        <p
-            class="uppercase subtitle text-[0.75rem] mt-6 mb-3 px-6 text-center"
-        >Recent transaction{{ transactionHistory.length > 1 ? 's' : '' }}</p>
+        <p class="uppercase subtitle text-[0.75rem] mt-6 mb-3 px-6 text-center">{{ tableCaption }}</p>
 
         <div class="overflow-x-auto w-full">
             <div
@@ -71,11 +69,11 @@
                 </div>
             </div>
 
-            <table v-else class="w-full">
+            <table v-else class="w-full" :aria-label="tableCaption.toLowerCase()">
                 <thead
-                    class="bg-white dark:bg-blue-gray-900 dark:bg-opacity-80 fill-before before-divide before:border-b before:border-t h-14 w-full relative text-left"
+                    class="bg-white dark:bg-blue-gray-900 dark:bg-opacity-80 border-t border-b border-solid border-black dark:border-white border-opacity-[0.05] dark:border-opacity-[0.05] w-full text-left"
                 >
-                    <tr>
+                    <tr class="min-h-[48px] h-[48px]">
                         <th v-for="(th, i) in tableHead" :key="i">
                             <div class="px-6">{{ th }}</div>
                         </th>
@@ -86,17 +84,25 @@
                     <tr
                         v-for="(transaction, i) in transactionHistory"
                         :key="i"
-                        :class="{ 'border-b border-black dark:border-white border-opacity-[0.05] dark:border-opacity-[0.05]': i != transactionHistory.length - 1 }"
-                        class="fade-appear bg-white dark:bg-blue-gray-900 bg-opacity-0 dark:bg-opacity-0 hover:odd:bg-opacity-20 dark:hover:odd:bg-opacity-20 hover:even:bg-opacity-50 dark:hover:even:bg-opacity-50 even:bg-opacity-30 dark:even:bg-opacity-30"
+                        class="fade-appear bg-white dark:bg-blue-gray-900 bg-opacity-0 dark:bg-opacity-0 hover:odd:bg-opacity-20 dark:hover:odd:bg-opacity-20 hover:even:bg-opacity-80 dark:hover:even:bg-opacity-70 even:bg-opacity-60 dark:even:bg-opacity-50"
                     >
                         <td>
-                            <div
-                                class="grid grid-flow-col gap-x-3 py-4 px-6 justify-start"
-                            >{{ transaction.timestamp }}</div>
+                            <div class="grid grid-flow-col gap-x-3 py-4 px-6 justify-start">
+                                <div>{{ getDate(transaction.timestamp) }}</div>
+                            </div>
                         </td>
 
                         <td>
-                            <div class="py-4 px-6">{{ transaction.type }}</div>
+                            <div class="py-4 px-6 capitalize">
+                                <span
+                                    class="rounded-full bg-opacity-75 dark:bg-opacity-75 text-[0.8rem] py-1 px-2 whitespace-nowrap"
+                                    :class="{
+                                        'bg-green-800 text-white': transaction.type == 'deposit',
+                                        'bg-yellow-500 text-black': transaction.type == 'purchase',
+                                        'bg-red-800 text-white': transaction.type == 'reset'
+                                    }"
+                                >{{ transaction.type }}</span>
+                            </div>
                         </td>
 
                         <td>
@@ -136,6 +142,9 @@ export default {
         },
     }),
     computed: {
+        tableCaption() {
+            return `Recent ${this.isBuyer ? 'transaction' : 'purchase'}${this.transactionHistory.length > 1 ? 's' : ''}`
+        },
         showBalance() {
             return this.$store.state.showBalance
         },
@@ -197,17 +206,23 @@ export default {
         async getTransactions() {
             this.loading = true;
 
-            const { data, error } = await this.$apiCall('transaction?limit=5')
+            const { data } = await this.$apiCall('transaction?limit=5')
 
             if (data?.length) {
                 this.transactionHistory = data;
-            } else if (error) {
-                this.errorFetching = error
+            } else if (data && !data.length) {
+                this.errorFetching = {
+                    message: 'You have no recent transaction',
+                    status: 404
+                }
             } else {
                 this.errorFetching.message = 'An error occured'
             }
 
             this.loading = false;
+        },
+        getDate(timestamp) {
+            return new Date(parseFloat(timestamp)).toLocaleDateString()
         }
     }
 }

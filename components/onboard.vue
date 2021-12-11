@@ -32,7 +32,7 @@
                     {{ loginText.h2 }}
                     <nuxt-link :to="loginText.to" class="text-blue-400 hover:underline">
                         {{
-                            loginText.nuxtLink
+                        loginText.nuxtLink
                         }}
                     </nuxt-link>
                 </h2>
@@ -42,7 +42,7 @@
                 class="text-2xl font-bold tracking-tighter mb-2 text-blue-gray-800 dark:text-blue-gray-100"
             >
                 {{
-                    loginText.h3
+                loginText.h3
                 }}
             </h3>
             <h4
@@ -171,7 +171,7 @@
                     {{ loginText.h2 }}
                     <nuxt-link :to="loginText.to" class="text-blue-400">
                         {{
-                            loginText.nuxtLink
+                        loginText.nuxtLink
                         }}
                     </nuxt-link>
                 </h5>
@@ -414,7 +414,7 @@ export default {
 
             if (data) {
 
-                this.$commit('UPDATE_', {
+                this.$commit('UPDATE', {
                     path: 'user',
                     value: data
                 })

@@ -59,7 +59,7 @@
                 {{
                     selectedType || 'Choose a type'
                 }}
-                <div class="opacity-75 flex">
+                <div class="opacity-75 flex pointer-events-none">
                     <ui-icon name="menuSwap" />
                 </div>
             </ui-btn>

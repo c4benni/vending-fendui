@@ -14,6 +14,14 @@ module.exports = (sequelize, dataTypes) => {
         type: dataTypes.STRING(99),
         allowNull: false
       },
+      secondParty: {
+        type: dataTypes.STRING(99),
+        allowNull: true
+      },
+      productId: {
+        type: dataTypes.STRING(99),
+        allowNull: true
+      },
       timestamp: {
         type: dataTypes.BIGINT,
         defaultValue: () => Date.now(),

@@ -180,7 +180,7 @@ export default {
               ...scoping
             },
             class: [
-              "main fill-before-after",
+              "main fill-before-after before:border-2 before:border-blue-700 dark:before:border-blue-500",
               {
                 focused: this.focused,
                 "has-value": vmodel,
@@ -311,6 +311,11 @@ export default {
   --ui-active-scale: translate3d(12px, 8px, 0) scale3d(0.8, 0.8, 1);
 }
 
+.root[data-ui-input]:focus-within .main[data-ui-input]::before {
+  opacity: 0.75;
+  transform: scale3d(1, 1, 1);
+}
+
 .main[data-ui-input] {
   /* height: var(--ui-height); */
   min-height: var(--ui-min-height);
@@ -322,9 +327,9 @@ export default {
 }
 
 .main[data-ui-input]::before {
-  transition: 0.1s opacity linear;
-  border: 2px solid var(--primary-bg);
+  transition: 0.1s opacity linear, 0.15s transform linear;
   opacity: 0;
+  transform: scale3d(1.005, 1.005, 1);
 }
 
 .main[data-ui-input]::after {

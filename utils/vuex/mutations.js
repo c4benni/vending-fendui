@@ -2,7 +2,7 @@ import Vue from 'vue'
 import { getObjectPath } from '../main'
 
 export default {
-  UPDATE_(s, p) {
+  UPDATE(s, p) {
     let root = getObjectPath({ obj: s, path: `${p.innerPath}` })
     const path = p?.name || p?.path
     let value = p.value

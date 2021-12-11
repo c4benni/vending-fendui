@@ -1,8 +1,10 @@
+const path = require('path')
+const fs = require('fs')
+
 const { app } = require('../config/config')
 
 module.exports = {
   // eslint-disable-next-line promise/param-names
-  promiser: (value) => new Promise((r) => r(value)),
   clearCookies(res) {
     res?.cookie?.('token', null, { maxAge: 0 })
 
@@ -25,8 +27,8 @@ module.exports = {
 
     const { User } = require('../models')
 
-    const user = await User.findOne({
-      where: { id }
+    const user = await User.findByPk(id, {
+      attributes: app.userData
     })
 
     if (!user) {
@@ -48,12 +50,6 @@ module.exports = {
         }
       }
     }
-
-    // // sign user;
-
-    const unwanted = module.exports.unwantedUserFields(user)
-
-    unwanted.forEach((path) => delete user[path])
 
     return {
       data: user
@@ -82,7 +78,9 @@ module.exports = {
 
     let money = total
     // sort so we can get the highest change first
-    const availableCoins = [...app.validCost].sort().reverse()
+    const availableCoins = app.validCost.sort((a, b) =>
+      b > a ? 1 : b < a ? -1 : 0
+    )
 
     //  loop and deduct money till money is 0;
     while (money) {
@@ -99,5 +97,48 @@ module.exports = {
     }
 
     return change
+  },
+
+  getCookie: (cookie) => {
+    if (typeof cookie != 'string') {
+      return {}
+    }
+
+    const cookieEntries = cookie
+      .split(';')
+      .filter(Boolean)
+      .map((x) => x.trim().split('='))
+
+    return Object.fromEntries(cookieEntries)
+  },
+
+  // used to auto import JS files from the same directory;
+  // this function is not so flexible, as it only deals with
+  // exported objects or function
+  // used otherwise, will throw an error;
+  autoImportFromSameDirectory(dirName, exemptFile = 'index.js') {
+    const importedModules = {}
+
+    const dotJS = /\.js$/
+
+    const jsFiles = fs
+      .readdirSync(dirName)
+      .filter((fileName) => dotJS.test(fileName) && fileName != exemptFile)
+
+    jsFiles.forEach((fileName) => {
+      const filePath = path.join(dirName, fileName)
+
+      const module = require(filePath)
+
+      if (typeof module == 'function') {
+        const moduleName = fileName.replace(dotJS, '')
+
+        importedModules[moduleName] = module
+      } else if (typeof module == 'object') {
+        Object.assign(importedModules, module)
+      }
+    })
+
+    return importedModules
   }
 }

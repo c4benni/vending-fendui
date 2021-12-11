@@ -5,12 +5,7 @@ export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
 
-  env: {
-    DB_HOST: process.env.DB_HOST || 'db-host',
-    DB_DATABASE: process.env.DB_DATABASE || 'postgres',
-    DB_USER: process.env.DB_USER || 'postgres',
-    DB_PASS: process.env.DB_PASS || 'Fendui'
-  },
+  env: {},
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -95,10 +90,10 @@ export default {
 
   cloudinary: {
     // Cloudinary configuration options
-    cloudName: 'c4benn',
-    apiKey: '336555747421799',
-    apiSecret: '0TtMTNIreV2Ljo7S1Binntv8dc0',
-    useComponent: true
+    useComponent: true,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET
   },
 
   router: {

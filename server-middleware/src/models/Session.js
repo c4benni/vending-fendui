@@ -20,6 +20,10 @@ module.exports = (sequelize, dataTypes) => {
         type: dataTypes.BIGINT,
         defaultValue: () => Date.now() + app.sessionMaxTime,
         allowNull: false
+      },
+      deviceHash: {
+        type: dataTypes.STRING(499),
+        allowNull: false
       }
     },
     {
@@ -31,7 +35,7 @@ module.exports = (sequelize, dataTypes) => {
         },
         {
           unique: false,
-          fields: ['timeout', 'id']
+          fields: ['timeout', 'id', 'deviceHash']
         }
       ]
     }

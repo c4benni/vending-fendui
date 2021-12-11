@@ -1,5 +1,4 @@
 /* eslint-disable promise/param-names */
-const sendError = require('./sendError')
 
 const defaultError = {
   message: 'Oops! A server error occured. Please try again later.',
@@ -24,7 +23,7 @@ module.exports = function ({
     } catch (e) {
       onError?.(e)
 
-      sendError.withStatus(res, errorMessage(e) || { ...defaultError, ...e })
+      res.status(500).send(res, errorMessage(e) || { ...defaultError, ...e })
 
       r({
         error: e

@@ -60,7 +60,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                            item.title
+                        item.title
                         }}
                     </ui-btn>
                 </div>
@@ -83,7 +83,7 @@
                         >
                             <ui-icon :name="item.icon" size="20px" />
                             {{
-                                item.title
+                            item.title
                             }}
                             <ui-icon
                                 :key="ordersState"
@@ -132,7 +132,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                            item.title
+                        item.title
                         }}
                     </ui-btn>
                 </div>
@@ -345,7 +345,7 @@ export default {
             await this.$apiCall('user/logout', 'POST')
 
             requestAnimationFrame(() => {
-                this.$commit('UPDATE_', {
+                this.$commit('UPDATE', {
                     path: 'user',
                     value: null
                 })

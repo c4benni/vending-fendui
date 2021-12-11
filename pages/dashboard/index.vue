@@ -36,15 +36,15 @@
                     <div class="px-4 pt-2">
                         <div class="flex justify-between items-center">
                             <div
-                                class="text-opacity-70 text-black dark:text-opacity-70 dark:text-white text-sm capitalize"
+                                class="text-opacity-70 text-black dark:text-opacity-70 dark:text-white text-[0.8rem] capitalize"
                             >{{ product.type }}</div>
 
-                            <div class="font-semibold">¢{{ product.cost }}</div>
+                            <div class="font-semibold">{{ formatCost(product.cost) }}</div>
                         </div>
                     </div>
 
                     <div
-                        class="font-bold text-xl px-4 mt-1 truncate capitalize"
+                        class="font-bold text-xl px-4 truncate capitalize"
                     >{{ product.productName }}</div>
 
                     <app-rating class="mx-3 mt-2" readonly />
@@ -57,6 +57,7 @@
 <script>
 import TransactionHistory from '~/components/dashboard/transactionHistory.vue';
 import AppRating from '~/components/appRating.vue';
+import { formatAmount } from '~/utils/main';
 
 export default {
     components: { TransactionHistory, AppRating },
@@ -71,10 +72,19 @@ export default {
     },
 
     async created() {
-        const { data } = await this.$apiCall('product/all?limit=10')
+        await this.fetchProducts()
+    },
 
-        if (data) {
-            this.products = data
+    methods: {
+        formatCost(cost) {
+            return formatAmount(cost)
+        },
+        async fetchProducts() {
+            const { data } = await this.$apiCall('product/all?limit=10')
+
+            if (data) {
+                this.products = data
+            }
         }
     }
 }

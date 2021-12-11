@@ -68,10 +68,12 @@
                     >
                         <td>
                             <nuxt-link
-                                class="grid grid-flow-col gap-x-3 py-4 px-6 justify-start"
+                                class="grid grid-flow-col gap-x-3 py-4 px-6 justify-start group"
                                 :to="`/dashboard/my-products?edit=${product.id}`"
                             >
-                                <div class="h-[80px] w-[80px] rounded-sm isolate overflow-hidden">
+                                <div
+                                    class="h-[80px] w-[80px] rounded-sm isolate overflow-hidden transition-transform transform-gpu group-hover:translate-y-[-0.15rem] group-hover:shadow-md"
+                                >
                                     <app-img
                                         :public-id="product.background"
                                         height="80px"

@@ -86,7 +86,7 @@ export const mediaListener = ({ media, callback }) => {
 }
 
 export function setTouchDevice() {
-  this.$commit('UPDATE_', {
+  this.$commit('UPDATE', {
     path: 'supportsBackdrop',
     value: isIOS() || CSS.supports('backdrop-filter', 'blur(0px)')
   })
@@ -96,14 +96,14 @@ export function setTouchDevice() {
     navigator.maxTouchPoints > 0 ||
     navigator.msMaxTouchPoints > 0
 
-  this.$commit('UPDATE_', {
+  this.$commit('UPDATE', {
     path: 'isTouchDevice',
     value: touchDevice
   })
 
   if (!setTouchDevice.mediaSet) {
     const strictTouch = (value) =>
-      this.$commit('UPDATE_', {
+      this.$commit('UPDATE', {
         path: 'isStrictTouchDevice',
         value
       })

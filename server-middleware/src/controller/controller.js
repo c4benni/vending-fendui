@@ -178,6 +178,15 @@ module.exports = {
             throw new Error('Update product error')
           }
 
+          // get seller;
+          const seller = await User.findByPk(product.sellerId, {
+            transaction: tx
+          })
+
+          if (!seller || seller?.error) {
+            return txError
+          }
+
           // update buyer to deduct deposit;
           const updateBuyer = async () => {
             const deductDeposit = await buyer.update(
@@ -206,7 +215,9 @@ module.exports = {
               userId: buyer.id,
               amount: `¢${productPrice}`,
               quantity: parseFloat(amount),
-              type: 'purchase'
+              type: 'purchase',
+              secondParty: seller.id,
+              productId: product.id
             })
 
             if (saveTx.error) {
@@ -223,49 +234,36 @@ module.exports = {
           }
 
           const updateSeller = async () => {
-            const seller = await User.findOne(
-              {
-                where: {
-                  id: product.sellerId
-                }
-              },
-              { transaction: tx }
-            )
+            const addIncome = await seller.update({
+              income: parseFloat(seller.income || 0) + totalCost,
+              transaction: tx
+            })
 
-            if (seller) {
-              const addIncome = await seller.update({
-                income: parseFloat(seller.income || 0) + totalCost,
-                transaction: tx
-              })
-
-              if (addIncome.error) {
-                return txError
-              }
-
-              const saveIncome = await seller.save({
-                fields: ['income'],
-                transaction: tx
-              })
-
-              if (saveIncome.error) {
-                return txError
-              }
-
-              const saveTx = await addTx({
-                userId: seller.id,
-                amount: `¢${productPrice}`,
-                quantity: parseFloat(amount),
-                type: 'purchase'
-              })
-
-              if (saveTx.error) {
-                return txError
-              }
-            } else {
+            if (addIncome.error) {
               return txError
             }
 
-            return {}
+            const saveIncome = await seller.save({
+              fields: ['income'],
+              transaction: tx
+            })
+
+            if (saveIncome.error) {
+              return txError
+            }
+
+            const saveTx = await addTx({
+              userId: seller.id,
+              amount: `¢${productPrice}`,
+              quantity: parseFloat(amount),
+              type: 'purchase',
+              secondParty: buyer.id,
+              productId: product.id
+            })
+
+            if (saveTx.error) {
+              return txError
+            }
           }
 
           const { error: updateSellerError } = await updateSeller()

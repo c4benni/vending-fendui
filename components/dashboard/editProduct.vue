@@ -104,7 +104,7 @@ export default {
 
             this.loading = false
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'productName',
                 value: data.productName
             })
@@ -128,7 +128,7 @@ export default {
             }
 
             // reset dialog message
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: null
             })
@@ -136,7 +136,7 @@ export default {
             await this.$nextTick()
 
             // set dialog message
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: {
                     title: 'Updating product',
@@ -147,7 +147,7 @@ export default {
             await this.$nextTick()
 
             // show dialog
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'dashboardProcessing',
                 value: true
             })
@@ -173,7 +173,7 @@ export default {
 
             const { error } = await this.$apiCall('product', 'PATCH', productForm)
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: {
                     title: error ? 'An error occured' : 'Product updated',
@@ -186,7 +186,7 @@ export default {
             this.$router.push('/dashboard/my-products')
         },
         deleteProduct() {
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'notify',
                 value: {
                     message: 'Are you sure you want to delete this product? This action cannot be reversed.',
@@ -198,7 +198,7 @@ export default {
 
                         await this.$sleep(100);
 
-                        this.$commit('UPDATE_', {
+                        this.$commit('UPDATE', {
                             path: 'notify',
                             value: {
                                 key: Date.now(),

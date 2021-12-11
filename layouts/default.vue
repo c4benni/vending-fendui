@@ -134,7 +134,7 @@ export default {
     async $route(n, o) {
       this.setGreetings()
 
-      this.$commit('UPDATE_', {
+      this.$commit('UPDATE', {
         path: 'mobileNav',
         value: false
       })
@@ -153,7 +153,7 @@ export default {
       if (/lg|xl/.test(n.is)) {
         if (this.state.mobileNav) {
           document.documentElement.classList.remove('overlay-active')
-          this.$commit('UPDATE_', {
+          this.$commit('UPDATE', {
             path: 'mobileNav',
             value: false
           })
@@ -213,12 +213,19 @@ export default {
 
     this.setGreetings()
 
-
     Vue.prototype.$toggleShowBalance = () => {
-      this.$commit('UPDATE_', {
+      this.$commit('UPDATE', {
         path: 'showBalance',
         value: !this.$store.state.showBalance
       })
+    }
+
+    Vue.prototype.$logout = async (arg) => {
+      const url = `user/logout${arg ? '/all' : ''}`
+
+      await this.$apiCall(url, arg);
+
+      await this.$refreshUser()
     }
   },
   async beforeMount() {
@@ -270,7 +277,7 @@ export default {
         }
       }
 
-      this.$commit('UPDATE_', {
+      this.$commit('UPDATE', {
         path: 'authSleeping',
         value: true
       })
@@ -279,13 +286,13 @@ export default {
 
       const { data, error } = await res.json()
 
-      this.$commit('UPDATE_', {
+      this.$commit('UPDATE', {
         path: 'user',
         value: !data ? null : data
       })
 
       this.$sleep(3000).then(() => {
-        this.$commit('UPDATE_', {
+        this.$commit('UPDATE', {
           path: 'authSleeping',
           value: false
         })
@@ -328,7 +335,7 @@ export default {
 
         // expired session
         if (json?.error?.status == 401) {
-          this.$commit('UPDATE_', {
+          this.$commit('UPDATE', {
             path: 'notify',
             value: {
               message: 'Session expired',
@@ -338,7 +345,7 @@ export default {
             }
           })
 
-          this.$commit('UPDATE_', {
+          this.$commit('UPDATE', {
             value: null,
             path: 'user'
           })
@@ -397,7 +404,7 @@ export default {
           document.msVisibilityState
         const documentHidden = !!hidden || /^hidden/i.test(visibility)
         const toggleVisibility = (value) => {
-          this.$commit('UPDATE_', {
+          this.$commit('UPDATE', {
             value,
             path: 'pageVisible',
           })
@@ -415,7 +422,7 @@ export default {
       await this.$sleep(200, true)
 
       Object.entries(this.state).forEach((x) => {
-        this.$commit('UPDATE_', {
+        this.$commit('UPDATE', {
           path: x[0],
           value: x[1],
         })
@@ -423,7 +430,7 @@ export default {
 
       await this.$nextTick()
 
-      this.$commit('UPDATE_', {
+      this.$commit('UPDATE', {
         path: 'pageTransitionState',
         value: 'afterEnter',
       })
@@ -450,7 +457,7 @@ export default {
         return 'evening'
       }
 
-      this.$commit('UPDATE_', {
+      this.$commit('UPDATE', {
         name: 'greeting',
         value: greeting(),
       })

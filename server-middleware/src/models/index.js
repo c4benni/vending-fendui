@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-const { join: joinPath } = require('path')
+const path = require('path')
 
 const { Sequelize, DataTypes } = require('sequelize')
 
@@ -26,7 +26,7 @@ fs.readdirSync(__dirname)
   .filter((file) => file !== 'index.js')
   .forEach((file) => {
     // import and initialize models;
-    const model = require(joinPath(__dirname, file))(sequelize, DataTypes)
+    const model = require(path.join(__dirname, file))(sequelize, DataTypes)
 
     // add to DB{}
     DB[model.name] = model

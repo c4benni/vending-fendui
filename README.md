@@ -1,4 +1,4 @@
-# client
+# vending-app
 
 ## Build Setup
 

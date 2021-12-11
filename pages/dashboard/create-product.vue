@@ -61,19 +61,19 @@ export default {
                 return null
             }
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: null
             })
 
             await this.$nextTick()
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'dashboardProcessing',
                 value: true
             })
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: {
                     title: 'Creating product',
@@ -106,7 +106,7 @@ export default {
 
             const { data, error } = await this.$apiCall('product', 'POST', productForm)
 
-            this.$commit('UPDATE_', {
+            this.$commit('UPDATE', {
                 path: 'processingDone',
                 value: {
                     title: error ? 'An error occured' : 'Product created',

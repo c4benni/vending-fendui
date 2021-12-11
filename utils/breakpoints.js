@@ -153,7 +153,7 @@ export default {
 
         const value = { ...this.breakpointOutput }
 
-        this.$commit('UPDATE_', {
+        this.$commit('UPDATE', {
           path: 'breakpoints',
           value
         })

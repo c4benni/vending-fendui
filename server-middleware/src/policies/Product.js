@@ -44,7 +44,7 @@ module.exports = {
     })
   },
 
-  async readProduct(req, res, next) {
+  async getProduct(req, res, next) {
     const mainCallback = () => {
       const query = req.query
 
@@ -72,7 +72,7 @@ module.exports = {
   },
 
   // limit should be at least 1 and at most 99; default = 99
-  async readAllProducts(req, res, next) {
+  async getAllProducts(req, res, next) {
     const mainCallback = () => {
       const schema = Joi.object({
         limit: Joi.number().min(1).max(99),
@@ -107,7 +107,7 @@ module.exports = {
     })
   },
 
-  async patchProduct(req, res, next) {
+  async updateProduct(req, res, next) {
     const mainCallback = () => {
       const body = req.body
 

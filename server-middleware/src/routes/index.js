@@ -1,15 +1,26 @@
-const { Router } = require('express')
+const path = require('path')
 
-const router = Router()
+const fs = require('fs')
 
-const session = require('../utils/sessions')
+const router = require('express').Router()
 
-const { signedInRole, unwantedUserFields } = require('../utils/utils')
-const User = require('./User')
-const Product = require('./Products')
-const clientRoutes = require('./clientRoutes')
+const { findSession, verify } = require('../utils/sessions')
 
-const routes = [...User, ...Product, ...clientRoutes]
+const { unwantedUserFields, getCookie } = require('../utils/utils')
+
+const { User } = require('../models')
+
+const routes = []
+
+fs.readdirSync(__dirname)
+  .filter((file) => file != 'index.js')
+  .forEach((file) => {
+    const module = require(path.join(__dirname, file))
+
+    if (Array.isArray(module)) {
+      routes.push(...module)
+    }
+  })
 
 routes.forEach((route) => {
   const method = route.method
@@ -27,7 +38,7 @@ routes.forEach((route) => {
   const authenticate = !publicUserRoutes && !publicProductRoutes
 
   if (authenticate) {
-    sessionVerification.push(session.verify)
+    sessionVerification.push(verify)
   }
 
   const callbacks = [sessionVerification, middleWare, route.callback]
@@ -35,14 +46,30 @@ routes.forEach((route) => {
   router[method](url, callbacks)
 })
 
+// for authenticating a user on the client;
+// returns nothing if user's session is expired;
+// or user not found.
+// signs user if found;
 router.get('/auth', async (req, res) => {
-  const { data, error } = await signedInRole({ req, res })
+  let data = {}
 
-  if (error) {
-    return res.send({ error })
+  const { id, token } = getCookie(req.headers.cookie)
+
+  if (!token || !id) {
+    return res.send({})
   }
 
-  await session.signUser(data.id, res, req)
+  const session = await findSession(token, id, req.machineId)
+
+  console.log({ session, hash: req.machineId })
+
+  if (!session) {
+    return res.send({})
+  }
+
+  await session.Sign()
+
+  data = await User.findByPk(id)
 
   const unwanted = unwantedUserFields(data)
 

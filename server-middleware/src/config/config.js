@@ -67,6 +67,17 @@ module.exports = {
     ],
     saltRounds: 10,
     // ms * s * min
-    sessionMaxTime: 1000 * 60 * 60
+    sessionMaxTime: 1000 * 60 * 60,
+    userData: [
+      'id',
+      'username',
+      'deposit',
+      'income',
+      'role',
+      'displayName',
+      'image',
+      'header',
+      'bio'
+    ]
   }
 }

@@ -40,7 +40,7 @@
                 <ui-icon
                     size="20px"
                     :name="item.name"
-                    @click="() => $commit('UPDATE_', { path: 'mobileNav', value: true })"
+                    @click="() => $commit('UPDATE', { path: 'mobileNav', value: true })"
                 ></ui-icon>
             </ui-btn>
 
@@ -82,7 +82,7 @@ export default {
     methods: {
         openMobileNav() {
             if (this.mobileHeader) {
-                this.$commit('UPDATE_', {
+                this.$commit('UPDATE', {
                     path: 'mobileNav',
                     value: true
                 })
