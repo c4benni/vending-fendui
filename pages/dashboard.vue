@@ -25,7 +25,12 @@
         <div
             class="mr-0 mx-0 w-full xl:mr-auto lg:max-w-[calc(100%-280px)] lg:mr-0 lg:ml-[280px] grid justify-center relative"
         >
-            <Header v-if="!errorPage || miniDevice" class="fixed top-0 z-10" :raise="raiseHeader" />
+            <Header
+                v-if="!errorPage || miniDevice"
+                class="fixed top-0 z-10"
+                :raise="canRaiseHeader"
+                :searching="isSearch"
+            />
 
             <ui-intersection @on-update="intersectionUpdated">
                 <div class="h-[1px] w-full absolute invisible" aria-hidden="true"></div>
@@ -177,6 +182,12 @@ export default {
     }),
 
     computed: {
+        canRaiseHeader() {
+            return this.isSearch || this.raiseHeader
+        },
+        isSearch() {
+            return /\/search\/?$/.test(this.$route.path)
+        },
         showBalance() {
             return this.$store.state.showBalance
         },
@@ -212,7 +223,7 @@ export default {
         showBanner() {
             if (!this.$store.state.bannerActive) { return false }
 
-            return !/^\/dashboard\/(reset-deposit|shop|create-product)\/?$/.test(this.$route.path) && !this.errorPage
+            return !/^\/dashboard\/(reset-deposit|shop|create-product)\/?$/.test(this.$route.path) && !this.errorPage && !this.isSearch
         },
         showTotalBalance() {
             return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path)
@@ -249,7 +260,7 @@ export default {
 
 
                 output.push({
-                    title: capitalize(title),
+                    title: decodeURI(capitalize(title)),
                     active: i == arr.length - 1,
                     to: `/${splitPaths.filter((_, key) => key - 1 < i).join('/')}`
                 })
@@ -312,6 +323,10 @@ export default {
                 {
                     active: /^\/dashboard\/my-products/.test(route.path) && this.$route.query.edit,
                     title: `Edit product`
+                },
+                {
+                    active: /^\/dashboard\/search/.test(route.path) && !this.$route.query.query,
+                    title: `Search app`
                 }
             ]
 

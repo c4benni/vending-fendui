@@ -297,7 +297,7 @@ export default {
   cursor: pointer;
   text-align: center;
   text-decoration: none;
-  transition: 0.1s transform linear, 0.1s opacity, 0.1s filter;
+  transition: 0.1s transform ease-in-out, 0.1s opacity, 0.1s filter;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   isolation: isolate;

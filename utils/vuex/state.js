@@ -15,7 +15,8 @@ export default function state() {
       welcome: `${mediaPath}crayon-welcome-3_yscmh1`,
       alert: `${mediaPath}flamenco-652_mrnn3d`,
       empty: `${mediaPath}flame-2_kn885a`,
-      upload: `${mediaPath}rush-1_fmqbfj`
+      upload: `${mediaPath}rush-1_fmqbfj`,
+      search: `${mediaPath}bermuda-searching_yra3bo`
     },
 
     user: null,

@@ -24,7 +24,11 @@
                 class="grid gap-3 grid-cols-[repeat(auto-fill,minmax(170px,1fr))] md:grid-cols-[initial] md:grid-flow-col flex-grow justify-end mt-6 md:mt-0"
             >
                 <ui-btn
-                    class="rounded-sm px-5 h-[48px] bg-blue-800 dark:bg-blue-400 text-white bg-opacity-100 dark:bg-opacity-20 hover:bg-opacity-35 dark:hover:bg-opacity-35 gap-x-1 hover:bg-opacity-100 dark:hover:bg-opacity-80 hover:text-white hover:bg-opacity-35 dark:hover:bg-opacity-35 w-full text-md"
+                    class="rounded-sm px-5 h-[48px] bg-opacity-100 dark:bg-opacity-20 hover:bg-opacity-35 dark:hover:bg-opacity-35 gap-x-1 hover:bg-opacity-100 dark:hover:bg-opacity-80 hover:text-white hover:bg-opacity-35 dark:hover:bg-opacity-35 w-full text-md"
+                    :class="{
+                        'bg-blue-800 dark:bg-blue-400 text-white': !disableWithdraw,
+                        'opacity-60': disableWithdraw
+                    }"
                     :title="isBuyer ? 'deposit coin(s)' : 'withdraw your income'"
                     :to="isBuyer ? `/dashboard/deposit` : '/dashboard'"
                     :disabled="disableWithdraw"
@@ -52,6 +56,7 @@
             <div
                 v-if="loading || errorFetching.message"
                 class="card min-h-[128px] grid justify-center items-center mx-6"
+                :class="{ 'bg-white shadow-sm': $theme.light }"
             >
                 <div v-if="loading" class="spinner-border"></div>
 

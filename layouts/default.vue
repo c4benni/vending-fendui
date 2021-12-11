@@ -144,7 +144,7 @@ export default {
           .classList.remove('overlay-active')
       }
 
-      if (n.path != '/' && o.path != '/') {
+      if (n.path != '/' && o.path != '/' && n.path != o.path) {
         await this.$refreshUser()
       }
     },
@@ -291,7 +291,7 @@ export default {
         value: !data ? null : data
       })
 
-      this.$sleep(3000).then(() => {
+      this.$sleep(4000).then(() => {
         this.$commit('UPDATE', {
           path: 'authSleeping',
           value: false

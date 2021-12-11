@@ -1,11 +1,6 @@
 <template>
     <div
-        class="card min-h-[360px] lg:min-h-[510px] mx-auto w-full relative lg:p-2 p-0 grid lg:grid-flow-col lg:grid-cols-[auto,1fr]"
-        :class="[
-            {
-                'before-divide before:border fill-before': $theme.dark
-            }
-        ]"
+        class="card min-h-[360px] lg:min-h-[510px] mx-auto w-full relative lg:p-2 p-0 grid lg:grid-flow-col lg:grid-cols-[auto,1fr] before-divide before:border fill-before before:opacity-[0.05]"
     >
         <div v-if="loading" class="h-full w-full absolute grid place-items-center top-0">
             <div class="spinner-border" style="--size: 2rem" />
