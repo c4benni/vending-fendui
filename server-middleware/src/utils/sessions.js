@@ -18,9 +18,8 @@ function signCookies({ res, token, userId }) {
   })
 }
 
+const { Session } = require('../models')
 async function findSession(token, userId, deviceHash) {
-  const { Session } = require('../models')
-
   const session = await Session.findOne({
     where: {
       session: token,

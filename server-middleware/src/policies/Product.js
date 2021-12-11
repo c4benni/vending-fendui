@@ -1,8 +1,7 @@
 const Joi = require('joi')
 
 const sendError = require('../utils/sendError')
-
-const attempt = require('../utils/attempt')
+const { sendServerError } = require('../utils/utils')
 
 const {
   product: productValidation,
@@ -11,8 +10,8 @@ const {
 } = require('../utils/validations')(Joi)
 
 module.exports = {
-  async createProduct(req, res, next) {
-    const mainCallback = () => {
+  createProduct(req, res, next) {
+    const callback = () => {
       const body = req.body
 
       const schema = Joi.object({
@@ -38,14 +37,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async getProduct(req, res, next) {
-    const mainCallback = () => {
+  getProduct(req, res, next) {
+    const callback = () => {
       const query = req.query
 
       const schema = Joi.object({
@@ -65,15 +65,16 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
   // limit should be at least 1 and at most 99; default = 99
-  async getAllProducts(req, res, next) {
-    const mainCallback = () => {
+  getAllProducts(req, res, next) {
+    const callback = () => {
       const schema = Joi.object({
         limit: Joi.number().min(1).max(99),
         offset: Joi.number().min(1),
@@ -101,14 +102,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async updateProduct(req, res, next) {
-    const mainCallback = () => {
+  updateProduct(req, res, next) {
+    const callback = () => {
       const body = req.body
 
       // allowed fields;
@@ -138,14 +140,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async deleteProduct(req, res, next) {
-    const mainCallback = () => {
+  deleteProduct(req, res, next) {
+    const callback = () => {
       const query = req.query
 
       const schema = Joi.object({
@@ -165,14 +168,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async deleteMultipleProducts(req, res, next) {
-    const mainCallback = () => {
+  deleteMultipleProducts(req, res, next) {
+    const callback = () => {
       const body = req.body
 
       const schema = Joi.object({
@@ -192,9 +196,10 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   }
 }

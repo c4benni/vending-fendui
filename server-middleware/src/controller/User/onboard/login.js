@@ -1,11 +1,10 @@
 const { User, Session } = require('../../../models')
-const attempt = require('../../../utils/attempt')
 const { signUser, signCookies } = require('../../../utils/sessions')
-const { unwantedUserFields } = require('../../../utils/utils')
+const { unwantedUserFields, sendServerError } = require('../../../utils/utils')
 
 // after a login, push a session
 module.exports = async function (req, res) {
-  const mainCallback = async () => {
+  const callback = async () => {
     const { username, password } = req.body
 
     // find existing user
@@ -66,8 +65,9 @@ module.exports = async function (req, res) {
     // unauthorized
   }
 
-  await attempt({
-    express: { res },
-    callback: mainCallback
-  })
+  try {
+    await callback()
+  } catch (e) {
+    sendServerError(res, e)
+  }
 }

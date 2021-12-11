@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 const { Product } = require('../../models')
-const attempt = require('../../utils/attempt')
 const { signUserFromCookie } = require('../../utils/sessions')
+const { sendServerError } = require('../../utils/utils')
 
 module.exports = async function (req, res) {
-  const mainCallback = async () => {
+  const callback = async () => {
     const { limit, where = '{}', offset } = req.query
 
     const getWhere = typeof where == 'object' ? JSON.stringify(where) : where
@@ -60,8 +60,9 @@ module.exports = async function (req, res) {
     }
   }
 
-  await attempt({
-    express: { res },
-    callback: mainCallback
-  })
+  try {
+    await callback()
+  } catch (e) {
+    sendServerError(res, e)
+  }
 }

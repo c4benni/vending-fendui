@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 const { app } = require('../../config/config')
 const { Product, User } = require('../../models')
-const attempt = require('../../utils/attempt')
+const { sendServerError } = require('../../utils/utils')
 
 module.exports = async function (req, res) {
-  const mainCallback = async () => {
+  const callback = async () => {
     // only logged in users with role == 'seller' can access this route.
     const { id } = req.cookies
 
@@ -80,8 +80,9 @@ module.exports = async function (req, res) {
     })
   }
 
-  await attempt({
-    express: { res },
-    callback: mainCallback
-  })
+  try {
+    await callback()
+  } catch (e) {
+    sendServerError(res, e)
+  }
 }

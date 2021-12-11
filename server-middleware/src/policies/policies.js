@@ -1,14 +1,13 @@
 const Joi = require('joi')
 
 const sendError = require('../utils/sendError')
-
-const attempt = require('../utils/attempt')
+const { sendServerError } = require('../utils/utils')
 
 const { product: validateProduct } = require('../utils/validations')(Joi)
 
 module.exports = {
-  async deposit(req, res, next) {
-    const mainCallback = () => {
+  deposit(req, res, next) {
+    const callback = () => {
       const query = req.body
 
       const schema = Joi.object({
@@ -29,14 +28,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async buy(req, res, next) {
-    const mainCallback = () => {
+  buy(req, res, next) {
+    const callback = () => {
       const query = req.body
 
       const schema = Joi.object({
@@ -57,14 +57,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async reset(req, res, next) {
-    const mainCallback = () => {
+  reset(req, res, next) {
+    const callback = () => {
       const query = req.body
 
       const schema = Joi.object({})
@@ -82,9 +83,10 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   }
 }

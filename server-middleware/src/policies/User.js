@@ -1,8 +1,7 @@
 const Joi = require('joi')
 
 const sendError = require('../utils/sendError')
-
-const attempt = require('../utils/attempt')
+const { sendServerError } = require('../utils/utils')
 
 const {
   user: userValidation,
@@ -12,8 +11,8 @@ const {
 } = require('../utils/validations')(Joi)
 
 module.exports = {
-  async register(req, res, next) {
-    const mainCallback = () => {
+  register(req, res, next) {
+    const callback = () => {
       const body = req.body
 
       const schema = Joi.object({
@@ -37,91 +36,101 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async login(req, res, next) {
-    await attempt({
-      express: { res },
-      callback: () => {
-        const schema = Joi.object({
-          username: userValidation.username,
-          password: userValidation.password
+  login(req, res, next) {
+    const callback = () => {
+      const schema = Joi.object({
+        username: userValidation.username,
+        password: userValidation.password
+      })
+
+      const validate = schema.validate(req.body)
+
+      if (validate.error) {
+        return sendError.withStatus(res, {
+          message:
+            validate?.error?.message ||
+            'an error occured. Check your login credentials and try again.',
+          status: 400
+          // bad request
         })
-
-        const validate = schema.validate(req.body)
-
-        if (validate.error) {
-          return sendError.withStatus(res, {
-            message:
-              validate?.error?.message ||
-              'an error occured. Check your login credentials and try again.',
-            status: 400
-            // bad request
-          })
-        }
-
-        req.body.username = req.body.username.toLowerCase()
-
-        next()
       }
-    })
+
+      req.body.username = req.body.username.toLowerCase()
+
+      next()
+    }
+
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async logout(req, res, next) {
-    await attempt({
-      express: { res },
-      callback: () => {
-        const schema = Joi.object({})
+  logout(req, res, next) {
+    const callback = () => {
+      const schema = Joi.object({})
 
-        const validate = schema.validate(req.body)
+      const validate = schema.validate(req.body)
 
-        if (validate.error) {
-          return sendError.withStatus(res, {
-            message:
-              validate?.error?.message ||
-              'an error occured. Check your credentials and try again.',
-            status: 400
-            // bad request
-          })
-        }
-
-        next()
-      }
-    })
-  },
-
-  async logoutAll(req, res, next) {
-    await attempt({
-      express: { res },
-      callback: () => {
-        const schema = Joi.object({
-          notCurrent: Joi.boolean()
+      if (validate.error) {
+        return sendError.withStatus(res, {
+          message:
+            validate?.error?.message ||
+            'an error occured. Check your credentials and try again.',
+          status: 400
+          // bad request
         })
-
-        const validate = schema.validate(req.body)
-
-        if (validate.error) {
-          return sendError.withStatus(res, {
-            message:
-              validate?.error?.message ||
-              'an error occured. Check your credentials and try again.',
-            status: 400
-            // bad request
-          })
-        }
-
-        next()
       }
-    })
+
+      next()
+    }
+
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
+  },
+
+  logoutAll(req, res, next) {
+    const callback = () => {
+      const schema = Joi.object({
+        notCurrent: Joi.boolean()
+      })
+
+      const validate = schema.validate(req.body)
+
+      if (validate.error) {
+        return sendError.withStatus(res, {
+          message:
+            validate?.error?.message ||
+            'an error occured. Check your credentials and try again.',
+          status: 400
+          // bad request
+        })
+      }
+
+      next()
+    }
+
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
   // id must be present in req.params and must be a valid id
-  async getUser(req, res, next) {
-    const mainCallback = () => {
+  getUser(req, res, next) {
+    const callback = () => {
       const query = req.query
 
       const schema = Joi.object({
@@ -142,15 +151,16 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
   // limit should be at least 1 and at most 99; default = 99
-  async getAllUsers(req, res, next) {
-    const mainCallback = () => {
+  getAllUsers(req, res, next) {
+    const callback = () => {
       const body = req.body
 
       const schema = Joi.object({
@@ -176,14 +186,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async updateUser(req, res, next) {
-    const mainCallback = () => {
+  updateUser(req, res, next) {
+    const callback = () => {
       const body = req.body
 
       const schema = Joi.object({
@@ -208,14 +219,15 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   },
 
-  async deleteUser(req, res, next) {
-    const mainCallback = () => {
+  deleteUser(req, res, next) {
+    const callback = () => {
       const body = req.body
 
       const schema = Joi.object({
@@ -235,9 +247,10 @@ module.exports = {
       next()
     }
 
-    await attempt({
-      express: { res },
-      callback: mainCallback
-    })
+    try {
+      callback()
+    } catch (e) {
+      sendServerError(res, e)
+    }
   }
 }

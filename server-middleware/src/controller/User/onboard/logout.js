@@ -1,11 +1,10 @@
 const { Session } = require('../../../models')
-const attempt = require('../../../utils/attempt')
 const { findSession } = require('../../../utils/sessions')
-const { clearCookies } = require('../../../utils/utils')
+const { clearCookies, sendServerError } = require('../../../utils/utils')
 
 // helper function;
 async function logoutLogic({ req, res, all }) {
-  const mainCallback = async () => {
+  const callback = async () => {
     const { id } = req.cookies
     const token = req.cookies?.token
 
@@ -57,10 +56,11 @@ async function logoutLogic({ req, res, all }) {
     // unauthorized
   }
 
-  await attempt({
-    express: { res },
-    callback: mainCallback
-  })
+  try {
+    await callback()
+  } catch (e) {
+    sendServerError(res, e)
+  }
 }
 
 module.exports = {

@@ -1,10 +1,9 @@
 const { User } = require('../../../models')
-const attempt = require('../../../utils/attempt')
 const { signUserFromCookie } = require('../../../utils/sessions')
-const { unwantedUserFields } = require('../../../utils/utils')
+const { unwantedUserFields, sendServerError } = require('../../../utils/utils')
 
 module.exports = async function (req, res) {
-  const mainCallback = async () => {
+  const callback = async () => {
     const { id, self } = req.query
 
     const findUser = await User.findByPk(id)
@@ -61,8 +60,9 @@ module.exports = async function (req, res) {
     }
   }
 
-  await attempt({
-    express: { res },
-    callback: mainCallback
-  })
+  try {
+    await callback()
+  } catch (e) {
+    sendServerError(res, e)
+  }
 }

@@ -1,10 +1,9 @@
-const { User } = require('../../../models')
-const attempt = require('../../../utils/attempt')
-const { clearCookies } = require('../../../utils/utils')
+const { User, sequelize } = require('../../../models')
+const { clearCookies, sendServerError } = require('../../../utils/utils')
 const { Product } = require('../../../models')
 
 module.exports = async function (req, res) {
-  const mainCallback = async () => {
+  const callback = async () => {
     const { id } = req.cookies
 
     if (!id) {
@@ -15,65 +14,98 @@ module.exports = async function (req, res) {
       })
     }
 
-    const { password } = req.body
+    // transaction
+    try {
+      await sequelize.transaction(async function (tx) {
+        const { password } = req.body
 
-    const findUser = await User.findByPk(id)
+        const findUser = await User.findByPk(id, { transaction: tx })
 
-    if (!findUser) {
-      return res.status(404).send({
-        message: 'user not found',
-        status: 404
-        // not found
-      })
-    } else {
-      const matchPassword = await findUser.matchPassword(password)
+        if (!findUser) {
+          throw new Error('{404} User not found')
+        } else {
+          const matchPassword = await findUser.matchPassword(password)
 
-      if (!matchPassword) {
-        return res.status(404).send({
-          message: 'incorrect password',
-          status: 404
-          // not found
-        })
-      }
+          if (!matchPassword) {
+            throw new Error('{401} Incorrect password')
+          }
 
-      const updateSellerProduct = async () => {
-        if (!findUser.isSeller) {
-          return
-        }
+          const updateSellerProduct = async () => {
+            if (!findUser.isSeller) {
+              return
+            }
 
-        await Product.update(
-          {
-            ownerDeleted: true
-          },
-          {
-            where: {
-              sellerId: findUser.id
+            const updateProduct = await Product.update(
+              {
+                ownerDeleted: true
+              },
+              {
+                where: {
+                  sellerId: findUser.id
+                },
+                transaction: tx
+              }
+            )
+
+            if (updateProduct) {
+              return {
+                error: `Error updating seller's product`
+              }
             }
           }
-        )
-      }
 
-      await updateSellerProduct()
+          const updateProduct = await updateSellerProduct()
 
-      const remove = await findUser.destroy()
+          if (updateProduct.error) {
+            throw new Error(updateProduct.error)
+          }
 
-      if (remove.error) {
-        throw remove.error
-      }
+          const remove = await findUser.destroy({ transaction: tx })
 
-      clearCookies(res)
+          if (remove.error) {
+            throw new Error('Error deleting user')
+          }
 
-      return res.send(res, {
-        data: {
-          message: 'user deleted'
-        },
-        status: 200
+          clearCookies(res)
+        }
+
+        return {}
       })
+    } catch (err) {
+      if (err) {
+        const matchStatus = err.message.match(/^\{\d+\}/g)
+
+        // defined error
+        if (matchStatus) {
+          const status = matchStatus[0].replace(/\{|\}/g, '')
+
+          return res.status(status).send({
+            error: {
+              message: err.message.replace(/^\{\d+\}\s/, '')
+            }
+          })
+        }
+
+        // conflict error
+        return res.status(409).send({
+          error: {
+            message: err.message
+          }
+        })
+      }
     }
+
+    return res.send(res, {
+      data: {
+        message: 'user deleted'
+      },
+      status: 200
+    })
   }
 
-  await attempt({
-    express: { res },
-    callback: mainCallback
-  })
+  try {
+    await callback()
+  } catch (e) {
+    sendServerError(res, e)
+  }
 }

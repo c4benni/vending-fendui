@@ -1,14 +1,17 @@
 const { TransactionHistory } = require('../models')
 
 module.exports = {
-  async addTx({ userId, type, amount, quantity }) {
+  async addTx({ userId, type, amount, quantity, transaction }) {
     // save transaction;
-    const saveTx = await TransactionHistory.create({
-      userId,
-      type,
-      amount,
-      quantity
-    })
+    const saveTx = await TransactionHistory.create(
+      {
+        userId,
+        type,
+        amount,
+        quantity
+      },
+      { transaction }
+    )
 
     if (saveTx.error) {
       return {

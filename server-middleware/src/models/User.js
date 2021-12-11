@@ -1,14 +1,8 @@
 /* eslint-disable require-await */
 
 const bcrypt = require('bcrypt')
-// const { Op } = require('sequelize/dist')
 const { app } = require('../config/config')
 const { id: generateId } = require('../utils/generate')
-
-// const { findSession } = require('../utils/sessions')
-// const { clearCookies } = require('../utils/utils')
-
-const { TransactionHistory, Session } = require('./index')
 
 async function hashPassword(user) {
   if (!user.changed('password')) {
@@ -23,6 +17,8 @@ async function hashPassword(user) {
 }
 
 async function afterDestroy(user) {
+  const { TransactionHistory, Session } = require('../models')
+
   // remove saved transactions
   await TransactionHistory.destroy({
     where: {
@@ -111,8 +107,6 @@ module.exports = (sequelize, dataTypes) => {
 
   User.prototype.matchPassword = async function (password) {
     const hash = this.password
-
-    console.log({ hash, password })
 
     const match = await bcrypt.compare(password, hash)
 
