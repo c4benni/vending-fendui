@@ -26,6 +26,7 @@ export default {
         return cloudinary({
             props: {
                 publicId: href,
+                // loading: 'lazy',
                 ...attrs,
             },
             attrs: {

@@ -25,7 +25,7 @@
                     :outlined-stroke="$theme.dark ? '.75px' : '1px'"
                 >
                     <div
-                        class="h-[300px] w-full hover:scale-[1.01] transform-gpu transition-transform"
+                        class="h-[300px] w-full hover:scale-[1.01] transform-gpu transition-transform fill-before before-divide before:border-b relative"
                     >
                         <app-img
                             :public-id="product.background"

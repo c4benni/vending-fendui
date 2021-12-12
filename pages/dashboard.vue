@@ -223,7 +223,7 @@ export default {
         showBanner() {
             if (!this.$store.state.bannerActive) { return false }
 
-            return !/^\/dashboard\/(reset-deposit|shop|create-product)\/?$/.test(this.$route.path) && !this.errorPage && !this.isSearch
+            return !/^\/dashboard\/(reset-deposit|shop|create-product|account|search)\/?$/.test(this.$route.path) && !this.errorPage
         },
         showTotalBalance() {
             return !/^\/dashboard\/(reset-deposit|shop)\/?$/.test(this.$route.path)
@@ -240,7 +240,9 @@ export default {
         breadcrumbs() {
             const route = this.$route;
 
-            if (/^\/dashboard\/?$/.test(route.path)) {
+            const overviewPage = /^\/dashboard\/?$/.test(route.path)
+
+            if (overviewPage || /^\/dashboard\/(account)\/?$/.test(this.$route.path)) {
                 return null
             }
 
@@ -327,6 +329,14 @@ export default {
                 {
                     active: /^\/dashboard\/search/.test(route.path) && !this.$route.query.query,
                     title: `Search app`
+                },
+                {
+                    active: /^\/dashboard\/search/.test(route.path) && this.$route.query.query,
+                    title: `Searching`
+                },
+                {
+                    active: /^\/dashboard\/account/.test(route.path),
+                    title: `Account`
                 }
             ]
 

@@ -22,11 +22,23 @@
 
             <ui-btn
                 class="rounded-md h-[72px] w-[calc(100%-3rem)] bg-blue-gray-100 dark:bg-blue-gray-800 mx-auto grid grid-flow-col grid-cols-[60px,1fr] py-2 px-4 items-center cursor-pointer hover:bg-blue-gray-200 dark:hover:bg-blue-gray-800 justify-start text-left"
+                to="/dashboard/account"
+                outlined
+                :outlined-opacity="0.05"
+                :outlined-stroke="'0.5px'"
             >
                 <div
                     class="h-[48px] w-[48px] rounded-full bg-blue-gray-400 overflow-hidden mr-[10%]"
                 >
-                    <app-img :public-id="user.image" height="48px" width="48px" />
+                    <app-img
+                        :public-id="user.image"
+                        height="48px"
+                        width="48px"
+                        radius="max"
+                        fetch-format="auto"
+                        quality="100"
+                        class="object-cover"
+                    />
                 </div>
 
                 <div>
@@ -60,7 +72,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                        item.title
+                            item.title
                         }}
                     </ui-btn>
                 </div>
@@ -83,7 +95,7 @@
                         >
                             <ui-icon :name="item.icon" size="20px" />
                             {{
-                            item.title
+                                item.title
                             }}
                             <ui-icon
                                 :key="ordersState"
@@ -132,7 +144,7 @@
                     >
                         <ui-icon :name="item.icon" size="20px" />
                         {{
-                        item.title
+                            item.title
                         }}
                     </ui-btn>
                 </div>
@@ -344,11 +356,11 @@ export default {
 
             await this.$apiCall('user/logout', 'POST')
 
+            this.$commit('UPDATE', {
+                path: 'user',
+                value: null
+            })
             requestAnimationFrame(() => {
-                this.$commit('UPDATE', {
-                    path: 'user',
-                    value: null
-                })
 
                 this.$router.replace('/?login=true')
             })

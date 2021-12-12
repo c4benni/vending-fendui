@@ -81,19 +81,41 @@
                 }"
                 :tabindex="searching ? '-1' : undefined"
             >
-                <app-img :public-id="user.image" height="32px" width="32px" class="object-contain"></app-img>
+                <app-img
+                    :public-id="user.image"
+                    height="32px"
+                    width="32px"
+                    radius="max"
+                    fetch-format="auto"
+                    quality="100"
+                    class="object-cover"
+                ></app-img>
             </ui-btn>
         </div>
 
-        <form v-if="showSearchInput" action="." name="search-app" class="absolute w-full h-full">
+        <form
+            v-if="showSearchInput"
+            action="."
+            name="search-app"
+            class="absolute w-full h-full fade-appear"
+        >
             <input
-                :value="$route.query.query"
+                :value="searchQuery"
                 type="search"
                 autofocus
-                class="w-full h-full pl-[calc(48px+1rem)] pr-3 bg-[transparent] rounded-none"
+                class="w-full h-full pl-[48px] lg:pl-[calc(48px+1rem)] pr-[calc(2rem+32px)] bg-[transparent] rounded-none appearance-none input"
+                placeholder="Search products"
                 @input="handleSearchInput"
                 @blur="handleSearchBlur"
             />
+
+            <ui-btn
+                v-if="searchQuery"
+                class="h-[32p] min-h-[32px] w-[32px] rounded-full absolute right-3 top-[50%] translate-y-[-50%]"
+                @click="clearSearch"
+            >
+                <ui-icon name="close" />
+            </ui-btn>
         </form>
     </header>
 </template>
@@ -126,6 +148,9 @@ export default {
         },
         user() {
             return this.$store.state.user || {}
+        },
+        searchQuery() {
+            return this.$route.query.query
         }
     },
     watch: {
@@ -141,6 +166,19 @@ export default {
         this.showSearchInput = this.searching;
     },
     methods: {
+
+        searchFor(str) {
+            this.$router.replace({
+                query: {
+                    ...this.$route.query,
+                    query: str
+                }
+            })
+        },
+
+        clearSearch() {
+            this.searchFor()
+        },
         openMobileNav() {
             if (this.mobileHeader) {
                 this.$commit('UPDATE', {
@@ -151,22 +189,12 @@ export default {
         },
 
         handleSearchInput(e) {
-            this.$router.replace({
-                query: {
-                    ...this.$route.query,
-                    query: e.currentTarget.value
-                }
-            });
+            this.searchFor(e.currentTarget.value || undefined)
         },
 
         handleSearchBlur() {
             if (!this.$route.query.query) {
-                this.$router.replace({
-                    query: {
-                        ...this.$route.query,
-                        query: undefined
-                    }
-                })
+                this.clearSearch()
             }
         }
     }
@@ -174,4 +202,15 @@ export default {
 </script>
 
 <style>
+.input[type="search"]::-webkit-search-cancel-button,
+.input[type="search"]::-webkit-search-decoration,
+.input[type="search"]::-webkit-search-results-button,
+.input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+}
+
+.input::-ms-clear,
+.input::-ms-reveal {
+    display: none;
+}
 </style>

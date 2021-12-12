@@ -132,6 +132,10 @@ export default {
         )
     },
     async $route(n, o) {
+      if (n.path == '/dashboard/account') {
+        requestAnimationFrame(() => scrollTo(0, 0))
+      }
+
       this.setGreetings()
 
       this.$commit('UPDATE', {
@@ -144,7 +148,7 @@ export default {
           .classList.remove('overlay-active')
       }
 
-      if (n.path != '/' && o.path != '/' && n.path != o.path) {
+      if ((n.path != '/' && o.path != '/') && (n.path != o.path)) {
         await this.$refreshUser()
       }
     },

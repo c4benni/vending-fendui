@@ -64,6 +64,7 @@ export default {
     inputDirtied: false,
     vMsgKey: 1,
     manualValue: undefined,
+    showPassword: false,
   }),
 
 
@@ -145,6 +146,8 @@ export default {
 
     const div = (d, c) => h("div", d, c);
     const label = (d, c) => h("label", d, c);
+    const btn = (d, c) => h("uiBtn", d, c);
+    const icon = (d, c) => h("uiIcon", d, c);
 
 
     const id = `uit-${this._uid}`;
@@ -156,6 +159,8 @@ export default {
     const textarea = this.type == "textarea";
 
     const vmodel = this.modelValue || this.manualValue;
+
+    const isPassword = this.type == 'password'
 
     return div(
       {
@@ -180,8 +185,11 @@ export default {
               ...scoping
             },
             class: [
-              "main fill-before-after before:border-2 before:border-blue-700 dark:before:border-blue-500",
+              "main fill-before-after before:border-blue-700 dark:before:border-blue-500",
+
               {
+                'before:border-dotted before:border-[1.5px]': this.disabled,
+                'before:border-2': !this.disabled,
                 focused: this.focused,
                 "has-value": vmodel,
                 invalid,
@@ -200,7 +208,8 @@ export default {
                   ...scoping,
                   for: id,
                 },
-                class: ["label", {
+                staticClass: "label",
+                class: [{
                   'opacity-60': this.focused || vmodel
                 }],
               },
@@ -215,6 +224,7 @@ export default {
                 {
                   textarea,
                   "has-value": vmodel,
+                  'pr-[calc(32px+0.75rem)]': this.type == 'password'
                 },
               ],
               attrs: {
@@ -228,7 +238,9 @@ export default {
                 required: this.required,
                 placeholder: this.placeholder,
                 id,
-                type: this.type,
+                type: isPassword ? (
+                  this.showPassword ? 'text' : 'password'
+                ) : this.type,
                 disabled: this.disabled
               },
               domProps: {
@@ -269,6 +281,21 @@ export default {
                 },
               }
             }),
+
+            isPassword && !this.disabled ? btn({
+              props: { tag: 'div' },
+              attrs: { ...scoping },
+              staticClass: 'absolute right-2 w-[32px] h-[32px] min-h-[32px] rounded-full top-[50%] translate-y-[-50%]',
+              on: {
+                click: () => { this.showPassword = !this.showPassword }
+              }
+            }, [
+              icon({
+                props: {
+                  name: this.showPassword ? 'eyeOff' : 'eye'
+                }
+              })
+            ]) : null
           ]
         ),
 
@@ -441,5 +468,17 @@ export default {
   animation-delay: 0.15s;
   font-weight: 500;
   letter-spacing: 0.4px;
+}
+
+.input[data-ui-input][type="search"]::-webkit-search-cancel-button,
+.input[data-ui-input][type="search"]::-webkit-search-decoration,
+.input[data-ui-input][type="search"]::-webkit-search-results-button,
+.input[data-ui-input][type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.input::-ms-clear,
+.input::-ms-reveal {
+  display: none;
 }
 </style>

@@ -35,7 +35,9 @@
             :outlined-storke="`${$theme.light ? '0.75px' : '0.5px'}`"
             :outlined-opacity="`${$theme.light ? '0.1' : '0.05'}`"
         >
-            <div class="h-[128px] lg:h-[224px] w-full mb-4">
+            <div
+                class="h-[128px] lg:h-[224px] w-full mb-4 relative fill-before before-divide before:border-b"
+            >
                 <app-img :public-id="product.background" class="h-full object-cover" />
             </div>
 

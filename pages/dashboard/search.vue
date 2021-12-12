@@ -17,14 +17,19 @@
 <script>
 export default {
     head() {
+        const searchQuery = this.searchQuery
         return {
-            title: 'Search'
+            title: searchQuery ? `Searching for - ${searchQuery}` : 'Search'
         }
     },
 
     computed: {
         searchIllustration() {
             return this.$store.state.media.search
+        },
+
+        searchQuery() {
+            return this.$route.query.query
         }
     }
 }

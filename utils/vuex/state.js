@@ -16,7 +16,8 @@ export default function state() {
       alert: `${mediaPath}flamenco-652_mrnn3d`,
       empty: `${mediaPath}flame-2_kn885a`,
       upload: `${mediaPath}rush-1_fmqbfj`,
-      search: `${mediaPath}bermuda-searching_yra3bo`
+      search: `${mediaPath}bermuda-searching_yra3bo`,
+      header: `/samples/landscapes/nature-mountains`
     },
 
     user: null,

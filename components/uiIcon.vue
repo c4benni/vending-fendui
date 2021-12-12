@@ -31,7 +31,7 @@ export default {
     },
     size: {
       type: [String, Number],
-      default: '24px',
+      default: '20px',
     },
     width: {
       type: [String, Number],

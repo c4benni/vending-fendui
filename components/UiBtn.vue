@@ -5,6 +5,10 @@ export default {
   props: {
     asWrapper: Boolean,
     actionButton: Boolean,
+    outlinedClass: {
+      type: [Array, Object, String],
+      default: undefined
+    },
     componentProps: {
       type: Object,
       default: () => ({}),
@@ -236,7 +240,7 @@ export default {
           : span({ staticClass: '__default-slot' }, [slots.default]),
         slots.append && slots.append,
         props.outlined &&
-        span({ attrs: { 'aria-hidden': 'true' }, staticClass: 'outline' }),
+        span({ attrs: { 'aria-hidden': 'true' }, staticClass: 'outline', class: props.outlinedClass }),
       ]
     )
   },

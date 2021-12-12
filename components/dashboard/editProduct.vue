@@ -194,7 +194,9 @@ export default {
                     closeText: 'Delete product',
                     callback: async () => {
 
-                        await this.$apiCall(`product?id=${this.id}`, 'DELETE')
+                        const del = await this.$apiCall(`product?id=${this.id}`, 'DELETE')
+
+                        console.log(del, `product?id=${this.id}`);
 
                         await this.$sleep(100);
 

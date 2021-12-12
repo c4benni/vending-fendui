@@ -32,7 +32,7 @@
                     {{ loginText.h2 }}
                     <nuxt-link :to="loginText.to" class="text-blue-400 hover:underline">
                         {{
-                        loginText.nuxtLink
+                            loginText.nuxtLink
                         }}
                     </nuxt-link>
                 </h2>
@@ -42,7 +42,7 @@
                 class="text-2xl font-bold tracking-tighter mb-2 text-blue-gray-800 dark:text-blue-gray-100"
             >
                 {{
-                loginText.h3
+                    loginText.h3
                 }}
             </h3>
             <h4
@@ -81,7 +81,7 @@
                     v-for="(item, i) in inputConfig"
                     :id="item.id"
                     :key="i"
-                    v-model="item.model"
+                    :model-value="item.model"
                     :label="item.label"
                     :type="item.type"
                     :placeholder="item.placeholder"
@@ -96,7 +96,7 @@
 
                 <h5
                     v-if="!isLogin"
-                    class="text-normal font-normal mt-8 dark:text-gray-50 text-gray-600"
+                    class="text-normal font-bold mt-8 dark:text-gray-50 text-gray-600 opacity-70"
                 >Choose type of account</h5>
 
                 <div
@@ -108,7 +108,9 @@
                         :key="i"
                         tag="div"
                         outlined
-                        outlined-opacity=".1"
+                        :outlined-opacity="form.role == item.title ? '.35' : '.1'"
+                        :outlined-stroke="form.role == item.title ? '2px' : '1.5px'"
+                        :outlined-class="form.role == item.title ? 'border-blue-600 dark:border-blue-400' : ''"
                         size="lg"
                         class="px-6 dark:hover:bg-blue-gray-800 hover:bg-blue-gray-100 hover:bg-opacity-70 dark:hover:text-white hover:text-black w-full justify-start my-1 grid-cols-1 h-[96px] content-center rounded-sm"
                         :class="[{
@@ -171,7 +173,7 @@
                     {{ loginText.h2 }}
                     <nuxt-link :to="loginText.to" class="text-blue-400">
                         {{
-                        loginText.nuxtLink
+                            loginText.nuxtLink
                         }}
                     </nuxt-link>
                 </h5>

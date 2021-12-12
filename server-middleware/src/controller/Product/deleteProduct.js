@@ -76,7 +76,8 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
         // conflict error
         return res.status(409).send({
           error: {
-            message: err.message
+            message: err.message,
+            trace: err
           }
         })
       }
