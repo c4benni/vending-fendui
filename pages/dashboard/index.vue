@@ -74,11 +74,11 @@ export default {
         ...mapState(['products', 'user']),
 
         productsLength() {
-            return Object.keys(this.products).length
+            return Object.keys(this.products || {}).length
         },
 
         isBuyer() {
-            return this.user.role == 'buyer'
+            return this.user?.role == 'buyer'
         },
 
         productsSubTitle() {

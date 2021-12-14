@@ -106,6 +106,11 @@ export default {
     const { data } = await transactionHistory.getTransactions.call(this, query)
 
     if (data?.length) {
+      commit('UPDATE', {
+        path: 'transactions',
+        value: {}
+      })
+
       data.forEach((product) => {
         commit('UPDATE', {
           path: 'transactions',

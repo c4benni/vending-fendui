@@ -83,6 +83,7 @@ import { mapState, mapActions } from 'vuex';
 import OrderQuantity from '../orderQuantity.vue';
 import AppRating from '~/components/appRating.vue';
 import { formatAmount } from '~/utils/main';
+import buy from '~/services/buy';
 
 export default {
     name: 'ProductDetail',
@@ -221,7 +222,7 @@ export default {
             // show button spinner
             this.purchasing = true;
 
-            const { data, error } = await this.$apiCall('buy', {
+            const { data, error } = await buy.call(this, {
                 id: this.id,
                 amount: this.quantity
             })

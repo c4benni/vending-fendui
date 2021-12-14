@@ -6,8 +6,7 @@ const { clearCookies, sendServerError } = require('../../../utils/utils')
 // helper function;
 async function logoutLogic({ req, res, all }) {
   const callback = async () => {
-    const { id } = req.cookies
-    const token = req.cookies?.token
+    const { id, token } = req.cookies
 
     // find existing user
     const session = await findSession(token, id)

@@ -264,6 +264,8 @@ export default {
 
             const { length } = await this.getTransactions('?limit=5')
 
+            await this.$refreshUser()
+
             if (length == 0) {
                 this.errorFetching = {
                     message: 'You have no recent transaction',

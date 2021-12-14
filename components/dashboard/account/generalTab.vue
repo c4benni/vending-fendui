@@ -28,7 +28,7 @@
             >
                 <app-img
                     alt="account image"
-                    :public-id="user.image"
+                    :public-id="userImage"
                     class="w-full h-full absolute rounded-full object-cover"
                     radius="max"
                     fetch-format="auto"
@@ -154,6 +154,11 @@ export default {
         miniDevice() {
             return /xxs|xs|sm/.test(this.breakpoints.is)
         },
+
+        userImage() {
+            return this.user.image || '/samples/people/boy-snow-hoodie'
+        },
+
 
         informationInput() {
             return [

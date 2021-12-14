@@ -1,4 +1,5 @@
-const { User, sequelize } = require('../../../models')
+const { Op } = require('sequelize/dist')
+const { User, sequelize, Session } = require('../../../models')
 const { signUser } = require('../../../utils/sessions')
 const { unwantedUserFields, sendServerError } = require('../../../utils/utils')
 
@@ -17,7 +18,7 @@ module.exports = async function (req, res) {
     // transaction
     try {
       await sequelize.transaction(async function (tx) {
-        const { username, password } = req.body
+        const { username, password, endOtherSessions } = req.body
 
         const user = await User.findByPk(id, {
           transaction: tx
@@ -50,6 +51,26 @@ module.exports = async function (req, res) {
           }
 
           updateValues.password = newPassword
+
+          // end other active sessions
+          if (endOtherSessions) {
+            const { token } = req.cookies
+
+            const endOtherSessionsTx = await Session.destroy({
+              where: {
+                id,
+                [Op.and]: {
+                  session: {
+                    [Op.not]: token
+                  }
+                }
+              }
+            })
+
+            if (endOtherSessionsTx.error) {
+              throw new Error('Error terminating other sessions')
+            }
+          }
         }
 
         if (username) {

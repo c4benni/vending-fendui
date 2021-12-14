@@ -32,7 +32,7 @@
                     class="h-[48px] w-[48px] rounded-full bg-blue-gray-400 overflow-hidden mr-[10%]"
                 >
                     <app-img
-                        :public-id="user.image"
+                        :public-id="userImage"
                         height="48px"
                         width="48px"
                         radius="max"
@@ -202,6 +202,10 @@ export default {
         },
         isMiniDevice() {
             return this.miniDevice
+        },
+
+        userImage() {
+            return this.user.image || '/samples/people/boy-snow-hoodie'
         },
 
         generalLinks() {

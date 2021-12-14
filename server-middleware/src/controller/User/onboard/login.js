@@ -16,7 +16,7 @@ module.exports = async function (req, res) {
     if (user) {
       // begin transaction
       try {
-        await sequelize.transaction(async (tx) => {
+        return await sequelize.transaction(async (tx) => {
           const matchPassword = await user.matchPassword(password)
 
           if (matchPassword) {

@@ -319,17 +319,6 @@ export default {
       window.history.scrollRestoration = 'auto'
 
       Vue.prototype.$storeUser = async () => {
-        if (this.state.authSleeping) {
-          return {
-            data: this.state.user
-          }
-        }
-
-        this.$commit('UPDATE', {
-          path: 'authSleeping',
-          value: true
-        })
-
 
         const { data: res } = await this.$axios.get('/auth')
 
@@ -337,15 +326,10 @@ export default {
 
         this.$commit('UPDATE', {
           path: 'user',
-          value: !data ? null : data
-        })
-
-
-        this.$sleep(4000).then(() => {
-          this.$commit('UPDATE', {
-            path: 'authSleeping',
-            value: false
-          })
+          value: !data ? null : {
+            ...(this.$store.state.user || {}),
+            ...data
+          }
         })
 
         return { data, error }
@@ -375,7 +359,7 @@ export default {
           const resError = e.response;
 
           // expired session
-          if (resError.status == 401) {
+          if (resError.status == 401 && /expired/.test(resError.data.error.message)) {
 
             this.$commit('UPDATE', {
               path: 'notify',

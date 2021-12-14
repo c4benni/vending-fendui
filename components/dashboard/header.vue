@@ -82,7 +82,7 @@
                 :tabindex="searching ? '-1' : undefined"
             >
                 <app-img
-                    :public-id="user.image"
+                    :public-id="userImage"
                     height="32px"
                     width="32px"
                     radius="max"
@@ -148,6 +148,9 @@ export default {
         },
         user() {
             return this.$store.state.user || {}
+        },
+        userImage() {
+            return this.user.image || '/samples/people/boy-snow-hoodie'
         },
         searchQuery() {
             return this.$route.query.query
