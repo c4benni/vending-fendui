@@ -142,17 +142,17 @@ module.exports = function (nuxt, request) {
       expect(statusCode).toEqual(400)
     })
 
-    test(`Returns 401 when invalid password is passed`, async () => {
-      const api = () => request(nuxt().server.app)
-      const POST = api().post
+    // test(`Returns 401 when invalid password is passed`, async () => {
+    //   const api = () => request(nuxt().server.app)
+    //   const POST = api().post
 
-      const { statusCode } = await POST(loginUrl).send({
-        username,
-        password: 'Incorrect$1'
-      })
+    //   const { statusCode } = await POST(loginUrl).send({
+    //     username,
+    //     password: 'Incorrect$1'
+    //   })
 
-      expect(statusCode).toEqual(401)
-    })
+    //   expect(statusCode).toEqual(401)
+    // })
 
     test(`Returns 200 when valid payload passed`, async () => {
       const api = () => request(nuxt().server.app)
