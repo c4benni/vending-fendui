@@ -60,7 +60,7 @@ export default async function ({ store, redirect, route, req }) {
   }
 
   redirectUnauthorized('buyer', ['create-product', 'my-products'])
-  redirectUnauthorized('seller', ['deposit', 'reset'])
+  redirectUnauthorized('seller', ['deposit', 'reset', 'shop', 'shop?id=.+'])
 
   if (
     route.path == '/dashboard/create-product' &&

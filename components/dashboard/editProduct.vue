@@ -65,7 +65,7 @@ export default {
     }),
     head() {
         return {
-            title: this.loading ? 'Loading product' : `Editing ${this.title}`
+            title: this.loading ? 'Loading product' : `Editing product ${this.product.productName}`
         }
     },
 
@@ -109,6 +109,10 @@ export default {
 
     async created() {
         await this.fetchProduct()
+    },
+
+    mounted() {
+        scrollTo(0, 0)
     },
 
     methods: {
@@ -192,7 +196,7 @@ export default {
 
             description && (productForm.description = description);
 
-            const { error } = await this.$apiCall('product', 'PATCH', productForm)
+            const { error } = await this.$dispatch('updateProduct', productForm)
 
             this.$commit('UPDATE', {
                 path: 'processingDone',
@@ -244,9 +248,7 @@ export default {
                         })
 
                         const { data, error } =
-                            await this.$apiCall(
-                                `product?id=${this.id}`, 'DELETE'
-                            )
+                            await this.$dispatch('deleteProduct', this.id)
 
                         await this.$sleep(100);
 

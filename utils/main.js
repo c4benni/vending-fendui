@@ -633,7 +633,9 @@ export const setCSSVariable = (str) => {
 export const btnClasses = `bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 dark:bg-blue-500 dark:text-black dark:hover:bg-blue-600 dark:hover:bg-opacity-70 dark:active:bg-blue-700 dark:active:bg-opacity-60`
 
 export const formatAmount = (amount) => {
-  const parseAmount = parseFloat(amount)
+  const getAmount =
+    typeof amount == 'string' ? amount.replace(/^\$|^¢/, '') : amount
+  const parseAmount = parseFloat(getAmount)
 
   if (isNaN(parseAmount)) {
     return null

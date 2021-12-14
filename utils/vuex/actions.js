@@ -37,6 +37,41 @@ export default {
     return { data: !!data }
   },
 
+  async updateProduct({ commit, state }, payload) {
+    const { data, error } = await product.updateProduct.call(this, payload)
+
+    if (data) {
+      commit('UPDATE', {
+        path: 'products',
+        value: {
+          ...state.products,
+          [data.id]: data
+        }
+      })
+    }
+
+    return { data, error }
+  },
+
+  async deleteProduct({ commit, state }, id) {
+    const { data, error } = await product.deleteProduct.call(this, id)
+
+    if (data) {
+      const newProducts = state.products
+
+      delete newProducts[id]
+
+      commit('UPDATE', {
+        path: 'products',
+        value: {
+          ...newProducts
+        }
+      })
+    }
+
+    return { data, error }
+  },
+
   async login({ commit }, credentials) {
     const { data: value } = await user.login.call(this, credentials)
 

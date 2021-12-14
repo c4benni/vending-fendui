@@ -198,6 +198,11 @@ export default {
             await this.getProduct(this.id)
 
             this.loading = false
+
+            this.$commit('UPDATE', {
+                path: 'productName',
+                value: this.product.productName
+            })
         },
         async purchase() {
             if (this.disablePurchase || this.isSeller) {

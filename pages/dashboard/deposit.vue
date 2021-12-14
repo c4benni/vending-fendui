@@ -42,7 +42,7 @@
             }]"
             @click="placeOrder"
         >
-            {{ isLoading ? '' : 'Place order' }}
+            {{ actionText }}
             <div v-if="isLoading" class="spinner-border"></div>
         </ui-btn>
     </div>
@@ -50,6 +50,8 @@
 
 <script>
 import OrderQuantity from "~/components/orderQuantity.vue";
+import deposit from "~/services/deposit";
+import { formatAmount } from '~/utils/main';
 export default {
     name: "DepositPage",
     components: { OrderQuantity },
@@ -64,6 +66,11 @@ export default {
             title: 'Deposit coins'
         }
     },
+    computed: {
+        actionText() {
+            return this.isLoading ? '' : !this.selected ? 'Choose a coin' : `Deposit ${formatAmount(parseFloat(this.selected) * this.quantity)}`
+        }
+    },
     methods: {
         async placeOrder() {
             this.isLoading = true
@@ -72,7 +79,7 @@ export default {
                 quantity: this.quantity
             }
 
-            const { data, error } = await this.$apiCall('deposit', 'post', payload)
+            const { data, error } = await deposit.call(this, payload)
 
             this.isLoading = false
 

@@ -201,7 +201,7 @@ export default {
             const notFound = this.notFound;
 
             return {
-                text: notFound ? 'Create product' : 'Retry',
+                text: notFound ? 'Create a product' : 'Retry',
                 to: notFound ? '/dashboard/create-product' : undefined,
             }
         }
@@ -238,7 +238,14 @@ export default {
         },
         async fetchProducts() {
 
-            await this.$dispatch('getProducts', `?where={"sellerId":"${this.user.id}"}`);
+            const { data } = await this.$dispatch('getProducts', `?where={"sellerId":"${this.user.id}"}`);
+
+            if (!data) {
+                this.errorFetching = {
+                    message: 'You have nothing to show',
+                    status: 404
+                }
+            }
 
             this.loading = false;
         }

@@ -8,7 +8,7 @@
 
         <p class="mt-6 font-semibold text-lg text-center">
             {{
-                emptyDeposit ? 'You have nothing to clear' : 'Are you sure about this action?'
+            emptyDeposit ? 'You have nothing to clear' : 'Are you sure about this action?'
             }}
         </p>
 
@@ -33,6 +33,7 @@
 
 <script>
 import UiBtn from "~/components/UiBtn.vue"
+import reset from "~/services/reset";
 export default {
     components: { UiBtn },
     head() {
@@ -74,7 +75,7 @@ export default {
                     warn: true,
                     closeText: 'Clear deposit',
                     callback: async () => {
-                        await this.$apiCall('reset', 'POST')
+                        await reset.call(this)
 
                         await this.$sleep(100);
 

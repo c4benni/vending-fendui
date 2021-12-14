@@ -370,7 +370,7 @@ export default {
 
     beforeMount() {
         this.redirectUnauthorized('buyer', ['create-product', 'my-products'])
-        this.redirectUnauthorized('seller', ['deposit', 'reset',])
+        this.redirectUnauthorized('seller', ['deposit', 'reset', 'shop', 'shop?id=.+'])
 
         this.$nextTick(() => {
             this.authenticated = true;

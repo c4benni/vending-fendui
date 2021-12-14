@@ -197,11 +197,7 @@ export default {
             description: true
         },
     }),
-    head() {
-        return {
-            title: 'Create product'
-        }
-    },
+
     computed: {
         breakpoints() {
             return this.$store.state.breakpoints;

@@ -119,13 +119,13 @@
                         </td>
 
                         <td>
-                            <div class="py-4 px-6">{{ transaction.amount }}</div>
+                            <div class="py-4 px-6">{{ formatAmount(transaction.amount) }}</div>
                         </td>
 
                         <td>
                             <div
                                 class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
-                            >{{ transaction.quantity }}</div>
+                            >{{ transaction.quantity || '--' }}</div>
                         </td>
 
                         <template v-if="isBuyer">
@@ -133,20 +133,20 @@
                                 <div class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap">
                                     <nuxt-link
                                         :to="`/dashboard/shop?id=${transaction.productId}`"
-                                    >{{ transaction.productId }}</nuxt-link>
+                                    >{{ transaction.productId || '--' }}</nuxt-link>
                                 </div>
                             </td>
                             <td>
                                 <div
                                     class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
-                                >{{ transaction.secondParty }}</div>
+                                >{{ transaction.secondParty || '--' }}</div>
                             </td>
                         </template>
 
                         <td v-else>
                             <div
                                 class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
-                            >{{ transaction.secondParty }}</div>
+                            >{{ transaction.secondParty || '--' }}</div>
                         </td>
                     </tr>
                 </tbody>
@@ -156,8 +156,9 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import UiIcon from '~/components/uiIcon.vue';
+import { formatAmount } from '~/utils/main';
 
 
 export default {
@@ -274,6 +275,9 @@ export default {
         },
         getDate(timestamp) {
             return new Date(parseFloat(timestamp)).toLocaleDateString()
+        },
+        formatAmount(val) {
+            return formatAmount(val)
         }
     }
 }
