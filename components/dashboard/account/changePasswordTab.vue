@@ -6,10 +6,16 @@
             class="text-xl px-6 font-bold fill-before before-divide before:border-b relative pb-4"
         >Update password</h2>
 
-        <ui-form name="password-form" class="mt-10 mb-6 px-6" :show-submit="false">
+        <ui-form
+            :key="'form' + form.key"
+            name="password-form"
+            class="mt-10 mb-6 px-6"
+            :show-submit="false"
+        >
             <input :value="user.username" autocomplete="username" class="sr-only" />
             <ui-input
                 id="current-password"
+                :key="'current-password' + form.key"
                 :model-value="form.oldPassword"
                 type="password"
                 label="Current password"
@@ -24,24 +30,26 @@
 
             <div class="h-[1px] relative w-full my-10 fill-before before-divide before:border-t"></div>
 
-            <ui-input
-                v-for="(input,i) in newPasswordInputs"
-                :id="input.id"
-                :key="i"
-                :model-value="input.model"
-                type="password"
-                :label="input.label"
-                :autocomplete="input.autocomplete"
-                :placeholder="input.placeholder"
-                :validate="input.validate"
-                :pattern="passwordPattern"
-                :disabled="input.disabled"
-                :main-class="['rounded-md bg-blue-gray-50 dark:bg-blue-gray-900 md:h-[64px] rounded-md bg-white dark:bg-blue-gray-900 md:h-[64px] border border-black dark:border-white border-opacity-10 dark:border-opacity-10', {
-                    'mt-4': i == 1
-                }]"
-                @input-validity="input.inputValidity"
-                @update:modelValue="input.onUpdate"
-            />
+            <fieldset>
+                <ui-input
+                    v-for="(input,i) in newPasswordInputs"
+                    :id="input.id"
+                    :key="i + form.key"
+                    :model-value="input.model"
+                    type="password"
+                    :label="input.label"
+                    :autocomplete="input.autocomplete"
+                    :placeholder="input.placeholder"
+                    :validate="input.validate"
+                    :pattern="passwordPattern"
+                    :disabled="input.disabled"
+                    :main-class="['rounded-md bg-blue-gray-50 dark:bg-blue-gray-900 md:h-[64px] rounded-md bg-white dark:bg-blue-gray-900 md:h-[64px] border border-black dark:border-white border-opacity-10 dark:border-opacity-10', {
+                        'mt-4': i == 1
+                    }]"
+                    @input-validity="input.inputValidity"
+                    @update:modelValue="input.onUpdate"
+                />
+            </fieldset>
 
             <div class="w-full pt-4">
                 <div class="flex justify-between items-center mt-8 mx-2">
@@ -53,7 +61,11 @@
                     <ui-switch id="end-sessions" v-model="form.endSessions" />
                 </div>
 
-                <p class="text-sm opacity-70 mt-1 mx-2">
+                <p
+                    :key="form.endSessions"
+                    class="text-sm opacity-70 mt-1 mx-2 fade-appear"
+                    style="--appear-to:0.7;"
+                >
                     {{
                         form.endSessions ? 'This account will be logged out from all other devices.' : ''
                     }}
@@ -69,6 +81,7 @@
                         'bg-green-700 text-white dark:bg-green-400 dark:text-blue-gray-900 hover:bg-green-800 dark:hover:bg-green-500': !disableSubmit
                     }"
                     :disabled="disableSubmit"
+                    @click="submit"
                 >
                     <ui-icon name="save" />Update password
                 </ui-btn>
@@ -97,7 +110,8 @@ export default {
             oldPassword: '',
             newPassword: '',
             confirmPassword: '',
-            endSessions: false
+            endSessions: false,
+            key: null
         },
 
         validatePasswords: {
@@ -160,7 +174,7 @@ export default {
                         }
 
                         if (this.form.newPassword != this.form.confirmPassword) {
-                            return 'Password must match'
+                            return 'Passwords must match'
                         }
 
                         return true
@@ -182,6 +196,10 @@ export default {
         disableSubmit() {
             return !this.validatePasswords.oldPassword || !this.validatePasswords.newPassword || !this.validatePasswords.confirmPassword
         }
+    },
+
+    created() {
+        this.form.key = Date.now()
     },
 
     methods: {
@@ -225,6 +243,67 @@ export default {
             }
 
             return true;
+        },
+
+        resetForm() {
+            this.form.oldPassword = ''
+            this.form.newPassword = ''
+            this.form.confirmPassword = ''
+            this.form.endSessions = false
+            this.form.key = Date.now()
+        },
+
+        async submit() {
+            if (this.disableSubmit) {
+                return null
+            }
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: null
+            })
+
+            await this.$nextTick()
+
+            this.$commit('UPDATE', {
+                path: 'dashboardProcessing',
+                value: true
+            })
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: 'Updating password',
+                    subtitle: 'Please wait while we update your password.',
+                    key: Date.now()
+                }
+            })
+
+            const payload = {
+                password: {
+                    old: this.form.oldPassword,
+                    new: this.form.confirmPassword,
+                    endOtherSessions: this.form.endSessions
+                }
+            }
+
+            const { data, error } = await this.$apiCall('user', 'PATCH', payload)
+
+            this.resetForm()
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: error ? 'An error occured' : 'Password updated!',
+                    subtitle: error?.message || data?.message,
+                    error: !!error,
+                    key: Date.now()
+                }
+            })
+
+            await this.$sleep()
+
+            await this.$refreshUser()
         }
     }
 }

@@ -29,7 +29,7 @@ async function afterDestroy(user) {
   // remove saved sessions;
   await Session.destroy({
     where: {
-      userId: user.id
+      id: user.id
     }
   })
 }
@@ -85,6 +85,30 @@ module.exports = (sequelize, dataTypes) => {
       bio: {
         type: dataTypes.TEXT,
         allowNull: true
+      },
+      publicProfile: {
+        type: dataTypes.BOOLEAN,
+        defaultValue: true
+      },
+      showBalance: {
+        type: dataTypes.BOOLEAN,
+        defaultValue: true
+      },
+      showBalanceFromAccountPage: {
+        type: dataTypes.BOOLEAN,
+        defaultValue: false
+      },
+      rememberMe: {
+        type: dataTypes.BOOLEAN,
+        defaultValue: true
+      },
+      logoutOtherSessions: {
+        type: dataTypes.BOOLEAN,
+        defaultValue: false
+      },
+      showBanner: {
+        type: dataTypes.BOOLEAN,
+        defaultValue: true
       }
     },
     {

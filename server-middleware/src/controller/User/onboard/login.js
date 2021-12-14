@@ -31,8 +31,7 @@ module.exports = async function (req, res) {
 
         // create a fresh user session;
         const newSession = await Session.create({
-          id: user.id,
-          deviceHash: req.machineId
+          id: user.id
         })
 
         const data = {

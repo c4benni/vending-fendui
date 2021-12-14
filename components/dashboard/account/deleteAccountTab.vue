@@ -6,7 +6,7 @@
             class="text-xl px-6 font-bold fill-before before-divide before:border-b relative pb-4"
         >Enter password</h2>
 
-        <ui-form name="password-form" class="mt-10 mb-6 px-6" :show-submit="false">
+        <ui-form :key="form.key" name="password-form" class="mt-10 mb-6 px-6" :show-submit="false">
             <input :value="user.username" autocomplete="username" class="sr-only" />
             <ui-input
                 id="current-password"
@@ -37,9 +37,9 @@
                 </ui-btn>
             </div>
 
-            <div v-else class="fade-appear" style="--appear-duration:350ms">
+            <div v-else class="fade-appear px-6" style="--appear-duration:350ms">
                 <div
-                    class="rounded-sm mt-[48px] mx-auto p-3 fill-before relative before-divide before:border flex justify-start bg-red-700 dark:bg-red-500 items-start w-[fit-content] bg-opacity-30 dark:bg-opacity-30"
+                    class="rounded-sm mt-[32px] mx-auto p-3 fill-before relative before-divide before:border flex justify-start bg-red-700 dark:bg-red-500 items-start w-[fit-content] bg-opacity-30 dark:bg-opacity-30"
                 >
                     <ui-icon name="alert" />
 
@@ -78,6 +78,7 @@ export default {
         passwordPattern: passwordRegExpStr,
         form: {
             password: '',
+            key: Date.now()
         },
 
         passwordValid: false
@@ -111,8 +112,7 @@ export default {
                 },
                 {
                     title: 'Delete account',
-                    onClick: () => {
-                    },
+                    onClick: this.submit,
                     classList: [
                         'bg-red-700 text-white dark:bg-red-400 dark:text-blue-gray-900 hover:bg-red-800 dark:hover:bg-red-500 ml-6',
                     ]
@@ -162,6 +162,64 @@ export default {
             }
 
             return true;
+        },
+        resetForm() {
+            this.form.password = ''
+            this.form.key = Date.now()
+            this.showAlert = false
+        },
+
+        async submit() {
+            if (this.disableSubmit) {
+                return null
+            }
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: null
+            })
+
+            await this.$nextTick()
+
+            this.$commit('UPDATE', {
+                path: 'dashboardProcessing',
+                value: true
+            })
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: 'Deleting profile',
+                    subtitle: 'Please wait while we delete your profile.',
+                    key: Date.now()
+                }
+            })
+
+            const payload = {
+                password: this.form.password
+            }
+
+            const { data, error } = await this.$apiCall('user', 'DELETE', payload)
+
+            this.resetForm()
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: error ? 'An error occured' : 'Your profile has been deleted!',
+                    subtitle: error?.message || data?.message,
+                    error: !!error,
+                    key: Date.now()
+                }
+            })
+
+            await this.$sleep()
+
+            if (!error) {
+                await this.$sleep(1500)
+
+                await this.$refreshUser('/')
+            }
         }
     }
 }

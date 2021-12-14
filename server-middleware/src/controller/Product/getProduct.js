@@ -24,7 +24,7 @@ module.exports = async function (req, res) {
     }
 
     // send filtered result;
-    const disAllowedFields = ['id', 'updatedAt']
+    const disAllowedFields = ['updatedAt']
 
     const productJSON = product.toJSON()
 

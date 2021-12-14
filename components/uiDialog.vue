@@ -240,7 +240,7 @@ export default {
           })
         }
         if (typeof this.zIndex == 'undefined') {
-          this.$set(this.$c4, 'overlays', [...this.$c4.overlays, this])
+          this.$set(this.$ui, 'overlays', [...this.$ui.overlays, this])
           this.stored_zIndex = zIndex.call(this)
         } else {
           this.stored_zIndex = this.zIndex
@@ -294,20 +294,20 @@ export default {
   // },
   beforeDestroy() {
     this.$set(
-      this.$c4,
+      this.$ui,
       'componentZIndex',
-      this.$c4.componentZIndex.filter((x) => x._uid != this._uid)
+      this.$ui.componentZIndex.filter((x) => x._uid != this._uid)
     )
     this.$set(
-      this.$c4,
+      this.$ui,
       'overlays',
-      this.$c4.overlays.filter((x) => x._uid != this._uid)
+      this.$ui.overlays.filter((x) => x._uid != this._uid)
     )
     this.v_model.close()
   },
 
   render(h) {
-    if (!this.$store.getters.pageEntered || !this.$c4.mounted) {
+    if (!this.$store.getters.pageEntered || !this.$ui.mounted) {
       return null
     }
     const root = (d, c) => h(this.tag, d, c)
@@ -480,7 +480,7 @@ export default {
 
                     this.$emit('leave', e)
                     if (
-                      !this.$c4.overlays?.filter((x) => x._uid != this._uid)
+                      !this.$ui.overlays?.filter((x) => x._uid != this._uid)
                         ?.length
                     ) {
                       const html = this.$el.closest('html')
@@ -512,16 +512,16 @@ export default {
 
                     this.$emit('afterLeave', e)
                     this.$set(
-                      this.$c4,
+                      this.$ui,
                       'componentZIndex',
-                      this.$c4.componentZIndex.filter(
+                      this.$ui.componentZIndex.filter(
                         (x) => x._uid != this._uid
                       )
                     )
                     this.$set(
-                      this.$c4,
+                      this.$ui,
                       'overlays',
-                      this.$c4.overlays.filter((x) => x._uid != this._uid)
+                      this.$ui.overlays.filter((x) => x._uid != this._uid)
                     )
                     this.$nextTick(() => {
                       this.stored_zIndex = 'auto'

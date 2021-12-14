@@ -24,9 +24,7 @@ module.exports = function (Joi) {
       displayName: Joi.string()
         .min(1)
         .max(99)
-        .pattern(
-          new RegExp('^(?=[a-zA-Z0-9._]{3,20}$)(?!.*[_.]{2})[^_.].*[^_.]$')
-        ),
+        .pattern(new RegExp('^([a-zA-Z0-9\\s]){3,99}$')),
 
       username: Joi.string()
         .min(3)
@@ -53,7 +51,8 @@ module.exports = function (Joi) {
       const password = this.user.password.required()
       return Joi.object({
         old: password,
-        new: password
+        new: password,
+        endOtherSessions: Joi.boolean()
       })
     },
     links,

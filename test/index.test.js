@@ -31,24 +31,24 @@ beforeAll(async () => {
   nuxt.server.listen(4000, 'localhost')
 }, 60000)
 
-const testFiles = []
+const testSuites = []
 
-// auto import test files and add them to testFiles[]
+// auto import test files and add them to testSuites[]
 readdirSync(__dirname)
   // get only .test files that arent this file
   .filter((file) => /.+\.test\.js$/.test(file) && file != 'index.js')
   .forEach((file) => {
     // import test files;
-    const testFile = require(joinPath(__dirname, file))
+    const testSuite = require(joinPath(__dirname, file))
 
-    // add to testFiles[]
+    // add to testSuites[]
     // only add files that are an exported function
-    typeof testFile == 'function' && testFiles.push(testFile)
+    typeof testSuite == 'function' && testSuites.push(testSuite)
   })
 
-// execute each test in testFiles[];
-for (const testFile of testFiles) {
-  testFile(() => nuxt, request)
+// execute each test in testSuites[];
+for (const testSuite of testSuites) {
+  testSuite(() => nuxt, request)
 }
 
 // require('./product.test')(() => nuxt, request)

@@ -1,4 +1,5 @@
 const { sequelize } = require('../../models')
+const { addTx } = require('../../utils/transactionHistory')
 
 const { signedInRole, sendServerError } = require('../../utils/utils')
 
@@ -17,6 +18,8 @@ module.exports = async function (req, res) {
 
     try {
       await sequelize.transaction(async function (tx) {
+        const initialDeposit = user.deposit
+
         const updateUser = await user.update(
           {
             deposit: 0
@@ -36,6 +39,20 @@ module.exports = async function (req, res) {
         if (saveUpdate.error) {
           throw new Error('Error saving update')
         }
+
+        const saveTx = await addTx({
+          userId: user.id,
+          amount: `¢${initialDeposit}`,
+          quantity: null,
+          type: 'reset',
+          transaction: tx
+        })
+
+        if (saveTx.error) {
+          return { error: 1 }
+        }
+
+        return {}
       })
     } catch (err) {
       if (err) {

@@ -158,8 +158,8 @@ ul {
   list-style-type: none;
 }
 
-html,
-html :not(input):not(.selectable):not(textarea) {
+img,
+.ui-btn {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;

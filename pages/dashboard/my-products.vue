@@ -22,7 +22,7 @@
     </div>
 
     <div v-else>
-        <div class="card p-0 mx-6 shadow-md dark:shadow-none overflow-x-auto fade-appear">
+        <div class="card p-0 mx-6 shadow-md dark:shadow-none fade-appear overflow-hidden">
             <form
                 action="."
                 name="search-products"
@@ -46,83 +46,85 @@
                 <p class="text-center text-lg font-bold p-10">No item to match your search</p>
             </div>
 
-            <table v-else class="w-full">
-                <caption class="sr-only">Product list</caption>
+            <div v-else class="overflow-x-auto max-w-[100%]">
+                <table class="w-full">
+                    <caption class="sr-only">Product list</caption>
 
-                <thead
-                    class="bg-white dark:bg-blue-gray-900 dark:bg-opacity-80 fill-before before-divide before:border-b h-14 w-full relative text-left"
-                >
-                    <tr>
-                        <th v-for="(th, i) in tableHead" :key="i">
-                            <div class="px-6">{{ th }}</div>
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr
-                        v-for="(product, i) in getProducts"
-                        :key="i"
-                        :class="{ 'border-b border-black dark:border-white border-opacity-10 dark:border-opacity-10': i != getProducts.length - 1 }"
-                        class="fade-appear bg-white dark:bg-blue-gray-900 bg-opacity-0 dark:bg-opacity-0 hover:bg-opacity-30 dark:hover:bg-opacity-30"
+                    <thead
+                        class="bg-white dark:bg-blue-gray-900 dark:bg-opacity-80 fill-before before-divide before:border-b w-full relative text-left"
                     >
-                        <td>
-                            <nuxt-link
-                                class="grid grid-flow-col gap-x-3 py-4 px-6 justify-start group"
-                                :to="`/dashboard/my-products?edit=${product.id}`"
-                            >
-                                <div
-                                    class="h-[80px] w-[80px] rounded-sm isolate overflow-hidden transition-transform transform-gpu group-hover:translate-y-[-0.15rem] group-hover:shadow-md"
+                        <tr class="min-h-[48px] h-[48px]">
+                            <th v-for="(th, i) in tableHead" :key="i">
+                                <div class="px-6">{{ th }}</div>
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr
+                            v-for="(product, i) in getProducts"
+                            :key="i"
+                            :class="{ 'border-b border-black dark:border-white border-opacity-10 dark:border-opacity-10': i != getProducts.length - 1 }"
+                            class="fade-appear bg-white dark:bg-blue-gray-900 bg-opacity-0 dark:bg-opacity-0 hover:bg-opacity-30 dark:hover:bg-opacity-30"
+                        >
+                            <td>
+                                <nuxt-link
+                                    class="grid grid-flow-col gap-x-3 py-4 px-6 justify-start group"
+                                    :to="`/dashboard/my-products?edit=${product.id}`"
                                 >
-                                    <app-img
-                                        :public-id="product.background"
-                                        height="80px"
-                                        width="80px"
-                                        class="object-cover"
-                                    ></app-img>
+                                    <div
+                                        class="h-[80px] w-[80px] rounded-sm isolate overflow-hidden transition-transform transform-gpu group-hover:translate-y-[-0.15rem] group-hover:shadow-md"
+                                    >
+                                        <app-img
+                                            :public-id="product.background"
+                                            height="80px"
+                                            width="80px"
+                                            class="object-cover"
+                                        ></app-img>
+                                    </div>
+
+                                    <div class="grid content-center">
+                                        <p
+                                            class="opacity-70 text-sm font-normal"
+                                        >{{ capitalize(product.type) }}</p>
+
+                                        <span>{{ capitalize(product.productName) }}</span>
+                                    </div>
+                                </nuxt-link>
+                            </td>
+
+                            <td>
+                                <div class="py-4 px-6">
+                                    <span
+                                        class="rounded-full bg-opacity-75 dark:bg-opacity-75 text-[0.8rem] py-1 px-2 whitespace-nowrap"
+                                        :class="{
+                                            'bg-green-800 text-white': parseInt(product.amountAvailable) >= 10,
+                                            'bg-yellow-500 text-black': parseInt(product.amountAvailable) < 10 && parseInt(product.amountAvailable) > 4,
+                                            'bg-red-800 text-white': parseInt(product.amountAvailable) < 5
+                                        }"
+                                    >{{ formatRemaining(product) }}</span>
                                 </div>
+                            </td>
 
-                                <div class="grid content-center">
-                                    <p
-                                        class="opacity-70 text-sm font-normal"
-                                    >{{ capitalize(product.type) }}</p>
+                            <td>
+                                <div class="py-4 px-6">¢{{ product.cost }}</div>
+                            </td>
 
-                                    <span>{{ capitalize(product.productName) }}</span>
+                            <td>
+                                <div class="py-4 px-6">
+                                    <app-rating readonly />
                                 </div>
-                            </nuxt-link>
-                        </td>
+                            </td>
 
-                        <td>
-                            <div class="py-4 px-6">
-                                <span
-                                    class="rounded-full bg-opacity-75 dark:bg-opacity-75 text-[0.8rem] py-1 px-2 whitespace-nowrap"
-                                    :class="{
-                                        'bg-green-800 text-white': parseInt(product.amountAvailable) >= 10,
-                                        'bg-yellow-500 text-black': parseInt(product.amountAvailable) < 10 && parseInt(product.amountAvailable) > 4,
-                                        'bg-red-800 text-white': parseInt(product.amountAvailable) < 5
-                                    }"
-                                >{{ formatRemaining(product) }}</span>
-                            </div>
-                        </td>
-
-                        <td>
-                            <div class="py-4 px-6">¢{{ product.cost }}</div>
-                        </td>
-
-                        <td>
-                            <div class="py-4 px-6">
-                                <app-rating readonly />
-                            </div>
-                        </td>
-
-                        <td>
-                            <div
-                                class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
-                            >{{ product.id }}</div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <td>
+                                <div
+                                    class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
+                                >{{ product.id }}</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="grid justify-center my-9">
@@ -135,6 +137,7 @@
 </template>
 
 <script>
+import { mapState, } from 'vuex'
 import uiIcon from '../../components/uiIcon.vue'
 import appRating from '../../components/appRating.vue'
 import editProduct from '~/components/dashboard/editProduct.vue'
@@ -150,7 +153,6 @@ export default {
             message: '',
             status: null
         },
-        products: [],
         tableHead: [
             'Name',
             'Stock',
@@ -166,6 +168,8 @@ export default {
     },
 
     computed: {
+        ...mapState(['products']),
+
         isEditing() {
             return !!this.$route.query.edit
         },
@@ -176,7 +180,9 @@ export default {
         getProducts() {
             const regExp = new RegExp(`${this.search}`, 'i');
 
-            return this.products.filter(product => regExp.test(product.productName))
+            const filterProducts = Object.values(this.products).filter(product => regExp.test(product.productName))
+
+            return filterProducts
         },
 
         notFound() {
@@ -231,17 +237,8 @@ export default {
             return available ? `${available} item${available > 1 ? 's' : ''} left` : 'Sold out'
         },
         async fetchProducts() {
-            this.products = [];
 
-            const { data, error } = await this.$apiCall(`product/all?where={"sellerId":"${this.user.id}"}`);
-
-            if (data?.length) {
-                this.products = data;
-            } else if (error) {
-                this.errorFetching = error
-            } else {
-                this.errorFetching.message = 'An error occured'
-            }
+            await this.$dispatch('getProducts', `?where={"sellerId":"${this.user.id}"}`);
 
             this.loading = false;
         }

@@ -199,7 +199,8 @@ module.exports = function (nuxt, request) {
         headers['set-cookie']
       )
 
-      expect(validStatusCode).toEqual(200)
+      expect(validStatusCode).toEqual(302)
+      // redirected
     })
   })
 

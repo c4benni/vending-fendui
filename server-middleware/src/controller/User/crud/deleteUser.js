@@ -32,7 +32,7 @@ module.exports = async function (req, res) {
 
           const updateSellerProduct = async () => {
             if (!findUser.isSeller) {
-              return
+              return {}
             }
 
             const updateProduct = await Product.update(
@@ -47,11 +47,13 @@ module.exports = async function (req, res) {
               }
             )
 
-            if (updateProduct) {
+            if (updateProduct.error) {
               return {
                 error: `Error updating seller's product`
               }
             }
+
+            return {}
           }
 
           const updateProduct = await updateSellerProduct()
@@ -95,7 +97,7 @@ module.exports = async function (req, res) {
       }
     }
 
-    return res.send(res, {
+    return res.send({
       data: {
         message: 'user deleted'
       },

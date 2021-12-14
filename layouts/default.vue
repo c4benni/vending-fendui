@@ -14,7 +14,7 @@
       breakpointsClasses,
     ]"
   >
-    <nuxt-child v-if="$c4.mounted" />
+    <nuxt-child v-if="$ui.mounted" />
 
     <!-- tailwind hasn't loaded yet,
     so render the page loader to hide unhydrated app-->
@@ -47,6 +47,7 @@ import {
 
 export default {
   name: 'DefaultLayout',
+
   data: () => ({
     ...breakpoints.data,
   }),
@@ -78,7 +79,7 @@ export default {
       }
     )
 
-    if (this.$c4.mounted) {
+    if (this.$ui.mounted) {
       links.push(
         {
           hid: 'animations',
@@ -94,7 +95,7 @@ export default {
       )
     }
     return {
-      title: 'Welcome',
+      title: this.$route.path == '/' ? 'Welcome' : 'Loading dashboard',
       link: [...links],
       htmlAttrs: {
         id: 'vending',
@@ -124,11 +125,15 @@ export default {
   },
   watch: {
     '$theme.light'() {
-      this.$el
-        .closest('html')
+      const currentTheme =
+        this.$theme.light ? 'dark' : 'light'
+
+      const newTheme = this.$theme.light ? 'light' : 'dark'
+
+      document.documentElement
         .classList.replace(
-          this.$theme.light ? 'dark' : 'light',
-          this.$theme.light ? 'light' : 'dark'
+          currentTheme,
+          newTheme
         )
     },
     async $route(n, o) {
@@ -143,7 +148,7 @@ export default {
         value: false
       })
 
-      if (this.$c4.mounted && this.state.mobileNav) {
+      if (this.$ui.mounted && this.state.mobileNav) {
         document.documentElement
           .classList.remove('overlay-active')
       }
@@ -166,7 +171,7 @@ export default {
     },
 
     '$route.path'() {
-      if (this.$c4.mounted) {
+      if (this.$ui.mounted) {
         scrollTo(0, 0)
       }
     },
@@ -201,251 +206,38 @@ export default {
       }
     },
 
+    '$store.state.user'(n) {
+      if (n) {
+        this.$commit('UPDATE', {
+          path: 'bannerActive',
+          value: n.showBanner
+        })
+
+      }
+    }
   },
 
   beforeCreate() {
-
     registerComponents(Vue)
 
     Vue.prototype.$commit = this.$store.commit
 
-    Vue.prototype.$c4 = Vue.observable(new C4UiLib(Vue.observable))
+    Vue.prototype.$dispatch = this.$store.dispatch
 
-    Vue.prototype.$theme = Vue.prototype.$c4.theme
+    Vue.prototype.$ui = Vue.observable(new C4UiLib(Vue.observable))
+
+    Vue.prototype.$theme = Vue.prototype.$ui.theme
   },
   created() {
-
-    this.setGreetings()
-
-    Vue.prototype.$toggleShowBalance = () => {
-      this.$commit('UPDATE', {
-        path: 'showBalance',
-        value: !this.$store.state.showBalance
-      })
-    }
-
-    Vue.prototype.$logout = async (arg) => {
-      const url = `user/logout${arg ? '/all' : ''}`
-
-      await this.$apiCall(url, arg);
-
-      await this.$refreshUser()
-    }
+    this.onCreated()
   },
   async beforeMount() {
-
-    const setPrototype = () => {
-      Vue.prototype.$nextFrame = nextFrame.bind(this)
-
-      Vue.prototype.$nextAnimFrame = nextAnimFrame.bind(this)
-
-      Vue.prototype.$sleep = sleep
-
-    }
-
-    setPrototype()
-
-    breakpoints.mounted.call(this)
-
-    setTouchDevice.call(this)
-
-    const setTheme = (val) => {
-      this.$theme.is = val
-        ; (
-          document.documentElement || document.getElementsByTagName('html')[0]
-        ).classList.add(this.$theme.light ? 'light' : 'dark')
-    }
-
-    const currentTheme = window.matchMedia('(prefers-color-scheme: light)')
-
-    if (currentTheme?.matches) {
-      setTheme('light')
-    } else setTheme('dark')
-
-    mediaListener({
-      media: currentTheme,
-      callback: (e) => {
-        if (e.matches) {
-          setTheme('light')
-        } else setTheme('dark')
-      },
-    })
-
-    window.history.scrollRestoration = 'auto'
-
-
-    Vue.prototype.$storeUser = async () => {
-      if (this.state.authSleeping) {
-        return {
-          data: this.state.user
-        }
-      }
-
-      this.$commit('UPDATE', {
-        path: 'authSleeping',
-        value: true
-      })
-
-      const res = await fetch('/api/v1/auth')
-
-      const { data, error } = await res.json()
-
-      this.$commit('UPDATE', {
-        path: 'user',
-        value: !data ? null : data
-      })
-
-      this.$sleep(4000).then(() => {
-        this.$commit('UPDATE', {
-          path: 'authSleeping',
-          value: false
-        })
-      })
-
-      return { data, error }
-    }
-
-    Vue.prototype.$refreshUser = async () => {
-      if (this.$route.path == '/') { return }
-
-      const { data } = await this.$storeUser();
-
-      if (!data && this.$c4.mounted) {
-        this.$router.replace('/')
-      }
-    }
-
-    Vue.prototype.$apiCall = async (url, method = 'GET', data) => {
-      try {
-
-        const objectMethod = typeof method == 'object'
-
-        const getMethod = objectMethod ? 'POST' : method;
-
-        const payload = objectMethod ? method : data;
-
-        const getData = payload ? JSON.stringify(payload) : undefined
-
-
-        const res = await fetch(`/api/v1/${url}`, {
-          method: getMethod,
-          body: getData,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-        })
-        const json = await res.json();
-
-        // expired session
-        if (json?.error?.status == 401) {
-          this.$commit('UPDATE', {
-            path: 'notify',
-            value: {
-              message: 'Session expired',
-              error: true,
-              timeout: 7500,
-              key: Date.now()
-            }
-          })
-
-          this.$commit('UPDATE', {
-            value: null,
-            path: 'user'
-          })
-
-          this.$router.replace('/')
-        }
-
-        return json
-      } catch (e) {
-        return {
-          error: {
-            message: 'Opps! An error occured',
-            status: 500, e
-          }
-        }
-      }
-    }
-
-    await this.$nextTick();
-
-    await this.$refreshUser()
-
-    await this.$nextTick();
-
-    const session = this.state.user
-    const path = this.$route.path
-
-    // redirect back to dashboard if a logged in user is trying to access login page
-    if (session && path == '/') {
-      this.$router.replace('/dashboard')
-    }
-
-    // redirect back to login if a logged out user is trying to access dashboard
-
-    else
-      if (!session && path != '/') {
-        return this.$router.replace('/')
-      }
-
+    await this.onBeforeMount()
   },
-
   mounted() {
-    breakpoints.mounted.call(this)
-
-    this.$nextTick(async () => {
-      this.appMounted = true
-
-      smoothscroll.polyfill()
-
-      const togglePageVisiblity = () => {
-        const hidden =
-          document.hidden || document.webkitHidden || document.msHidden
-        const visibility =
-          document.visibilityState ||
-          document.webkitVisibilityState ||
-          document.msVisibilityState
-        const documentHidden = !!hidden || /^hidden/i.test(visibility)
-        const toggleVisibility = (value) => {
-          this.$commit('UPDATE', {
-            value,
-            path: 'pageVisible',
-          })
-        }
-
-        if (documentHidden) {
-          toggleVisibility(false)
-        } else toggleVisibility(true)
-      }
-
-      togglePageVisiblity()
-
-      document.addEventListener('visibilitychange', togglePageVisiblity)
-
-      await this.$sleep(200, true)
-
-      Object.entries(this.state).forEach((x) => {
-        this.$commit('UPDATE', {
-          path: x[0],
-          value: x[1],
-        })
-      })
-
-      await this.$nextTick()
-
-      this.$commit('UPDATE', {
-        path: 'pageTransitionState',
-        value: 'afterEnter',
-      })
-
-      await this.$sleep(200)
-
-      this.showUserPrefTheme = false
-
-      this.$c4.mounted = true
-    })
+    this.onMounted()
   },
+
   methods: {
     ...breakpoints.methods,
     setGreetings() {
@@ -466,6 +258,227 @@ export default {
         value: greeting(),
       })
     },
+
+    onCreated() {
+      this.setGreetings()
+
+      Vue.prototype.$toggleShowBalance = (val = !this.$store.state.showBalance) => {
+
+        let value = val;
+
+        if (typeof value != 'boolean') {
+          value = !this.$store.state.showBalance
+        }
+
+        this.$commit('UPDATE', {
+          path: 'showBalance',
+          value
+        })
+      }
+    },
+
+    async onBeforeMount() {
+
+      const setPrototype = () => {
+        Vue.prototype.$nextFrame = nextFrame.bind(this)
+
+        Vue.prototype.$nextAnimFrame = nextAnimFrame.bind(this)
+
+        Vue.prototype.$sleep = sleep
+
+      }
+
+      setPrototype()
+
+      breakpoints.mounted.call(this)
+
+      setTouchDevice.call(this)
+
+      const setTheme = (val) => {
+        this.$theme.is = val
+          ; (
+            document.documentElement || document.getElementsByTagName('html')[0]
+          ).classList.add(this.$theme.light ? 'light' : 'dark')
+      }
+
+      const currentTheme = window.matchMedia('(prefers-color-scheme: light)')
+
+      if (currentTheme?.matches) {
+        setTheme('light')
+      } else setTheme('dark')
+
+      mediaListener({
+        media: currentTheme,
+        callback: (e) => {
+          if (e.matches) {
+            setTheme('light')
+          } else setTheme('dark')
+        },
+      })
+
+      window.history.scrollRestoration = 'auto'
+
+      Vue.prototype.$storeUser = async () => {
+        if (this.state.authSleeping) {
+          return {
+            data: this.state.user
+          }
+        }
+
+        this.$commit('UPDATE', {
+          path: 'authSleeping',
+          value: true
+        })
+
+
+        const { data: res } = await this.$axios.get('/auth')
+
+        const { data, error } = res
+
+        this.$commit('UPDATE', {
+          path: 'user',
+          value: !data ? null : data
+        })
+
+
+        this.$sleep(4000).then(() => {
+          this.$commit('UPDATE', {
+            path: 'authSleeping',
+            value: false
+          })
+        })
+
+        return { data, error }
+      }
+
+      Vue.prototype.$refreshUser = async (routeTo = '/?login=true') => {
+        if (this.$route.path == '/') { return }
+
+        const { data } = await this.$storeUser();
+
+        if (!data && this.$ui.mounted) {
+          this.$router.replace(routeTo)
+        }
+      }
+
+      Vue.prototype.$apiCall = async (url, method = 'get', payload = {}) => {
+
+        const objectMethod = typeof method == 'object'
+
+        const getMethod = (objectMethod ? 'post' : method).toLocaleLowerCase();
+
+        try {
+          const { data: response } = await this.$axios[getMethod](url, payload)
+
+          return { data: response.data, error: null }
+        } catch (e) {
+          const resError = e.response;
+
+          // expired session
+          if (resError.status == 401) {
+
+            this.$commit('UPDATE', {
+              path: 'notify',
+              value: {
+                message: 'Session expired',
+                error: true,
+                timeout: 7500,
+                key: Date.now()
+              }
+            })
+
+            this.$commit('UPDATE', {
+              value: null,
+              path: 'user'
+            })
+
+            this.$router.replace('/?login=true')
+          }
+
+          return {
+            error: resError.data.error,
+            data: null
+          }
+        }
+      }
+
+      await this.$nextTick();
+
+      await this.$refreshUser()
+
+      await this.$nextTick();
+
+      const session = this.state.user
+      const path = this.$route.path
+
+      // redirect back to dashboard if a logged in user is trying to access login page
+      if (session && path == '/') {
+        this.$router.replace('/dashboard')
+      }
+
+      // redirect back to login if a logged out user is trying to access dashboard
+
+      else
+        if (!session && path != '/') {
+          return this.$router.replace('/')
+        }
+    },
+
+    onMounted() {
+      breakpoints.mounted.call(this)
+
+      this.$nextTick(async () => {
+        this.appMounted = true
+
+        smoothscroll.polyfill()
+
+        const togglePageVisiblity = () => {
+          const hidden =
+            document.hidden || document.webkitHidden || document.msHidden
+          const visibility =
+            document.visibilityState ||
+            document.webkitVisibilityState ||
+            document.msVisibilityState
+          const documentHidden = !!hidden || /^hidden/i.test(visibility)
+          const toggleVisibility = (value) => {
+            this.$commit('UPDATE', {
+              value,
+              path: 'pageVisible',
+            })
+          }
+
+          if (documentHidden) {
+            toggleVisibility(false)
+          } else toggleVisibility(true)
+        }
+
+        togglePageVisiblity()
+
+        document.addEventListener('visibilitychange', togglePageVisiblity)
+
+        await this.$sleep(200, true)
+
+        Object.entries(this.state).forEach((x) => {
+          this.$commit('UPDATE', {
+            path: x[0],
+            value: x[1],
+          })
+        })
+
+        await this.$nextTick()
+
+        this.$commit('UPDATE', {
+          path: 'pageTransitionState',
+          value: 'afterEnter',
+        })
+
+        await this.$sleep(200)
+
+        this.showUserPrefTheme = false
+
+        this.$ui.mounted = true
+      })
+    }
   },
 }
 </script>

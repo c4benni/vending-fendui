@@ -85,11 +85,38 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
-    '@nuxtjs/cloudinary'
+    '@nuxtjs/cloudinary',
+    '@nuxtjs/axios'
   ],
 
+  axios: {
+    baseURL: 'http://localhost:3000/api/v1',
+    prefix: '',
+    retry: true,
+    credentials: true,
+    debug: true,
+    headers: {
+      Accept: 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    }
+  },
+
+  publicRuntimeConfig: {
+    axios: {
+      browserBaseURL: process.env.BROWSER_BASE_URL
+    },
+    baseURL: process.env.BASE_URL
+  },
+
+  privateRuntimeConfig: {
+    axios: {
+      baseURL: process.env.BASE_URL
+    },
+    apiSecret: process.env.API_SECRET
+  },
+
   cloudinary: {
-    // Cloudinary configuration options
     useComponent: true,
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,
@@ -113,7 +140,7 @@ export default {
     },
     meta: {
       author: 'Chidi Benedict',
-      themeColor: '#cacd23',
+      themeColor: '#000',
       nativeUI: true
       // ohHost: 'https://www.c4benni.github.io/nina'
     }

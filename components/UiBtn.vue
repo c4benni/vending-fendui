@@ -19,8 +19,8 @@ export default {
       default: 'button',
     },
     to: {
-      type: String,
-      default: '',
+      type: [String, Object],
+      default: () =>'',
     },
     disabled: {
       type: Boolean,
@@ -428,6 +428,10 @@ export default {
   transition: 0s;
 }
 
+.ui-btn.__text::after {
+  border: none;
+}
+
 .ui-btn:before {
   background-color: var(--fill-background, var(--primary));
   opacity: 0;
@@ -438,6 +442,10 @@ export default {
 .ui-btn:focus-visible:after,
 .ui-btn[tabindex="-1"]:focus-within:after {
   opacity: var(--t-disabled);
+}
+
+.ui-btn.__text:focus-visible {
+  text-decoration: underline;
 }
 
 .ui-btn:focus-visible::before,

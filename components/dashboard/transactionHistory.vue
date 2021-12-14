@@ -12,6 +12,7 @@
                 <span :key="showBalanceIcon" class="fade-appear inline-block">{{ availableAmount }}</span>
 
                 <ui-btn
+                    v-if="renderToggleBalance"
                     class="ml-1 min-h-[38px]"
                     :title="showBalance ? 'hide balance' : 'show balance'"
                     @click="$toggleShowBalance"
@@ -87,7 +88,7 @@
 
                 <tbody>
                     <tr
-                        v-for="(transaction, i) in transactionHistory"
+                        v-for="(transaction, i) in transactions"
                         :key="i"
                         class="fade-appear bg-white dark:bg-blue-gray-900 bg-opacity-0 dark:bg-opacity-0 hover:odd:bg-opacity-20 dark:hover:odd:bg-opacity-20 hover:even:bg-opacity-80 dark:hover:even:bg-opacity-70 even:bg-opacity-60 dark:even:bg-opacity-50"
                     >
@@ -98,8 +99,9 @@
                         </td>
 
                         <td>
-                            <div class="py-4 px-6 capitalize">
+                            <div class="py-4 px-6" :class="{ 'capitalize': isBuyer }">
                                 <span
+                                    v-if="isBuyer"
                                     class="rounded-full bg-opacity-75 dark:bg-opacity-75 text-[0.8rem] py-1 px-2 whitespace-nowrap"
                                     :class="{
                                         'bg-green-800 text-white': transaction.type == 'deposit',
@@ -107,6 +109,12 @@
                                         'bg-red-800 text-white': transaction.type == 'reset'
                                     }"
                                 >{{ transaction.type }}</span>
+
+                                <div v-else class="opacity-80 text-[0.875rem]">
+                                    <nuxt-link
+                                        :to="`/dashboard/shop?id=${transaction.productId}`"
+                                    >{{ transaction.productId }}</nuxt-link>
+                                </div>
                             </div>
                         </td>
 
@@ -119,6 +127,27 @@
                                 class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
                             >{{ transaction.quantity }}</div>
                         </td>
+
+                        <template v-if="isBuyer">
+                            <td>
+                                <div class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap">
+                                    <nuxt-link
+                                        :to="`/dashboard/shop?id=${transaction.productId}`"
+                                    >{{ transaction.productId }}</nuxt-link>
+                                </div>
+                            </td>
+                            <td>
+                                <div
+                                    class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
+                                >{{ transaction.secondParty }}</div>
+                            </td>
+                        </template>
+
+                        <td v-else>
+                            <div
+                                class="opacity-80 text-[0.875rem] py-4 px-6 whitespace-nowrap"
+                            >{{ transaction.secondParty }}</div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -127,19 +156,14 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import UiIcon from '~/components/uiIcon.vue';
+
 
 export default {
     components: { UiIcon },
 
     data: () => ({
-        tableHead: [
-            'Date',
-            'Type',
-            'amount',
-            'Quantity',
-        ],
-        transactionHistory: [],
         loading: true,
         errorFetching: {
             message: '',
@@ -147,8 +171,34 @@ export default {
         },
     }),
     computed: {
+        ...mapState(['transactions']),
+
+        tableHead() {
+            const output = [
+                'Date',
+                this.isBuyer ? 'Type' : 'Product ID',
+                'Amount',
+                'Quantity',
+            ]
+
+            if (this.isBuyer) {
+                output.push('Product ID', 'Seller ID')
+            } else {
+                output.push('Buyer ID')
+            }
+
+            return output
+        },
+        transactionsLength() {
+            return Object.keys(this.transactions)
+        },
         tableCaption() {
-            return `Recent ${this.isBuyer ? 'transaction' : 'purchase'}${this.transactionHistory.length > 1 ? 's' : ''}`
+            const transactionsLength = this.transactionsLength;
+
+            return `Recent ${this.isBuyer ? 'transaction' : 'purchase'}${transactionsLength > 1 ? 's' : ''}`
+        },
+        renderToggleBalance() {
+            return this.$store.getters.renderToggleBalance
         },
         showBalance() {
             return this.$store.state.showBalance
@@ -174,7 +224,7 @@ export default {
                 return '*'.repeat(5)
             }
 
-            return availableAmount
+            return availableAmount || '¢0'
         },
         availableCoins() {
             const userInfo = this.userInfo
@@ -190,9 +240,6 @@ export default {
         disableWithdraw() {
             return !this.isBuyer && !parseFloat(this.userInfo.income || 0)
         },
-        // notFound() {
-        //     return this.errorFetching.status == 404
-        // },
         getErrorMessage() {
             return this.errorFetching.message;
         },
@@ -201,27 +248,26 @@ export default {
         }
     },
     async created() {
-        await this.getTransactions();
+        this.loading = !this.transactionsLength;
+
+        await this.fetchTransactions();
     },
     async activated() {
-        await this.getTransactions()
+        await this.fetchTransactions()
     },
 
     methods: {
-        async getTransactions() {
-            this.loading = true;
+        ...mapActions(['getTransactions']),
 
-            const { data } = await this.$apiCall('transaction?limit=5')
+        async fetchTransactions() {
 
-            if (data?.length) {
-                this.transactionHistory = data;
-            } else if (data && !data.length) {
+            const { length } = await this.getTransactions('?limit=5')
+
+            if (length == 0) {
                 this.errorFetching = {
                     message: 'You have no recent transaction',
                     status: 404
                 }
-            } else {
-                this.errorFetching.message = 'An error occured'
             }
 
             this.loading = false;

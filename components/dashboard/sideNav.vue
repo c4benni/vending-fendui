@@ -22,6 +22,7 @@
 
             <ui-btn
                 class="rounded-md h-[72px] w-[calc(100%-3rem)] bg-blue-gray-100 dark:bg-blue-gray-800 mx-auto grid grid-flow-col grid-cols-[60px,1fr] py-2 px-4 items-center cursor-pointer hover:bg-blue-gray-200 dark:hover:bg-blue-gray-800 justify-start text-left"
+                :title="`${user.role} account`"
                 to="/dashboard/account"
                 outlined
                 :outlined-opacity="0.05"
@@ -41,12 +42,12 @@
                     />
                 </div>
 
-                <div>
+                <div class="overflow-hidden">
                     <h2
-                        class="dark:text-white text-black font-semibold text-[0.9rem] capitalize"
-                    >{{ user.role }}</h2>
+                        class="dark:text-white text-black font-semibold text-[0.9rem] capitalize truncate"
+                    >{{ user.displayName || user.username }}</h2>
                     <h3
-                        class="dark:text-white text-black font-normal text-sm text-opacity-50 dark:text-opacity-50"
+                        class="dark:text-white text-black font-normal text-sm text-opacity-50 dark:text-opacity-50 truncate"
                     >@{{ user.username }}</h3>
                 </div>
             </ui-btn>
@@ -354,14 +355,9 @@ export default {
     methods: {
         async logout() {
 
-            await this.$apiCall('user/logout', 'POST')
+            await this.$dispatch('logout')
 
-            this.$commit('UPDATE', {
-                path: 'user',
-                value: null
-            })
             requestAnimationFrame(() => {
-
                 this.$router.replace('/?login=true')
             })
         },

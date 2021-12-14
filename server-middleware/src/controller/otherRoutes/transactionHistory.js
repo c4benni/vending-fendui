@@ -13,7 +13,15 @@ module.exports = async function (req, res) {
       },
       limit,
       offset,
-      attributes: ['timestamp', 'type', 'amount', 'quantity'],
+      attributes: [
+        'id',
+        'timestamp',
+        'type',
+        'amount',
+        'quantity',
+        'secondParty',
+        'productId'
+      ],
       raw: true,
       order: [['timestamp', 'DESC']]
     })

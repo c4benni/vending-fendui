@@ -17,5 +17,15 @@ export default {
     }
 
     return output
+  },
+
+  renderToggleBalance(s) {
+    const user = s.user
+
+    if (!user) {
+      return false
+    }
+
+    return !user.showBalanceFromAccountPage
   }
 }

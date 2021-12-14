@@ -29,6 +29,8 @@ module.exports = async function (req, res) {
 
         const updateValues = {}
 
+        // ~to do
+        // end all other active sessions~
         if (password) {
           const oldPassword = password.old
           const newPassword = password.new
@@ -68,7 +70,18 @@ module.exports = async function (req, res) {
 
         // fields without validation;
         const buildUpdateValues = () => {
-          const genericFields = ['displayName', 'image', 'header', 'bio']
+          const genericFields = [
+            'displayName',
+            'image',
+            'header',
+            'bio',
+            'publicProfile',
+            'showBalance',
+            'showBalanceFromAccountPage',
+            'rememberMe',
+            'logoutOtherSessions',
+            'showBanner'
+          ]
 
           genericFields.forEach((field) => {
             const value = req.body[field]
@@ -96,7 +109,7 @@ module.exports = async function (req, res) {
 
         const saveUpdate = await user.save({ transaction: tx })
 
-        if (saveUpdate) {
+        if (saveUpdate.error) {
           throw new Error('Error saving update')
         }
 

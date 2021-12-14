@@ -6,7 +6,7 @@
             class="text-xl px-6 font-bold fill-before before-divide before:border-b relative pb-4"
         >App preference</h2>
         <div class="px-6">
-            <div class="w-full">
+            <div class="w-full mt-6">
                 <div class="flex justify-between items-center mx-2 mt-4">
                     <label for="show-balance" class="flex-grow cursor-pointer">Show balance</label>
 
@@ -62,20 +62,26 @@
                     <label
                         for="logout-sessions"
                         class="flex-grow cursor-pointer"
-                    >Logout all other sessions</label>
+                    >Logout all other sessions on login</label>
 
                     <ui-switch id="logout-sessions" v-model="form.logoutOtherSessions" />
                 </div>
 
                 <p class="text-[0.85rem] opacity-50 mt-1 mx-2">
                     {{
-                        form.logoutOtherSessions ? 'End all sessions when you login.' : 'Keep multiple sessions'
+                        form.logoutOtherSessions ? 'End all sessions when you login.' : 'Keep multiple sessions.'
                     }}
                 </p>
             </div>
         </div>
 
-        <tab-footer full-bleed />
+        <tab-footer
+            full-bleed
+            :disable-revert="!formUpdated"
+            :disable-save="!formUpdated"
+            @save-changes="submit"
+            @revert-changes="resetForm"
+        />
     </div>
 </template>
 
@@ -94,7 +100,6 @@ export default {
             showBalanceFromAccountPage: false,
             rememberMe: true,
             logoutOtherSessions: false
-
         }
     }),
 
@@ -102,15 +107,98 @@ export default {
         user() {
             return this.$store.getters.userInfo;
         },
+
+        formUpdated() {
+            const showBalanceUpdated = this.form.showBalance !== this.user.showBalance;
+
+            const showBalanceFromAccountPageUpdated = this.form.showBalanceFromAccountPage !== this.user.showBalanceFromAccountPage;
+
+            const rememberMeUpdated = this.form.rememberMe !== this.user.rememberMe;
+
+            const logoutOtherSessionsUpdated = this.form.logoutOtherSessions !== this.user.logoutOtherSessions
+
+            return showBalanceUpdated ||
+                showBalanceFromAccountPageUpdated ||
+                rememberMeUpdated ||
+                logoutOtherSessionsUpdated
+        },
+
+        submitPayload() {
+            const {
+                showBalance, showBalanceFromAccountPage, rememberMe, logoutOtherSessions
+            } = this.form;
+
+            return {
+                showBalance,
+                showBalanceFromAccountPage,
+                rememberMe,
+                logoutOtherSessions
+            }
+        }
+
     },
 
     created() {
-        this.form.showBalance = this.user.showBalance
-        this.form.showBalanceFromAccountPage = this.user.showBalanceFromAccountPage
-        this.form.rememberMe = this.user.rememberMe
-        this.form.logoutOtherSessions = this.user.logoutOtherSessions
-
+        this.resetForm()
     },
+
+    methods: {
+        resetForm() {
+            this.form.showBalance = this.user.showBalance
+            this.form.showBalanceFromAccountPage = this.user.showBalanceFromAccountPage
+            this.form.rememberMe = this.user.rememberMe
+            this.form.logoutOtherSessions = this.user.logoutOtherSessions
+        },
+
+        async submit() {
+            if (!this.formUpdated) {
+                return null
+            }
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: null
+            })
+
+            await this.$nextTick()
+
+            this.$commit('UPDATE', {
+                path: 'dashboardProcessing',
+                value: true
+            })
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: 'Updating information',
+                    subtitle: 'Please wait while we update your profile information.',
+                    key: Date.now()
+                }
+            })
+
+            const payload = { ...this.submitPayload }
+
+            const { data, error } = await this.$apiCall('user', 'PATCH', payload)
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: error ? 'An error occured' : 'Profile updated!',
+                    subtitle: error?.message || data?.message,
+                    error: !!error,
+                    key: Date.now()
+                }
+            })
+
+            await this.$sleep()
+
+            await this.$refreshUser()
+
+            this.$toggleShowBalance(!this.user.showBalance)
+        }
+    },
+
+
 }
 </script>
 

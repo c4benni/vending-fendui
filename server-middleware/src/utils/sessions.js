@@ -19,18 +19,15 @@ function signCookies({ res, token, userId }) {
 }
 
 const { Session } = require('../models')
-async function findSession(token, userId, deviceHash) {
+async function findSession(token, userId) {
   const session = await Session.findOne({
     where: {
       session: token,
       [Op.and]: {
-        id: userId,
-        deviceHash
+        id: userId
       }
     }
   })
-
-  console.log({ session, token, userId, deviceHash })
 
   if (session && session.timeout <= Date.now()) {
     await session.Sign(0)
@@ -51,7 +48,7 @@ async function signUser(userId, res, req) {
     token = getCookie(req.headers.cookie).token || '0'
   }
 
-  const session = await findSession(token, userId, req.machineId)
+  const session = await findSession(token, userId)
 
   let signedSession
 
@@ -89,7 +86,7 @@ async function verify(req, res, next) {
     return expiredSession()
   }
 
-  const session = await findSession(token, userId, req.machineId)
+  const session = await findSession(token, userId)
 
   if (!session) {
     clearCookies(res)

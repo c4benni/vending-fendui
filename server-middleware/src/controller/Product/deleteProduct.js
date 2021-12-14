@@ -2,14 +2,14 @@
 const { Product, sequelize } = require('../../models')
 const { sendServerError } = require('../../utils/utils')
 
-async function deleteProductLogic({ req, res, productID, sendMessage }) {
+async function deleteProductLogic({ req, res, productID, sendResponse }) {
   const callback = async () => {
     // check that user is signed in;
     const { id: userId } = req.cookies
 
     if (!userId) {
       return (
-        sendMessage &&
+        sendResponse &&
         res.status(401).send({
           error: {
             message: 'session expired'
@@ -23,19 +23,19 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
       await sequelize.transaction(async function (tx) {
         // check that product exists;
         const product = await Product.findByPk(productID, {
-          attributes: ['sellerId'],
+          attributes: ['sellerId', 'id'],
           transaction: tx
         })
 
         if (!product) {
-          if (sendMessage)
+          if (sendResponse)
             throw new Error('{404} Item not found or might have been deleted')
           // not found
         }
 
         // check that product.sellerId == userId;
         if (product.sellerId !== userId) {
-          if (sendMessage) {
+          if (sendResponse) {
             throw new Error(
               '{401} Only the owner of this product can delete it'
             )
@@ -43,20 +43,22 @@ async function deleteProductLogic({ req, res, productID, sendMessage }) {
         }
 
         // all checked, can delete;
-        const deleteProduct = await product.destroy()
+        const deleteProduct = await product.destroy({
+          transaction: tx
+        })
 
-        if (deleteProduct.error && sendMessage) {
+        if (deleteProduct.error && sendResponse) {
           throw new Error('Error deleting product')
         }
 
-        return sendMessage
-          ? res.status(204).send({
+        return sendResponse
+          ? res.status(200).send({
               data: {
                 message: 'product successfully deleted'
               }
               // no content
             })
-          : true
+          : {}
       })
     } catch (err) {
       if (err) {
@@ -97,7 +99,7 @@ module.exports = {
       req,
       res,
       productID: req.query.id,
-      sendMessage: true
+      sendResponse: true
     })
   },
 
@@ -111,7 +113,7 @@ module.exports = {
         req,
         res,
         productID: id,
-        sendMessage: false
+        sendResponse: false
       })
 
       if (deleteItem === false) {

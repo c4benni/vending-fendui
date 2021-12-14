@@ -283,7 +283,7 @@ module.exports = function (nuxt, request) {
         .delete(`/api/v1/product?id=${productCode}`)
         .set('Cookie', headers['set-cookie'])
 
-      expect(statusCode).toEqual(204)
+      expect(statusCode).toEqual(200)
     })
   })
 }

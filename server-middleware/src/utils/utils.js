@@ -145,7 +145,9 @@ module.exports = {
   sendServerError(res, error) {
     res.status(500).send({
       error: {
-        message: 'Oops! A server error occured. Please try again later.',
+        message:
+          error?.message ||
+          'Oops! A server error occured. Please try again later.',
         status: 500,
         trace: error
       }

@@ -51,17 +51,15 @@ routes.forEach((route) => {
 // or user not found.
 // signs user if found;
 router.get('/auth', async (req, res) => {
-  let data = {}
-
   const { id, token } = getCookie(req.headers.cookie)
 
   if (!token || !id) {
     return res.send({})
   }
 
-  const session = await findSession(token, id, req.machineId)
+  const session = await findSession(token, id)
 
-  console.log({ session, hash: req.machineId })
+  console.log(session)
 
   if (!session) {
     return res.send({})
@@ -69,7 +67,11 @@ router.get('/auth', async (req, res) => {
 
   await session.Sign()
 
-  data = await User.findByPk(id)
+  const data = await User.findByPk(id)
+
+  if (!data) {
+    return res.send({})
+  }
 
   const unwanted = unwantedUserFields(data)
 

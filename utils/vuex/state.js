@@ -40,6 +40,10 @@ export default function state() {
 
     bannerActive: true,
 
-    showBalance: true
+    showBalance: true,
+
+    products: {},
+
+    transactions: {}
   }
 }

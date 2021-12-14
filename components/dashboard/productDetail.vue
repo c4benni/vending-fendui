@@ -48,9 +48,9 @@
                 <ui-btn
                     class="min-w-[200px] h-[48px] mx-auto grid w-[min(70%,300px)]"
                     :class="{
-                        'bg-blue-800 text-white dark:bg-blue-400 dark:text-black': !disablePurchase
+                        'bg-blue-800 text-white dark:bg-blue-400 dark:text-black': !disablePurchase && !ownerDeleted
                     }"
-                    :disabled="disablePurchase"
+                    :disabled="disablePurchase || ownerDeleted"
                     @click="purchase"
                 >
                     {{ purchaseText }}
@@ -78,6 +78,8 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex';
+
 import OrderQuantity from '../orderQuantity.vue';
 import AppRating from '~/components/appRating.vue';
 import { formatAmount } from '~/utils/main';
@@ -90,7 +92,6 @@ export default {
         purchasing: false,
         loading: true,
         quantity: 1,
-        product: {}
     }),
 
     head() {
@@ -104,7 +105,19 @@ export default {
     },
 
     computed: {
+        ...mapState(['products']),
+
+        product() {
+            return this.products[this.id] || {}
+        },
+
+        ownerDeleted() {
+            return this.product.ownerDeleted
+        },
         purchaseHint() {
+            if (this.product.ownerDeleted) {
+                return 'Product owner deleted. Please try another product.'
+            }
             return this.soldOut ? 'Item is out of stock. Check back later.' :
                 this.insufficientDeposit ? 'Deposit more coins and try again.' :
                     `You spend ${this.getTotalCost} in total`
@@ -159,6 +172,10 @@ export default {
                 return 'Buyers only!'
             }
 
+            if (this.product.ownerDeleted) {
+                return 'Owner deleted'
+            }
+
             if (this.soldOut) { return 'Sold out' }
 
             const text = this.insufficientDeposit ? `Insufficient coins` : 'Purchase'
@@ -170,23 +187,17 @@ export default {
     },
 
     async created() {
+        this.loading = !this.product.id
         await this.fetchProduct()
     },
 
     methods: {
+        ...mapActions(['getProduct']),
+
         async fetchProduct() {
-            const { data } = await this.$apiCall(`product?id=${this.id}`)
+            await this.getProduct(this.id)
 
-            if (data) {
-                this.product = { ...data };
-
-                this.loading = false
-
-                this.$commit('UPDATE', {
-                    path: 'productName',
-                    value: data.productName
-                })
-            }
+            this.loading = false
         },
         async purchase() {
             if (this.disablePurchase || this.isSeller) {
@@ -243,7 +254,8 @@ export default {
             await this.$refreshUser()
 
             await this.fetchProduct()
-        }
+        },
+
     }
 
 }

@@ -3,7 +3,7 @@
         <TransactionHistory />
 
         <div
-            v-if="products"
+            v-if="products.length"
             class="card lg:mx-6 max-w-[100vw] lg:max-w-[calc(calc(min(100vw,1920px)-3rem)-280px)] lg:bg-opacity-100 bg-opacity-0 dark:bg-opacity-0 lg:dark:bg-opacity-50"
         >
             <div class="subtitle px-6">New products added</div>
@@ -55,6 +55,8 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
+
 import TransactionHistory from '~/components/dashboard/transactionHistory.vue';
 import AppRating from '~/components/appRating.vue';
 import { formatAmount } from '~/utils/main';
@@ -62,13 +64,14 @@ import { formatAmount } from '~/utils/main';
 export default {
     components: { TransactionHistory, AppRating },
 
-    data: () => ({
-        products: null,
-    }),
     head() {
         return {
             title: 'Overview'
         }
+    },
+
+    computed: {
+        ...mapState(['products'])
     },
 
     async created() {
@@ -76,15 +79,12 @@ export default {
     },
 
     methods: {
+        ...mapActions(['getProducts']),
         formatCost(cost) {
             return formatAmount(cost)
         },
         async fetchProducts() {
-            const { data } = await this.$apiCall('product/all?limit=10')
-
-            if (data) {
-                this.products = data
-            }
+            await this.getProducts('?limit=10')
         }
     }
 }

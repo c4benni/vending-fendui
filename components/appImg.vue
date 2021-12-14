@@ -7,7 +7,7 @@ export default {
 
         const href = `${attrs.src || attrs.publicId || attrs['public-id'] || attrs.href}`
 
-        if (!this.$c4.mounted) {
+        if (!this.$ui.mounted) {
             return h('a', {
                 attrs: {
                     href,

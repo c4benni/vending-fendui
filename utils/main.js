@@ -360,12 +360,12 @@ export function sleep(d, idle, cb) {
 }
 
 export function zIndex() {
-  this.$c4.componentZIndex.push(this)
-  this.$c4.componentZIndex = [...new Set(this.$c4.componentZIndex)]
+  this.$ui.componentZIndex.push(this)
+  this.$ui.componentZIndex = [...new Set(this.$ui.componentZIndex)]
 
-  const lengthTimes100 = 100 * this.$c4.componentZIndex.length
+  const lengthTimes100 = 100 * this.$ui.componentZIndex.length
 
-  return 10000 + this.$c4.componentZIndex.length + lengthTimes100
+  return 10000 + this.$ui.componentZIndex.length + lengthTimes100
 }
 
 export function parser({ input, type, bind = null }) {

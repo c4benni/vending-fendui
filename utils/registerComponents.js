@@ -4,7 +4,7 @@ export default function registerComponents(Vue) {
   const requireComponent = require.context(
     '~/components',
     true,
-    /uiBtn|uiIcon|uiClickable|uiSheet|uiDialog|uiIntersection|sheetHeader|uiInput|uiForm|textDivide|appBar|navBar|appImg|uiTable|uiSelect|onboard\.(vue)$/i
+    /uiBtn|uiIcon|uiClickable|uiSheet|uiDialog|uiIntersection|uiInput|uiForm|appImg|uiTable|uiSelect\.(vue)$/i
   )
 
   requireComponent.keys().forEach((fileName) => {

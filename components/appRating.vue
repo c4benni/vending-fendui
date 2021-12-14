@@ -8,7 +8,7 @@ export default {
         rating: 4
     }),
     render(h) {
-        if (!this.$c4.mounted) {
+        if (!this.$ui.mounted) {
             return null
         }
         const div = (d, c,) => h('div', d, c);

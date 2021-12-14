@@ -1,5 +1,14 @@
 <template>
+    <div v-if="loading" class="grid h-screen w-full justify-center items-start mt-[48px]">
+        <div class="spinner-border"></div>
+    </div>
+
+    <div v-else-if="errorFetching" class="grid h-screen w-full justify-center items-start">
+        <p class="font-bold mt-[48px]">{{ errorFetching.message }}</p>
+    </div>
+
     <ProductForm
+        v-else
         :key="id + `${loading}`"
         :fields="fields"
         class="fade-appear"
@@ -28,10 +37,12 @@
 
 <script>
 import ProductForm from "./productForm.vue";
+import { capitalize } from '~/utils/main';
 export default {
     components: { ProductForm },
     data: () => ({
         loading: true,
+        errorFetching: null,
         product: {
             productName: 'Loading title',
             caption: null,
@@ -97,21 +108,31 @@ export default {
     },
 
     async created() {
-        const { data } = await this.$apiCall(`product?id=${this.id}`)
-
-        if (data) {
-            this.product = { ...data };
-
-            this.loading = false
-
-            this.$commit('UPDATE', {
-                path: 'productName',
-                value: data.productName
-            })
-        }
+        await this.fetchProduct()
     },
 
     methods: {
+        async fetchProduct() {
+            this.loading = true;
+
+            const { data, error } = await this.$apiCall(`product?id=${this.id}`)
+
+            this.loading = false
+
+            if (data) {
+                this.product = { ...data };
+
+                this.$commit('UPDATE', {
+                    path: 'productName',
+                    value: data.productName
+                })
+            } else {
+                this.errorFetching = {
+                    ...error,
+                    message: capitalize(error.message || 'An error occured'),
+                }
+            }
+        },
         formUpdated(e) {
             this.form = e.form;
 
@@ -181,9 +202,11 @@ export default {
                 }
             })
 
-            await this.$sleep(100);
+            if (!error) {
+                await this.$sleep(100);
 
-            this.$router.push('/dashboard/my-products')
+                this.$router.push('/dashboard/my-products')
+            }
         },
         deleteProduct() {
             this.$commit('UPDATE', {
@@ -194,24 +217,54 @@ export default {
                     closeText: 'Delete product',
                     callback: async () => {
 
-                        const del = await this.$apiCall(`product?id=${this.id}`, 'DELETE')
+                        this.$commit('UPDATE', {
+                            path: 'notify',
+                            value: { message: null }
+                        })
 
-                        console.log(del, `product?id=${this.id}`);
+                        this.$commit('UPDATE', {
+                            path: 'processingDone',
+                            value: null
+                        })
+
+                        await this.$nextTick()
+
+                        this.$commit('UPDATE', {
+                            path: 'dashboardProcessing',
+                            value: true
+                        })
+
+                        this.$commit('UPDATE', {
+                            path: 'processingDone',
+                            value: {
+                                title: 'Deleting product',
+                                subtitle: 'Please wait while we delete your product.',
+                                key: Date.now()
+                            }
+                        })
+
+                        const { data, error } =
+                            await this.$apiCall(
+                                `product?id=${this.id}`, 'DELETE'
+                            )
 
                         await this.$sleep(100);
 
                         this.$commit('UPDATE', {
-                            path: 'notify',
+                            path: 'processingDone',
                             value: {
-                                key: Date.now(),
-                                message: 'Product successfully deleted!',
-                                timeout: 2000
+                                title: error ? 'An error occured' : 'Product created',
+                                subtitle: error?.message || data?.message,
+                                error: !!error,
+                                key: Date.now()
                             }
                         })
 
-                        await this.$sleep(100);
+                        if (!error) {
+                            await this.$sleep(100);
 
-                        this.$router.replace('/dashboard/my-products')
+                            this.$router.replace('/dashboard/my-products')
+                        }
                     },
                     key: Date.now()
                 }

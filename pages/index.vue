@@ -16,7 +16,7 @@
       </h1>
     </div>
 
-    <onboard :key="loginPage" />
+    <onboard />
   </div>
 
   <div v-else class="w-[100%] h-[100%] grid place-items-center">
@@ -25,8 +25,11 @@
 </template>
 
 <script>
+import onboard from '~/components/onboard.vue'
 export default {
   name: 'IndexPage',
+
+  components: { onboard },
 
   head() {
     return {
@@ -46,6 +49,27 @@ export default {
     }
   },
 
+  beforeCreate() {
+    // close dahsboard dialog and notifications;
+    // this is usefull when an error was thrown
+    // and user was kicked out.
+    // upon login, notifications might still be active;
+
+    this.$commit('UPDATE', {
+      path: 'dashboardProcessing',
+      value: false
+    })
+
+    this.$commit('UPDATE', {
+      path: 'processingDone',
+      value: null
+    })
+
+    this.$commit('UPDATE', {
+      path: 'notify',
+      value: { message: null }
+    })
+  }
 
 }
 </script>

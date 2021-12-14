@@ -63,6 +63,7 @@
                     :validate="input.validate"
                     :main-class="['rounded-md bg-blue-gray-50 dark:bg-blue-gray-900 md:h-[64px] rounded-md bg-white dark:bg-blue-gray-900 md:h-[64px] border border-black dark:border-white border-opacity-10 dark:border-opacity-10', { 'mt-4': i != 0 }]"
                     @update:modelValue="input.onUpdate"
+                    @input-validity="input.inputValidity"
                 />
 
                 <div class="w-full">
@@ -82,7 +83,12 @@
                     </p>
                 </div>
             </ui-form>
-            <tab-footer />
+            <tab-footer
+                :disable-revert="!formUpdated"
+                :disable-save="disableSave"
+                @save-changes="submit"
+                @revert-changes="resetForm"
+            />
         </div>
     </div>
 </template>
@@ -100,9 +106,16 @@ export default {
 
     data: () => ({
         form: {
+            username: '',
             displayName: '',
             bio: '',
             publicProfile: false
+        },
+
+        validateFields: {
+            username: true,
+            displayName: true,
+            bio: true
         }
     }),
 
@@ -145,30 +158,62 @@ export default {
         informationInput() {
             return [
                 {
-                    disabled: true,
-                    model: this.user.username,
+                    model: this.form.username,
+                    placeholder: 'username',
                     label: 'Username',
                     id: 'username-input',
                     autocomplete: 'username',
-                    onUpdate: () => { }
+                    validate: input => {
+                        if (!input) {
+                            return 'Required'
+                        }
+
+                        const e = input.trim()
+
+
+                        if (e.length < 3) {
+                            return 'Min length is 3'
+                        }
+
+                        if (e.length > 20) {
+                            return 'Max length is 20'
+                        }
+
+                        return true
+                    },
+                    onUpdate: e => {
+                        this.form.username = e
+                    },
+                    inputValidity: e => {
+                        if (this.form.username) {
+                            this.validateFields.username = e
+                        }
+                    },
                 },
                 {
                     disabled: true,
                     model: capitalize(this.user.role),
                     label: 'Account type',
                     id: 'role-input',
-                    onUpdate: () => { }
+                    onUpdate: () => { },
+                    inputValidity: () => { }
                 },
 
                 {
                     model: this.form.displayName,
                     label: 'Display name',
-                    placeholder: 'David mark',
+                    placeholder: 'David Mark',
                     id: 'display-name-input',
                     autocomplete: 'name',
+                    pattern: '^([a-zA-Z0-9\\s]){3,99}$',
                     validate: input => {
                         if (input) {
                             const e = input.trim()
+
+                            if (!/^([a-zA-Z0-9\s]){3,99}$/.test(e)) {
+                                return 'Invalid character(s)'
+                            }
+
                             if (e.length < 3) {
                                 return 'Min length is 3'
                             }
@@ -182,7 +227,12 @@ export default {
                     },
                     onUpdate: e => {
                         this.form.displayName = e
-                    }
+                    },
+                    inputValidity: e => {
+                        if (this.form.displayName) {
+                            this.validateFields.displayName = e
+                        }
+                    },
                 },
 
                 {
@@ -206,19 +256,119 @@ export default {
                     },
                     onUpdate: e => {
                         this.form.bio = e
-                    }
+                    },
+                    inputValidity: e => {
+                        if (this.form.bio) {
+                            this.validateFields.bio = e
+                        }
+                    },
                 },
 
             ]
         },
+
+        formUpdated() {
+            const usernameUpdated =
+                this.form.username !== this.user.username
+
+            const displayNameUpdated =
+                this.form.displayName !== this.user.displayName
+
+            const bioUpdated =
+                this.form.bio !== this.user.bio
+
+            const publicProfileUpdated =
+                this.form.publicProfile !== this.user.publicProfile
+
+            return usernameUpdated || displayNameUpdated || bioUpdated || publicProfileUpdated
+        },
+
+        disableSave() {
+            return !this.formUpdated
+                || Object.values(this.validateFields).includes(false)
+        },
+
+        submitPayload() {
+
+            const {
+                username, displayName, bio, publicProfile
+            } = this.form;
+
+            const payload = {
+                displayName, bio, publicProfile
+            }
+
+
+            if (username !== this.user.username) {
+                payload.username = username
+            }
+
+            for (const key in payload) {
+                if (!payload[key]) {
+                    delete payload[key]
+                }
+            }
+
+            return payload
+        }
     },
 
     created() {
-        this.form.displayName = this.user.displayName
-        this.form.bio = this.user.bio
-        this.form.publicProfile = this.user.publicProfile
-
+        this.resetForm()
     },
+
+    methods: {
+        resetForm() {
+            this.form.username = this.user.username
+            this.form.displayName = this.user.displayName
+            this.form.bio = this.user.bio
+            this.form.publicProfile = this.user.publicProfile
+        },
+        async submit() {
+            if (this.disableSave) {
+                return null
+            }
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: null
+            })
+
+            await this.$nextTick()
+
+            this.$commit('UPDATE', {
+                path: 'dashboardProcessing',
+                value: true
+            })
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: 'Updating information',
+                    subtitle: 'Please wait while we update your profile information.',
+                    key: Date.now()
+                }
+            })
+
+            const payload = { ...this.submitPayload }
+
+            const { data, error } = await this.$apiCall('user', 'PATCH', payload)
+
+            this.$commit('UPDATE', {
+                path: 'processingDone',
+                value: {
+                    title: error ? 'An error occured' : 'Profile updated!',
+                    subtitle: error?.message || data?.message,
+                    error: !!error,
+                    key: Date.now()
+                }
+            })
+
+            await this.$sleep()
+
+            await this.$refreshUser()
+        }
+    }
 }
 </script>
 

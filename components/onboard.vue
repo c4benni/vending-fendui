@@ -38,13 +38,19 @@
                 </h2>
             </div>
 
-            <h3
-                class="text-2xl font-bold tracking-tighter mb-2 text-blue-gray-800 dark:text-blue-gray-100"
-            >
-                {{
-                    loginText.h3
-                }}
-            </h3>
+            <transition :name="accountCreatedText.title ? 'fade-transition' : ''" mode="out-in">
+                <h3
+                    :key="loginText.h3"
+                    class="text-2xl font-bold tracking-tighter mb-2 text-blue-gray-800 dark:text-blue-gray-100"
+                    :style="{
+                        '--fade-duration': accountCreatedText.title ? '500ms' : ''
+                    }"
+                >
+                    {{
+                        loginText.h3
+                    }}
+                </h3>
+            </transition>
             <h4
                 class="font-normal text-base text-blue-gray-600 dark:text-blue-gray-200 text-opacity-70 dark:text-opacity-50"
             >{{ loginText.h4 }}</h4>
@@ -89,6 +95,7 @@
                     :validate="item.validate"
                     :main-class="['rounded-md bg-blue-gray-50 dark:bg-blue-gray-900 md:h-[64px] rounded-md bg-white dark:bg-blue-gray-900 md:h-[64px] border border-black dark:border-white border-opacity-10 dark:border-opacity-10', { 'mt-4': i == 1 }]"
                     required
+                    :disabled="isLoading"
                     :autocomplete="item.autocomplete"
                     @update:modelValue="item.onUpdate"
                     @input-validity="item.validity"
@@ -112,6 +119,7 @@
                         :outlined-stroke="form.role == item.title ? '2px' : '1.5px'"
                         :outlined-class="form.role == item.title ? 'border-blue-600 dark:border-blue-400' : ''"
                         size="lg"
+                        :disabled="isLoading"
                         class="px-6 dark:hover:bg-blue-gray-800 hover:bg-blue-gray-100 hover:bg-opacity-70 dark:hover:text-white hover:text-black w-full justify-start my-1 grid-cols-1 h-[96px] content-center rounded-sm"
                         :class="[{
                             'dark:bg-blue-gray-800 dark:text-white bg-blue-gray-300 text-black': form.role == item.title,
@@ -146,6 +154,7 @@
                             type="checkbox"
                             class="h-[24px] w-[24px] opacity-0 absolute cursor-pointer"
                             required="required"
+                            :disabled="isLoading"
                         />
                         <ui-icon
                             :key="form.termsAndConditions"
@@ -183,6 +192,9 @@
 </template>
 
 <script>
+import onboard from '../services/user'
+import { nextAnimFrame } from '~/utils/main'
+
 const defaultFields = () => ({
     username: '',
     password: '',
@@ -208,6 +220,11 @@ export default {
             { title: 'buyer', subtitle: 'Deposit coins and buy items' },
             { title: 'seller', subtitle: 'Add products and monitor your profit' },
         ],
+
+        accountCreatedText: {
+            title: '',
+            subtitle: ''
+        }
     }),
 
     head() {
@@ -217,14 +234,18 @@ export default {
     },
 
     computed: {
-
         loginText() {
             return {
                 to: !this.isLogin ? '/?login=true' : '/',
+
                 nuxtLink: this.isLogin ? 'Register' : 'Sign in',
+
                 h2: this.isLogin ? "Don't have an account?" : 'Already have an account?',
-                h3: !this.isLogin ? `Get started, it's free.` : `Welcome back!`,
-                h4: !this.isLogin ? `Start buying and selling easily anywhere you are` : `Login to view your activities`,
+
+                h3: !this.isLogin ? `Get started, it's free.` : this.accountCreatedText.title || `Welcome back!`,
+
+                h4: !this.isLogin ? `Start buying and selling easily anywhere you are` : this.accountCreatedText.subtitle || `Login to view your activities`,
+
                 formBtn: this.isLoading ? '' : (this.isLogin ? 'LOGIN' : 'REGISTER')
             }
         },
@@ -344,10 +365,21 @@ export default {
     },
 
     watch: {
-        async isLogin() {
-            this.message = null;
+        async isLogin(n) {
+            // reset the dynamic account created message
+            // when going back to /
+            if (!n) {
+                this.accountCreatedText = {
+                    title: '',
+                    subtitle: ''
+                }
+            }
 
-            await this.$sleep(50)
+            this.message = null
+
+            this.form = defaultFields()
+
+            await nextAnimFrame()
 
             scrollTo(0, 0)
         }
@@ -366,16 +398,11 @@ export default {
                 form.role = role
             }
 
-            const res = await fetch(`api/v1/user/${this.isLogin ? 'login' : 'register'}`, {
-                method: 'post',
-                body: JSON.stringify(form),
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
+            const method = this.isLogin ? 'login' : 'register'
 
-            const { data, error } = await res.json()
+            const apiCall = onboard[method]
+
+            const { data, error } = await apiCall.call(this, form)
 
             this.form.termsAndConditions = false
 
@@ -391,22 +418,29 @@ export default {
                     error: true
                 }
             }
-            // don't show success message on login as we re-route immediately
             else if (!this.isLogin) {
+
+                this.accountCreatedText.title = 'Account created successfully!'
+
+                const action = this.form.role == 'buyer' ? 'buying' : 'selling'
+
+                this.accountCreatedText.subtitle =
+                    `Start ${action} on the vending app`
+
+                await this.$nextTick()
+
                 this.form = defaultFields();
-
-                this.message = {
-                    text: 'Account created successfully!',
-                    error: false
-                }
-
-                await this.$sleep(1000)
 
                 this.isLoading = false;
 
-                await this.$sleep(7000)
+                this.$router.push('/?login=true')
 
-                this.message = null
+                // change account created text;
+                await this.$sleep(3000)
+
+                if (!this.accountCreatedText.title) { return }
+
+                this.accountCreatedText.title = 'Login below'
 
                 return
             }
@@ -422,6 +456,7 @@ export default {
                 })
 
                 await this.$sleep();
+
                 this.$router.replace('/dashboard')
 
                 this.form = defaultFields()

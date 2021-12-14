@@ -174,7 +174,7 @@ export default {
             textarea,
             sm: /^sm$|^small$/i.test(this.size),
             lg: /^lg$|^large$/i.test(this.size),
-            'opacity-60': this.disabled
+            'opacity-50': this.disabled
           },
         ],
       },
@@ -249,6 +249,10 @@ export default {
               on: {
                 focus: () => {
                   this.focused = true;
+
+                  if (this.isPassword) {
+                    this.$emit('modelValue', '')
+                  }
                 },
                 blur: () => {
                   this.focused = false;
@@ -383,7 +387,7 @@ export default {
 }
 
 .main[data-ui-input].has-value:not(:focus-within):before {
-  opacity: 0.15;
+  opacity: 0.35;
 }
 
 .label[data-ui-input] {

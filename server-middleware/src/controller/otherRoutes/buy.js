@@ -35,8 +35,7 @@ module.exports = async function (req, res) {
 
         // valid user;
         // check product exists
-        const product = await Product.findOne({
-          where: { id },
+        const product = await Product.findByPk(id, {
           transaction: tx
         })
 
@@ -169,10 +168,14 @@ module.exports = async function (req, res) {
         }
 
         const updateSeller = async () => {
-          const addIncome = await seller.update({
-            income: parseFloat(seller.income || 0) + totalCost,
-            transaction: tx
-          })
+          const addIncome = await seller.update(
+            {
+              income: parseFloat(seller.income || 0) + totalCost
+            },
+            {
+              transaction: tx
+            }
+          )
 
           if (addIncome.error) {
             return txError
@@ -200,6 +203,8 @@ module.exports = async function (req, res) {
           if (saveTx.error) {
             return txError
           }
+
+          return {}
         }
 
         const { error: updateSellerError } = await updateSeller()

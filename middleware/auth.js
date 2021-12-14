@@ -1,7 +1,7 @@
 export default async function ({ store, redirect, route, req }) {
   const app = store.$router.app
   // redirect if not logged in and path isnt / and app mounted
-  const appMounted = app?.$c4?.mounted
+  const appMounted = app?.$ui?.mounted
 
   if (req) {
     const scheme = req.connection.encrypted ? 'https://' : 'http://'

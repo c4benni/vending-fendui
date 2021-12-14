@@ -203,7 +203,13 @@ module.exports = {
         displayName: userValidation.displayName,
         image: imageValidation,
         header: imageValidation,
-        bio: textValidation
+        bio: textValidation,
+        publicProfile: Joi.boolean(),
+        showBalance: Joi.boolean(),
+        showBalanceFromAccountPage: Joi.boolean(),
+        rememberMe: Joi.boolean(),
+        logoutOtherSessions: Joi.boolean(),
+        showBanner: Joi.boolean()
       })
 
       const validate = schema.validate(body)

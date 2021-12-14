@@ -59,6 +59,7 @@
                     >{{ totalDeposit }}</span>
 
                     <ui-btn
+                        v-if="renderToggleBalance"
                         class="ml-1 min-h-[38px]"
                         :title="showBalance ? 'hide balance' : 'show balance'"
                         @click="$toggleShowBalance"
@@ -127,7 +128,7 @@
                         <div
                             v-if="notifyMessage"
                             :key="notify.key + $route.path"
-                            class="border p-6 rounded-md my-6 mx-8 pointer-events-auto w-[min(calc(100vw-2rem),450px)] text-black text-opacity-80 shadow-lg grid grid-cols-[1fr,auto] gap-x-2"
+                            class="border p-6 rounded-md my-6 mx-8 pointer-events-auto w-[min(calc(100vw-2rem),450px)] text-black text-opacity-80 shadow-lg grid grid-cols-[1fr,auto] gap-x-2 max-w-[500px] z-[1]"
                             :class="{
                                 'transition-opacity opacity-0': !notifyMessage,
                                 'border-green-400 dark:border-green-200 bg-green-500 dark:bg-green-300': !notify.error && !notify.warn,
@@ -166,11 +167,14 @@
 </template>
 
 <script>
+import user from '../services/user'
+
 import SideNav from '~/components/dashboard/sideNav.vue'
 import ProcessDialog from '~/components/dashboard/processDialog.vue'
 import Header from '~/components/dashboard/header.vue';
 import { capitalize } from '~/utils/main';
 import UiIcon from '~/components/uiIcon.vue';
+
 
 export default {
     name: 'DashboardPage',
@@ -187,6 +191,9 @@ export default {
         },
         isSearch() {
             return /\/search\/?$/.test(this.$route.path)
+        },
+        renderToggleBalance() {
+            return this.$store.getters.renderToggleBalance
         },
         showBalance() {
             return this.$store.state.showBalance
@@ -271,7 +278,7 @@ export default {
             return output;
         },
         miniDevice() {
-            if (this.$c4.mounted)
+            if (this.$ui.mounted)
                 return /xxs|xs|sm|md/.test(this.$store.state.breakpoints.is);
 
             return false
@@ -381,9 +388,19 @@ export default {
                     message: this.user.alert,
                     warn: true,
                     closeText: 'End sessions',
-                    callback: () => this.$logout({ notCurrent: true }),
-                    key: Date.now()
+                    callback: async () => {
 
+
+                        await user.logoutAll.call(this, { notCurrent: true })
+
+                        this.$commit('UPDATE', {
+                            path: 'notify',
+                            value: { message: 'Other sessions successfully terminated', key: Date.now(), timeout: 1500 }
+                        })
+
+                    },
+                    key: Date.now(),
+                    timeout: 15000
                 }
             })
         }
@@ -395,6 +412,10 @@ export default {
         },
 
         hideBackdrop() {
+            // session expired, or user deleted
+            if (!this.$store.state.user) {
+                this.$router.replace('/')
+            }
             this.closeNav();
 
             this.$commit('UPDATE', {
@@ -441,11 +462,15 @@ export default {
                 }
             })
         },
-        closeBanner() {
+        async closeBanner() {
             this.$commit('UPDATE', {
                 path: 'bannerActive',
                 value: false
             })
+
+            await this.$apiCall('user', 'PATCH', { showBanner: false })
+
+            await this.$refreshUser()
         }
     }
 }

@@ -1,3 +1,4 @@
+const { Op } = require('sequelize/dist')
 const { Session } = require('../../../models')
 const { findSession } = require('../../../utils/sessions')
 const { clearCookies, sendServerError } = require('../../../utils/utils')
@@ -9,7 +10,7 @@ async function logoutLogic({ req, res, all }) {
     const token = req.cookies?.token
 
     // find existing user
-    const session = await findSession(token, id, req.machineId)
+    const session = await findSession(token, id)
 
     if (session) {
       if (token) {
@@ -20,20 +21,19 @@ async function logoutLogic({ req, res, all }) {
         } else {
           await Session.destroy({
             where: {
-              id: notCurrent ? '0' : id
+              id,
+              [Op.and]: {
+                session: {
+                  [Op.not]: token
+                }
+              }
             }
           })
         }
 
-        clearCookies(res)
+        !notCurrent && clearCookies(res)
 
-        return res.status(200).send({
-          data: {
-            message: 'logout successful',
-            status: 200
-          }
-          // okay
-        })
+        return !all ? res.redirect('/?login=true') : res.sendStatus(200)
       } else {
         await session.Sign(0)
 

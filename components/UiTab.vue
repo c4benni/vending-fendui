@@ -81,26 +81,6 @@ export default {
 
         const tabControls = () => {
 
-            const getTo = (tab) => {
-                const route = this.$route
-
-                let to = route.path
-
-                Object.entries({
-                    ...route.query,
-                    tab,
-                }).forEach((item, key) => {
-                    if (!item[1]) {
-                        return
-                    }
-                    to += `${key == 0 ? '?' : '&'}${item[0]}=${item[1]}`
-                })
-
-                to += route.hash || ''
-
-                return to
-            }
-
             return [
                 div(
                     {
@@ -127,7 +107,20 @@ export default {
                                     'aria-controls': item.control,
                                     id: item.id,
                                     // tabindex: item.tabindex,
-                                    to: !item.selected ? getTo(item.control) : undefined
+                                    to: !item.selected ? {
+                                        query: {
+                                            ...this.$route.query,
+                                            tab: item.control,
+                                        }
+                                    } : undefined,
+                                    componentProps: !item.selected ? {
+                                        replace: true
+                                    } : undefined,
+                                    on: {
+                                        click: (e) => {
+                                            e.currentTarget.scrollIntoView()
+                                        }
+                                    }
                                 },
                                 staticClass: 'tabctrl h-[48px] px-0 mr-4 rounded-none min-w-[fit-content]',
                                 class: [{
@@ -197,7 +190,7 @@ export default {
 }
 
 .tablist[data-sape] {
-    --height: 56px;
+    --height: 48px;
     height: var(--height);
     display: flex;
     background: var(--theme-background);
@@ -205,10 +198,6 @@ export default {
     isolation: isolate;
     contain: content;
     z-index: 10;
-}
-
-.md-up .tablist[data-sape] {
-    --height: 48px;
 }
 
 .tablist[data-sape]::before {

@@ -11,7 +11,7 @@
     </div>
 
     <div
-        v-else-if="!products.length"
+        v-else-if="!productsLength"
         class="lg:w-[calc(100vw-280px)] xl:w-[calc(calc(min(100vw,1920px)-3rem)-280px)] w-full pb-6 min-h-screen"
     >
         <div class="min-h-[200px] grid justify-center">
@@ -42,8 +42,10 @@
             </div>
 
             <div class="px-2 pb-3 lg:px-3 overflow-hidden">
-                <p class="truncate opacity-70 mb-1 font-sm font-medium">{{ product.type }}</p>
-                <p class="truncate mb-2">{{ product.productName }}</p>
+                <p
+                    class="capitalize truncate opacity-70 mb-1 text-sm font-normal"
+                >{{ product.type }}</p>
+                <p class="truncate mb-2 capitalize">{{ product.productName }}</p>
 
                 <p class="text-sm opacity-80">¢{{ product.cost }}</p>
             </div>
@@ -52,13 +54,15 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex';
+
 import AppImg from '~/components/appImg.vue';
 import productDetail from '~/components/dashboard/productDetail.vue'
+
 export default {
     components: { productDetail, AppImg },
 
     data: () => ({
-        products: [],
         loading: true,
         errorFetching: null
     }),
@@ -70,13 +74,21 @@ export default {
     },
 
     computed: {
+        ...mapState(['products']),
+
+        productsLength() {
+            console.log(Object.keys(this.products).length);
+            return Object.keys(this.products).length
+        },
+
         queryId() {
             return this.$route.query.id;
         },
 
         media() {
             return this.$store.state.media
-        }
+        },
+
     },
 
     watch: {
@@ -86,20 +98,17 @@ export default {
     },
 
     async created() {
+        this.loading = !this.productsLength;
+
         await this.getItems();
     },
 
     methods: {
+        ...mapActions(['getProducts']),
+
         async getItems() {
-            this.loading = true;
 
-            const { data, error } = await this.$apiCall('product/all')
-
-            if (data) {
-                this.products = data
-            } else {
-                this.errorFetching = error
-            }
+            await this.getProducts()
 
             this.loading = false;
         }

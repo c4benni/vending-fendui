@@ -5,10 +5,12 @@
     >
         <slot></slot>
 
-        <div v-if="showActions" class="flex justify-between w-full">
+        <div v-if="showActions" class="flex justify-between w-full mt-[24px]">
             <ui-btn
                 v-for="(action, i) in actions"
                 :key="i"
+                :text="action.text"
+                :disabled="action.disabled"
                 :class="action.classList"
                 @click="action.onClick"
             >{{ action.title }}</ui-btn>
@@ -17,7 +19,8 @@
         <div class="relative fill-before before-divide before:border-t mt-[48px] pt-6">
             <!-- alert -->
             <div
-                class="rounded-sm mx-auto p-3 fill-before relative before-divide before:border flex justify-start bg-blue-700 dark:bg-blue-400 items-start w-[fit-content] bg-opacity-30 dark:bg-opacity-30"
+                class="rounded-sm md:mx-auto p-3 fill-before relative before-divide before:border flex justify-start bg-blue-700 dark:bg-blue-400 items-start w-[fit-content] bg-opacity-30 dark:bg-opacity-30"
+                :class="{ 'mx-6': fullBleed }"
             >
                 <ui-icon name="info" />
 
@@ -31,6 +34,7 @@
             <div class="pt-6 flex w-full justify-between items-center">
                 <ui-btn
                     :to="leftPaddel.to"
+                    :component-props="{ replace: true }"
                     class="font-normal text-blue-700 dark:text-blue-500 px-0"
                     :class="{ invisible: !leftPaddel.text, 'ml-6': fullBleed }"
                 >
@@ -40,8 +44,13 @@
 
                 <ui-btn
                     :to="rightPaddel.to"
-                    class="font-normal text-blue-700 dark:text-blue-500 px-0"
-                    :class="{ invisible: !rightPaddel.text, 'mr-6': fullBleed }"
+                    :component-props="{ replace: true }"
+                    class="font-normal px-0"
+                    :class="{
+                        invisible: !rightPaddel.text, 'mr-6': fullBleed,
+                        'text-blue-700 dark:text-blue-500': !rightPaddel.warn,
+                        'text-red-700 dark:text-red-500': rightPaddel.warn,
+                    }"
                 >
                     {{ rightPaddel.text }}
                     <ui-icon name="chevron-right" />
@@ -55,7 +64,11 @@
 import { capitalize } from '~/utils/main'
 export default {
     name: 'TabFooter',
-    props: { fullBleed: Boolean },
+    props: {
+        fullBleed: Boolean,
+        disableRevert: Boolean,
+        disableSave: Boolean
+    },
     computed: {
         showActions() {
             return !this.$slots.default?.length
@@ -64,15 +77,19 @@ export default {
             return [
                 {
                     title: 'Revert changes',
+                    text: true,
                     onClick: () => {
                         this.$emit('revert-changes')
                     },
                     classList: [
-                        'text-red-700 dark:text-red-500 pl-0 font-normal',
+                        'pl-0 font-normal',
                         {
+                            'text-red-700 dark:text-red-500': !this.disableRevert,
+                            'opacity-40': this.disableRevert,
                             'ml-6': this.fullBleed
                         }
                     ],
+                    disabled: this.disableRevert
                 },
                 {
                     title: 'Save changes',
@@ -80,11 +97,13 @@ export default {
                         this.$emit('save-changes')
                     },
                     classList: [
-                        'bg-green-700 text-white dark:bg-green-400 dark:text-blue-gray-900 hover:bg-green-800 dark:hover:bg-green-500',
                         {
+                            'bg-green-700 text-white dark:bg-green-400 dark:text-blue-gray-900 hover:bg-green-800 dark:hover:bg-green-500': !this.disableSave,
+                            'opacity-60': this.disableSave,
                             'mr-6': this.fullBleed
                         }
-                    ]
+                    ],
+                    disabled: this.disableSave
                 }
             ]
         },
@@ -102,7 +121,12 @@ export default {
 
             return {
                 text: capitalize(previousTitle).replace(/-/g, ' '),
-                to: this.getTo(previousTitle)
+                to: {
+                    query: {
+                        ...this.$route.query,
+                        tab: previousTitle,
+                    }
+                }
             }
         },
 
@@ -116,34 +140,16 @@ export default {
 
             return {
                 text: capitalize(nextTitle).replace(/-/g, '   '),
-                to: this.getTo(nextTitle)
+                to: {
+                    query: {
+                        ...this.$route.query,
+                        tab: nextTitle,
+                    }
+                },
+                warn: nextTitle == 'delete-account'
             }
         }
     },
 
-    methods: {
-        getTo(tab) {
-            const route = this.$route
-
-            let to = route.path
-
-            Object.entries({
-                ...route.query,
-                tab,
-            }).forEach((item, key) => {
-                if (!item[1]) {
-                    return
-                }
-                to += `${key == 0 ? '?' : '&'}${item[0]}=${item[1]}`
-            })
-
-            to += route.hash || ''
-
-            return to
-        }
-    }
 }
 </script>
-
-<style>
-</style>
