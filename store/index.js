@@ -1,7 +1,7 @@
-import Mutations from '~/utils/vuex/mutations'
-import State from '~/utils/vuex/state'
-import Getters from '~/utils/vuex/getters'
-import Actions from '~/utils/vuex/actions'
+import Mutations from './mutations'
+import State from './state'
+import Getters from './getters'
+import Actions from './actions'
 
 export const state = State
 

@@ -1,4 +1,4 @@
-import { formatAmount } from '../main'
+import { formatAmount } from '../utils/main'
 
 export default {
   userInfo(s) {

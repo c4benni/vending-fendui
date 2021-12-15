@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { getObjectPath } from '../main'
+import { getObjectPath } from '../utils/main'
 
 export default {
   UPDATE(s, p) {
