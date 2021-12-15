@@ -178,7 +178,7 @@ export default {
             const output = [
                 'Date',
                 this.isBuyer ? 'Type' : 'Product ID',
-                'Amount',
+                this.isBuyer ? 'Amount' : 'Price tag',
                 'Quantity',
             ]
 
@@ -191,10 +191,12 @@ export default {
             return output
         },
         transactionsLength() {
-            return Object.keys(this.transactions)
+            return Object.keys(this.transactions).length
         },
         tableCaption() {
             const transactionsLength = this.transactionsLength;
+
+            console.log(transactionsLength);
 
             return `Recent ${this.isBuyer ? 'transaction' : 'purchase'}${transactionsLength > 1 ? 's' : ''}`
         },

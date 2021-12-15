@@ -20,6 +20,8 @@ export default function state() {
       header: `/samples/landscapes/nature-mountains`
     },
 
+    pageVisible: false,
+
     user: null,
 
     greeting: '',

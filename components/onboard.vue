@@ -201,6 +201,7 @@ const defaultFields = () => ({
     role: '',
     termsAndConditions: false
 })
+
 export default {
     name: 'Onboard',
 
@@ -403,6 +404,8 @@ export default {
             const apiCall = onboard[method]
 
             const { data, error } = await apiCall.call(this, form)
+
+            console.log({ data, error });
 
             this.form.termsAndConditions = false
 

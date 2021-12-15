@@ -1,67 +1,43 @@
+import { serviceCall } from '~/utils/main'
+
 export default {
   async register(credentials) {
-    try {
-      const { data: response } = await this.$axios.post(
-        'user/register',
-        credentials
-      )
-
-      return { data: response.data, error: null }
-    } catch (err) {
-      const errResponse = err.response.data
-      return {
-        error: errResponse.error,
-        data: null
-      }
-    }
+    return await serviceCall(
+      async () => await this.$axios.post('user/register', credentials)
+    )
   },
 
   async login(credentials) {
-    try {
-      const { data: response } = await this.$axios.post(
-        'user/login',
-        credentials
-      )
-
-      return { data: response.data, error: null }
-    } catch (err) {
-      const errResponse = err.response.data
-
-      return {
-        error: errResponse.error,
-        data: null
-      }
-    }
+    return await serviceCall(
+      async () => await this.$axios.post('user/login', credentials)
+    )
   },
 
   async logout() {
-    try {
-      const { data: response } = await this.$axios.post('/user/logout')
-
-      return { data: response.data, error: null }
-    } catch (err) {
-      const errResponse = err.response.data
-
-      return {
-        error: errResponse.error,
-        data: null
-      }
-    }
+    return await serviceCall(async () => await this.$axios.post('/user/logout'))
   },
 
   async logoutAll({ notCurrent = true }) {
-    try {
-      const { data: response } = await this.$axios.post('/user/logout/all', {
-        notCurrent
-      })
+    return await serviceCall(
+      async () =>
+        await this.$axios.post('/user/logout/all', {
+          notCurrent
+        })
+    )
+  },
 
-      return { data: response.data, error: null }
-    } catch (err) {
-      const errResponse = err.response.data
-      return {
-        error: errResponse.error,
-        data: null
-      }
-    }
+  async updateUser(payload) {
+    return await serviceCall(
+      async () => await this.$axios.patch('user', payload)
+    )
+  },
+
+  async deleteUser(payload) {
+    return await serviceCall(
+      async () =>
+        await this.$axios.delete('user', {
+          data: payload
+        })
+    )
   }
 }

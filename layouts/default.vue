@@ -176,37 +176,20 @@ export default {
       }
     },
 
-    async 'state.vmodel.pageVisible'(n) {
+    async 'state.pageVisible'(n) {
       if (n) {
-        const refreshUser = async () => {
-          const { data } = await this.$refreshUser()
-
-          const path = this.$route.path
-
-          // logged in from another tab on same app, go to dashboard
-          if (data && path == '/') {
-            this.$router.replace('/dashboard')
-          }
-
-          // logged out from another tab on same app, go to login
-          if (!data && /^\/dashboard/.test(path)) {
-            this.$router.replace('/?login=true')
-          }
-        }
-
-        await refreshUser()
-
-        await this.$nuxt.refresh()
 
         setTouchDevice.call(this)
 
         this.$nuxt.refreshOnlineStatus()
 
         this.setGreetings()
+
+        await this.$refreshUser('/?login=true', false)
       }
     },
 
-    '$store.state.user'(n) {
+    'state.user'(n) {
       if (n) {
         this.$commit('UPDATE', {
           path: 'bannerActive',
@@ -335,12 +318,16 @@ export default {
         return { data, error }
       }
 
-      Vue.prototype.$refreshUser = async (routeTo = '/?login=true') => {
-        if (this.$route.path == '/') { return }
+      Vue.prototype.$refreshUser = async (
+        routeTo = '/?login=true',
+        skipHomePage = true
+      ) => {
+        if (this.$route.path == '/' && skipHomePage) { return }
 
         const { data } = await this.$storeUser();
 
-        if (!data && this.$ui.mounted) {
+        if (!data && this.$ui.mounted && this.$route.fullPath != routeTo) {
+
           this.$router.replace(routeTo)
         }
       }

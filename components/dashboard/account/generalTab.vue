@@ -99,6 +99,7 @@ import appImg from '~/components/appImg.vue'
 import uiSwitch from '~/components/uiSwitch.vue';
 
 import { capitalize, computedBR } from '~/utils/main';
+import user from '~/services/user';
 export default {
     name: 'GeneralTab',
 
@@ -357,7 +358,7 @@ export default {
 
             const payload = { ...this.submitPayload }
 
-            const { data, error } = await this.$apiCall('user', 'PATCH', payload)
+            const { data, error } = await user.updateUser.call(this, payload)
 
             this.$commit('UPDATE', {
                 path: 'processingDone',

@@ -183,7 +183,7 @@ export default {
             return this.purchasing ? '' : text
         },
         showDeposit() {
-            return this.disablePurchase && !this.isSeller && !this.soldOut
+            return !this.disablePurchase && !this.isSeller && !this.soldOut && !this.ownerDeleted
         }
     },
 

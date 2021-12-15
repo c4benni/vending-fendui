@@ -645,3 +645,17 @@ export const formatAmount = (amount) => {
     return `¢${parseAmount}`
   } else return `$${(parseAmount / 100).toFixed(2)}`
 }
+
+export const serviceCall = async (axiosCall) => {
+  try {
+    const { data: response } = await axiosCall()
+
+    return { data: response.data, error: null }
+  } catch (err) {
+    const errResponse = err.response.data
+    return {
+      error: errResponse.error,
+      data: null
+    }
+  }
+}

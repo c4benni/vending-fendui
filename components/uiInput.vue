@@ -133,7 +133,6 @@ export default {
 
         this.$emit('input-validity', getValidation.valid)
 
-
         input?.setCustomValidity?.(message);
       });
 

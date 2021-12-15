@@ -103,7 +103,7 @@ export default {
             return formatAmount(cost)
         },
         async fetchProducts() {
-            const query = this.user.role == 'buyer' ? '?limit=10' : `?where={"sellerId":"${this.user.id}"}&limit=10`
+            const query = this.user?.role == 'buyer' ? '?limit=10' : `?where={"sellerId":"${this.user?.id}"}&limit=10`
 
             await this.getProducts(query)
         },

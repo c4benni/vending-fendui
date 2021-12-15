@@ -63,6 +63,7 @@
 
 <script>
 import tabFooter from './tabFooter.vue';
+import user from '~/services/user';
 
 const passwordRegExpStr = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,32}$'
 
@@ -199,7 +200,7 @@ export default {
                 password: this.form.password
             }
 
-            const { data, error } = await this.$apiCall('user', 'DELETE', payload)
+            const { data, error } = await user.deleteUser.call(this, payload)
 
             this.resetForm()
 
