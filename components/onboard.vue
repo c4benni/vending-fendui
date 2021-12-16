@@ -405,8 +405,6 @@ export default {
 
             const { data, error } = await apiCall.call(this, form)
 
-            console.log({ data, error });
-
             this.form.termsAndConditions = false
 
             this.fetchKey = Date.now()
