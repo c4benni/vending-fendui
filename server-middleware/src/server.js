@@ -14,12 +14,7 @@ const routes = require('./routes/index')
 
 const corsOptions = {
   credentials: true,
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:8080',
-    'http://localhost:8080',
-    'http://172.20.10.3:3000'
-  ]
+  origin: ['*']
 }
 
 app.use([

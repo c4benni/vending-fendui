@@ -90,7 +90,7 @@ export default {
   ],
 
   axios: {
-    baseURL: 'http://localhost:3000/api/v1',
+    baseURL: '/api/v1',
     prefix: '',
     retry: true,
     credentials: true,
@@ -150,7 +150,7 @@ export default {
   build: {},
 
   server: {
-    // port: 8000, // default: 3000
+    port: 61279, // default: 3000
     host: '0.0.0.0' // default: localhost
   }, // other configs
 
