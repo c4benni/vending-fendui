@@ -1,5 +1,3 @@
-
-
 <template>
   <div
     id="ui-root"
@@ -8,10 +6,10 @@
       {
         'touch-device': state.isTouchDevice,
         'strict-touch': state.isStrictTouchDevice,
-        'can-hover': !state.isStrictTouchDevice,
+        'can-hover': !state.isStrictTouchDevice
       },
-    
-      breakpointsClasses,
+
+      breakpointsClasses
     ]"
   >
     <nuxt-child v-if="$ui.mounted" />
@@ -20,9 +18,17 @@
     so render the page loader to hide unhydrated app-->
     <div
       v-else
-      style="width:100%;height:100%;position:fixed;z-index:1000;display:grid;justify-content:center;align-items:center"
+      style="
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        z-index: 1000;
+        display: grid;
+        justify-content: center;
+        align-items: center;
+      "
     >
-      <div class="spinner-border" style="--size:2rem;"></div>
+      <div class="spinner-border" style="--size: 2rem"></div>
     </div>
   </div>
 </template>
@@ -42,14 +48,14 @@ import {
   nextAnimFrame,
   nextFrame,
   setTouchDevice,
-  sleep,
+  sleep
 } from '~/utils/main'
 
 export default {
   name: 'DefaultLayout',
 
   data: () => ({
-    ...breakpoints.data,
+    ...breakpoints.data
   }),
 
   head() {
@@ -59,18 +65,18 @@ export default {
       {
         hid: 'google-font-preconnect',
         rel: 'preconnect',
-        href: 'https://fonts.googleapis.com',
+        href: 'https://fonts.googleapis.com'
       },
       {
         hid: 'gstatic-preconnect',
         rel: 'preconnect',
         crossorigin: 'true',
-        href: 'https://fonts.gstatic.com',
+        href: 'https://fonts.gstatic.com'
       },
       {
         hid: 'public-sans-font',
         href: 'https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap',
-        rel: 'stylesheet',
+        rel: 'stylesheet'
       },
       {
         hid: 'satisfy-font',
@@ -85,12 +91,12 @@ export default {
           hid: 'animations',
           rel: 'preload',
           as: 'style',
-          href: 'css/animations.css',
+          href: 'css/animations.css'
         },
         {
           hid: 'animations',
           rel: 'stylesheet',
-          href: 'css/animations.css',
+          href: 'css/animations.css'
         }
       )
     }
@@ -99,8 +105,8 @@ export default {
       link: [...links],
       htmlAttrs: {
         id: 'vending',
-        lang: 'el',
-      },
+        lang: 'el'
+      }
     }
   },
   computed: {
@@ -119,26 +125,22 @@ export default {
     pageLoading() {
       return {
         appLoaded: this.state.appLoaded,
-        showLoading: this.state.showPageLoading,
+        showLoading: this.state.showPageLoading
       }
-    },
+    }
   },
   watch: {
     '$theme.light'() {
-      const currentTheme =
-        this.$theme.light ? 'dark' : 'light'
+      const currentTheme = this.$theme.light ? 'dark' : 'light'
 
       const newTheme = this.$theme.light ? 'light' : 'dark'
 
-      document.documentElement
-        .classList.replace(
-          currentTheme,
-          newTheme
-        )
+      document.documentElement.classList.replace(currentTheme, newTheme)
     },
     async $route(n, o) {
       if (n.path == '/dashboard/account') {
-        requestAnimationFrame(() => scrollTo(0, 0))
+        await this.$sleep(100)
+        scrollTo(0, 0)
       }
 
       this.setGreetings()
@@ -149,11 +151,10 @@ export default {
       })
 
       if (this.$ui.mounted && this.state.mobileNav) {
-        document.documentElement
-          .classList.remove('overlay-active')
+        document.documentElement.classList.remove('overlay-active')
       }
 
-      if ((n.path != '/' && o.path != '/') && (n.path != o.path)) {
+      if (n.path != '/' && o.path != '/' && n.path != o.path) {
         await this.$refreshUser()
       }
     },
@@ -178,7 +179,6 @@ export default {
 
     async 'state.pageVisible'(n) {
       if (n) {
-
         setTouchDevice.call(this)
 
         this.$nuxt.refreshOnlineStatus()
@@ -195,7 +195,6 @@ export default {
           path: 'bannerActive',
           value: n.showBanner
         })
-
       }
     }
   },
@@ -238,16 +237,17 @@ export default {
 
       this.$commit('UPDATE', {
         name: 'greeting',
-        value: greeting(),
+        value: greeting()
       })
     },
 
     onCreated() {
       this.setGreetings()
 
-      Vue.prototype.$toggleShowBalance = (val = !this.$store.state.showBalance) => {
-
-        let value = val;
+      Vue.prototype.$toggleShowBalance = (
+        val = !this.$store.state.showBalance
+      ) => {
+        let value = val
 
         if (typeof value != 'boolean') {
           value = !this.$store.state.showBalance
@@ -261,14 +261,12 @@ export default {
     },
 
     async onBeforeMount() {
-
       const setPrototype = () => {
         Vue.prototype.$nextFrame = nextFrame.bind(this)
 
         Vue.prototype.$nextAnimFrame = nextAnimFrame.bind(this)
 
         Vue.prototype.$sleep = sleep
-
       }
 
       setPrototype()
@@ -279,9 +277,9 @@ export default {
 
       const setTheme = (val) => {
         this.$theme.is = val
-          ; (
-            document.documentElement || document.getElementsByTagName('html')[0]
-          ).classList.add(this.$theme.light ? 'light' : 'dark')
+        ;(
+          document.documentElement || document.getElementsByTagName('html')[0]
+        ).classList.add(this.$theme.light ? 'light' : 'dark')
       }
 
       const currentTheme = window.matchMedia('(prefers-color-scheme: light)')
@@ -296,23 +294,24 @@ export default {
           if (e.matches) {
             setTheme('light')
           } else setTheme('dark')
-        },
+        }
       })
 
       window.history.scrollRestoration = 'auto'
 
       Vue.prototype.$storeUser = async () => {
-
         const { data: res } = await this.$axios.get('/auth')
 
         const { data, error } = res
 
         this.$commit('UPDATE', {
           path: 'user',
-          value: !data ? null : {
-            ...(this.$store.state.user || {}),
-            ...data
-          }
+          value: !data
+            ? null
+            : {
+                ...(this.$store.state.user || {}),
+                ...data
+              }
         })
 
         return { data, error }
@@ -322,32 +321,34 @@ export default {
         routeTo = '/?login=true',
         skipHomePage = true
       ) => {
-        if (this.$route.path == '/' && skipHomePage) { return }
+        if (this.$route.path == '/' && skipHomePage) {
+          return
+        }
 
-        const { data } = await this.$storeUser();
+        const { data } = await this.$storeUser()
 
         if (!data && this.$ui.mounted && this.$route.fullPath != routeTo) {
-
           this.$router.replace(routeTo)
         }
       }
 
       Vue.prototype.$apiCall = async (url, method = 'get', payload = {}) => {
-
         const objectMethod = typeof method == 'object'
 
-        const getMethod = (objectMethod ? 'post' : method).toLocaleLowerCase();
+        const getMethod = (objectMethod ? 'post' : method).toLocaleLowerCase()
 
         try {
           const { data: response } = await this.$axios[getMethod](url, payload)
 
           return { data: response.data, error: null }
         } catch (e) {
-          const resError = e.response;
+          const resError = e.response
 
           // expired session
-          if (resError.status == 401 && /expired/.test(resError.data.error.message)) {
-
+          if (
+            resError.status == 401 &&
+            /expired/.test(resError.data.error.message)
+          ) {
             this.$commit('UPDATE', {
               path: 'notify',
               value: {
@@ -373,11 +374,11 @@ export default {
         }
       }
 
-      await this.$nextTick();
+      await this.$nextTick()
 
       await this.$refreshUser()
 
-      await this.$nextTick();
+      await this.$nextTick()
 
       const session = this.state.user
       const path = this.$route.path
@@ -388,11 +389,9 @@ export default {
       }
 
       // redirect back to login if a logged out user is trying to access dashboard
-
-      else
-        if (!session && path != '/') {
-          return this.$router.replace('/')
-        }
+      else if (!session && path != '/') {
+        return this.$router.replace('/')
+      }
     },
 
     onMounted() {
@@ -414,7 +413,7 @@ export default {
           const toggleVisibility = (value) => {
             this.$commit('UPDATE', {
               value,
-              path: 'pageVisible',
+              path: 'pageVisible'
             })
           }
 
@@ -432,7 +431,7 @@ export default {
         Object.entries(this.state).forEach((x) => {
           this.$commit('UPDATE', {
             path: x[0],
-            value: x[1],
+            value: x[1]
           })
         })
 
@@ -440,7 +439,7 @@ export default {
 
         this.$commit('UPDATE', {
           path: 'pageTransitionState',
-          value: 'afterEnter',
+          value: 'afterEnter'
         })
 
         await this.$sleep(200)
@@ -450,7 +449,7 @@ export default {
         this.$ui.mounted = true
       })
     }
-  },
+  }
 }
 </script>
 
