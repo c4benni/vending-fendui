@@ -139,7 +139,7 @@ export default {
     },
     async $route(n, o) {
       if (n.path == '/dashboard/account') {
-        await this.$sleep(100)
+        await this.$sleep(70)
         scrollTo(0, 0)
       }
 
