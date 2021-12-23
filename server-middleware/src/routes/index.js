@@ -59,8 +59,6 @@ router.get('/auth', async (req, res) => {
 
   const session = await findSession(token, id)
 
-  console.log(session)
-
   if (!session) {
     return res.send({})
   }
