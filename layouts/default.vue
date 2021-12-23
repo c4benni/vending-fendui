@@ -185,7 +185,9 @@ export default {
 
         this.setGreetings()
 
-        await this.$refreshUser('/?login=true', false)
+        if (this.$route.path != '/') {
+          await this.$refreshUser('/?login=true', false)
+        }
       }
     },
 
