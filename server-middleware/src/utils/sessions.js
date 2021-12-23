@@ -9,12 +9,14 @@ function signCookies({ res, token, userId }) {
 
   res?.cookie?.('token', token, {
     maxAge: sessionMaxTime,
-    httpOnly: true
+    httpOnly: true,
+    secure: true
   })
 
   res?.cookie?.('id', userId, {
     maxAge: sessionMaxTime,
-    httpOnly: true
+    httpOnly: true,
+    secure: true
   })
 }
 
@@ -72,6 +74,8 @@ async function signUser(userId, res, req) {
 
 async function verify(req, res, next) {
   const { token, id: userId } = req.cookies
+
+  console.log(req.headers.cookie)
 
   const expiredSession = () =>
     res.status(401).send({
