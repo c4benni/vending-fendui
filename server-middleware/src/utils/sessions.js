@@ -9,14 +9,12 @@ function signCookies({ res, token, userId }) {
 
   res?.cookie?.('token', token, {
     maxAge: sessionMaxTime,
-    httpOnly: true,
-    secure: true
+    httpOnly: true
   })
 
   res?.cookie?.('id', userId, {
     maxAge: sessionMaxTime,
-    httpOnly: true,
-    secure: true
+    httpOnly: true
   })
 }
 
