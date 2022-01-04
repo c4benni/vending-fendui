@@ -17,12 +17,18 @@ const DB = {}
 let sequelize;
 
 if (isProduction) {
+const ssl = {
+  required: true,
+  rejectUnauthorized: false
+}
+
 sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   protocol: 'postgres',
   dialectOptions: {
-    ssl: true
-  }
+    ssl
+  },
+  ssl
 })
 
 } else {
