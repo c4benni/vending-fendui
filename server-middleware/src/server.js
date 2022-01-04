@@ -8,6 +8,8 @@ const morgan = require('morgan')
 
 const cookieParser = require('cookie-parser')
 
+const { isTesting } = require('../../utils/main')
+
 const { sequelize: DB } = require('./models')
 
 const routes = require('./routes/index')
@@ -26,9 +28,8 @@ app.use([
 ])
 
 DB.authenticate().then(() => {
-  DB.sync({
-    force: /test/i.test(process.env.NODE_ENV)
-  })
+DB.sync({ force: isTesting })
+
 })
 
 module.exports = app
