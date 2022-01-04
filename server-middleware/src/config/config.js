@@ -9,9 +9,8 @@ module.exports = {
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     options: {
-      dialect: process.env.DIALECT || 'postgres',
+      dialect: process.env.DB_DIALECT,
       host: process.env.HOST || 'localhost',
-      storage: './vending.sql'
     }
   },
 
