@@ -1,7 +1,10 @@
 {
   "name": "vending-app",
+  "description": "a vending app with buyer and seller roles",
   "version": "1.0.0",
-  "private": true,
+  "engines": {
+    "node": "16.11.x"
+  },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
