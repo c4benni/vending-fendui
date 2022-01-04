@@ -152,7 +152,8 @@ export default {
   build: {},
 
   server: {
-    port: 61279, // default: 3000
+// port: 61279, // default: 3000
+
     host: '0.0.0.0' // default: localhost
   }, // other configs
 
