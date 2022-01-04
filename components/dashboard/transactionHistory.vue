@@ -214,7 +214,8 @@ export default {
     tableCaption() {
       const transactionsLength = this.transactionsLength
 
-      console.log(transactionsLength)
+// console.log(transactionsLength)
+
 
       return `Recent ${this.isBuyer ? 'transaction' : 'purchase'}${
         transactionsLength > 1 ? 's' : ''

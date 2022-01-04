@@ -284,7 +284,8 @@ export default {
                 {
                     id: 'username-field',
                     validity: e => {
-                        console.log(e);
+// console.log(e);
+
                         this.validFields.username = e
                     },
                     autocomplete: 'username',

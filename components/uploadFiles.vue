@@ -152,7 +152,8 @@ export default {
 
             this.$emit('update:modelValue', this.displayFiles)
 
-            console.log(this.displayFiles);
+// console.log(this.displayFiles);
+
         },
         buildDisplay(files) {
             for (const file of files) {
