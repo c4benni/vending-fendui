@@ -6,7 +6,8 @@ const { Sequelize, DataTypes } = require('sequelize')
 
 const { db: dbConfig } = require('../config/config')
 
-const { isProduction } = require('../../utils/main')
+const { isProduction } = require('../../../utils/main')
+
 
 // database instance
 const DB = {}
