@@ -73,7 +73,8 @@ async function signUser(userId, res, req) {
 async function verify(req, res, next) {
   const { token, id: userId } = req.cookies
 
-  console.log(req.headers.cookie)
+req.headers.cookie
+
 
   const expiredSession = () =>
     res.status(401).send({

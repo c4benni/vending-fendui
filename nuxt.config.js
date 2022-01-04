@@ -124,7 +124,7 @@ export default {
   },
 
   router: {
-    base: '/vending-fendui',
+    base: '/',
     middleware: 'auth'
   },
 

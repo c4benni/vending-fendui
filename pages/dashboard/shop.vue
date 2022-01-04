@@ -77,7 +77,8 @@ export default {
         ...mapState(['products']),
 
         productsLength() {
-            console.log(Object.keys(this.products).length);
+// console.log(Object.keys(this.products).length);
+
             return Object.keys(this.products).length
         },
 
