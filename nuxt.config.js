@@ -124,7 +124,8 @@ export default {
   },
 
   router: {
-    base: '/',
+    base: /production|test/.test(process.env.NODE_ENV
+) ?  '/' : '/vending-fendui',
     middleware: 'auth'
   },
 
