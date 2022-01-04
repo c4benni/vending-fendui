@@ -1,3 +1,5 @@
+import { isProduction } from './utils/main'
+
 const description =
   'Discover your favourite recipes from different parts of the world!'
 
@@ -94,7 +96,7 @@ export default {
     prefix: '',
     retry: true,
     credentials: true,
-    debug: true,
+    debug: !isProduction,
     headers: {
       Accept: 'application/json',
       'Access-Control-Allow-Origin': '*',
