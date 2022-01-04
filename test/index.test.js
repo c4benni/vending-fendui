@@ -2,6 +2,8 @@ const { readdirSync } = require('fs')
 const { resolve, join: joinPath } = require('path')
 const { Nuxt, Builder } = require('nuxt')
 const request = require('supertest')
+const { isProduction } = require('~/utils/main')
+
 
 // We keep the nuxt and server instance
 // So we can close them at the end of the test
@@ -10,7 +12,7 @@ let nuxt = null
 // Init Nuxt.js and create a server listening on localhost:4000
 beforeAll(async () => {
   const config = {
-    dev: process.env.NODE_ENV === 'production',
+    dev: !isProduction,
     rootDir: resolve(__dirname, '../'),
     serverMiddleware: [
       { path: '/api/v1', handler: '~/server-middleware/src/server.js' }
