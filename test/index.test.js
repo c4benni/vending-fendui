@@ -2,7 +2,8 @@ const { readdirSync } = require('fs')
 const { resolve, join: joinPath } = require('path')
 const { Nuxt, Builder } = require('nuxt')
 const request = require('supertest')
-const { isProduction } = require('~/utils/main')
+const { isProduction } = require('../utils/main')
+
 
 
 // We keep the nuxt and server instance
