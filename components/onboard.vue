@@ -1,12 +1,16 @@
 <template>
     <div
         :key="isLogin + fetchKey"
-        class="root w-[100%] h-[100%] grid justify-items-center items-center grid-cols-[1fr] grid-rows-[auto,1fr] fade-slide-x-appear"
+class="root w-[100%] h-[100%] grid justify-items-center items-center
+grid-cols-[1fr] grid-rows-[auto,1fr] fade-slide-x-appear isolate"
+
     >
         <div
             v-if="message"
             role="alert"
-            class="p-4 min-h-[72px] min-w-[calc(100%-3rem)] lg:min-w-[70%] mx-auto mt-6 grid grid-flow-col grid-cols-[36px,1fr] m-4"
+class="p-4 min-h-[72px] min-w-[calc(100%-3rem)] lg:min-w-[70%] mx-auto mt-6 grid
+grid-flow-col grid-cols-[36px,1fr] m-4 z-[1]"
+
             :class="[
             {
                 'bg-red-800 dark:bg-red-500 rounded-md border-[1px] border-red-600 dark:border-red-400 text-white': message.error,
@@ -283,8 +287,7 @@ export default {
             return [
                 {
                     id: 'username-field',
-                    validity: e => {
-// console.log(e);
+validity: e => {
 
                         this.validFields.username = e
                     },
