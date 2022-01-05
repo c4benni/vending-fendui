@@ -1,4 +1,3 @@
-import { isProduction } from '~/utils/main'
 
 export default async function ({ store, redirect, route, req }) {
   const app = store.$router.app
@@ -6,13 +5,9 @@ export default async function ({ store, redirect, route, req }) {
   const appMounted = app?.$ui?.mounted
 
   if (req) {
-if (isProduction && !req.connection.encrypted) {
-  return redirect(process.env.BROWSER_BASE_URL)
-}
 
-const scheme = isProduction
-  ? 'https://'
-  : req.connection.encrypted
+const scheme = req.connection.encrypted
+
   ? 'https://'
   : 'http://'
 
